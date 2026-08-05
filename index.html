@@ -193,7 +193,8 @@
   .lx-card h3 em { font-style: normal; color: var(--lx-red); }
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
-  .lx-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; align-items: start; }
+  /* 컬럼 폭을 각 이미지 비율에 맞춰 배분해 세 이미지의 렌더링 높이를 동일하게 맞춤 */
+  .lx-docs { display: grid; grid-template-columns: 1fr .996fr 1.067fr; gap: 16px; margin-bottom: 48px; align-items: stretch; }
   .fig { background: #fff; border: 1px solid var(--green-line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; }
   .fig figcaption {
     padding: 13px 16px; font-size: 14.5px; font-weight: 700;
@@ -449,7 +450,7 @@
   <div class="container">
     <p><b>주식회사 그린홈시스</b> · 대표 김상대 · LX하우시스 완성창 대리점</p>
     <p>서울특별시 금천구 디지털로10길 37 아스크타워 1401호</p>
-    <p>TEL 1551-7704 · Mobile 010-4170-4413 · Green-homesys@naver.com</p>
+    <p>TEL 1551-7704 · Green-homesys@naver.com</p>
   </div>
 </footer>
 
