@@ -1,0 +1,12 @@
+BEGIN:VCARD
+VERSION:3.0
+N:김;상대;;;
+FN:김상대 (그린홈시스)
+ORG:주식회사 그린홈시스
+TITLE:대표
+TEL;TYPE=WORK,VOICE:1551-7704
+TEL;TYPE=CELL,VOICE:010-4170-4413
+EMAIL;TYPE=WORK:Green-homesys@naver.com
+ADR;TYPE=WORK:;;디지털로10길 37 아스크타워 1401호;금천구;서울특별시;;대한민국
+NOTE:LX하우시스 완성창 대리점 — 무료 견적 1551-7704
+END:VCARD
