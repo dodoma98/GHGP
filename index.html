@@ -193,7 +193,7 @@
   .lx-card h3 em { font-style: normal; color: var(--lx-red); }
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
-  .lx-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 44px; }
+  .lx-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; align-items: start; }
   .fig { background: #fff; border: 1px solid var(--green-line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; }
   .fig figcaption {
     padding: 13px 16px; font-size: 14.5px; font-weight: 700;
@@ -201,18 +201,6 @@
     display: flex; align-items: center; gap: 8px;
   }
   .fig figcaption::after { content: "크게 보기 +"; margin-left: auto; font-weight: 600; font-size: 12.5px; color: var(--muted); }
-
-  .doc-strip-wrap { margin-bottom: 48px; }
-  .doc-strip-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .doc-strip-title small { font-weight: 600; color: var(--muted); font-size: 13px; }
-  .doc-strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
-  .doc-thumb {
-    flex: 0 0 150px; cursor: zoom-in;
-    border: 1px solid var(--green-line); border-radius: 10px;
-    overflow: hidden; background: #fff;
-  }
-  .doc-thumb img { width: 100%; height: auto; }
-  .doc-thumb span { display: block; font-size: 12.5px; font-weight: 600; text-align: center; padding: 8px 6px; color: var(--muted); }
 
   /* business card */
   .namecard { max-width: 780px; margin: 0 auto; text-align: center; }
@@ -294,7 +282,7 @@
     .float-chip.p2 { right: -4px; }
     .toon-grid { grid-template-columns: 1fr; gap: 16px; max-width: 460px; margin: 0 auto; }
     .lx-cards { grid-template-columns: 1fr; }
-    .lx-duo { grid-template-columns: 1fr; }
+    .lx-docs { grid-template-columns: 1fr; }
     .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
     .float-call { display: flex; }
     section { padding: 56px 0; }
@@ -393,26 +381,19 @@
       </div>
     </div>
 
-    <div class="lx-duo">
-      <figure class="fig" data-full="assets/lx-compare.jpg">
-        <img src="assets/lx-compare.jpg" alt="저가 창호와 정품 완성창 비교표" loading="lazy">
-        <figcaption>저가 창호 vs 정품 완성창, 뭐가 다를까요?</figcaption>
+    <div class="lx-docs">
+      <figure class="fig" data-full="assets/lx-vueframe-1.png">
+        <img src="assets/lx-vueframe-1.png" alt="LX Z:IN 뷰프레임 제품 설명서" loading="lazy">
+        <figcaption>뷰프레임 소개</figcaption>
       </figure>
-      <figure class="fig" data-full="assets/process.png">
-        <img src="assets/process.png" alt="그린홈시스 시공 프로세스 5단계" loading="lazy">
-        <figcaption>그린홈시스는 이렇게 시공합니다</figcaption>
+      <figure class="fig" data-full="assets/lx-vueframe-2.png">
+        <img src="assets/lx-vueframe-2.png" alt="LX하우시스 완성창 시스템과 제품 라인업" loading="lazy">
+        <figcaption>완성창 시스템</figcaption>
       </figure>
-    </div>
-
-    <div class="doc-strip-wrap">
-      <div class="doc-strip-title">더 자세한 자료 보기 <small>눌러서 크게 확인하세요</small></div>
-      <div class="doc-strip">
-        <div class="doc-thumb" data-full="assets/lx-vueframe-1.png"><img src="assets/lx-vueframe-1.png" alt="LX Z:IN 뷰프레임 제품 설명서 1" loading="lazy"><span>뷰프레임 소개</span></div>
-        <div class="doc-thumb" data-full="assets/lx-vueframe-2.png"><img src="assets/lx-vueframe-2.png" alt="LX하우시스 완성창 제품 설명서 2" loading="lazy"><span>완성창 시스템</span></div>
-        <div class="doc-thumb" data-full="assets/lx-lineup.jpg"><img src="assets/lx-lineup.jpg" alt="발코니창·일반창·여닫이도어 제품 라인업" loading="lazy"><span>제품 라인업</span></div>
-        <div class="doc-thumb" data-full="assets/lx-tech.jpg"><img src="assets/lx-tech.jpg" alt="TPS 단열간봉과 수퍼더블로이유리 기술 설명" loading="lazy"><span>단열 기술</span></div>
-        <div class="doc-thumb" data-full="assets/lx-warranty.png"><img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증서" loading="lazy"><span>10년 보증서</span></div>
-      </div>
+      <figure class="fig" data-full="assets/lx-warranty.png">
+        <img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy">
+        <figcaption>10년 품질보증제도</figcaption>
+      </figure>
     </div>
 
     <!-- 명함 -->
