@@ -51,14 +51,7 @@
     height: 64px;
   }
   .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
-  .logo-mark {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--green) 0%, var(--green-deep) 100%);
-    display: grid; place-items: center;
-    color: #fff; font-size: 16px;
-  }
-  .gnb nav { display: flex; gap: 22px; margin-left: auto; font-size: 15px; font-weight: 600; color: var(--muted); }
-  .gnb nav a:hover { color: var(--green); }
+  .logo-img { height: 34px; width: auto; }
   .gnb-call {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--green); color: #fff;
@@ -245,6 +238,7 @@
   .closing h2 { font-size: clamp(26px, 3.4vw, 38px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 12px; }
   .closing p { opacity: .9; margin-bottom: 30px; font-size: 16.5px; }
   .closing .btn { font-size: 19px; padding: 18px 38px; border-radius: 999px; }
+  .closing-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
   footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
   footer b { color: var(--ink); }
@@ -278,6 +272,12 @@
   }
 
   /* ───────── responsive ───────── */
+  /* 데스크톱: 히어로 버튼 확대 */
+  @media (min-width: 901px) {
+    .hero-ctas .btn { font-size: 19px; padding: 19px 36px; border-radius: 14px; }
+    .btn-point { font-size: 20px; }
+  }
+
   /* 태블릿: 웹툰 4컷을 2×2로 */
   @media (max-width: 1120px) {
     .toon-grid { grid-template-columns: repeat(2, 1fr); max-width: 760px; margin: 0 auto; }
@@ -285,7 +285,6 @@
 
   /* 모바일·세로 태블릿 */
   @media (max-width: 900px) {
-    .gnb nav { display: none; }
     .hero-inner { grid-template-columns: 1fr; gap: 34px; padding: 44px 0 40px; }
     .hero-copy { order: 1; }
     .hero-visual { order: 2; max-width: 420px; margin: 0 auto; }
@@ -310,7 +309,7 @@
   @media (max-width: 380px) {
     .gnb-inner { gap: 10px; height: 56px; }
     .logo { font-size: 16px; gap: 6px; }
-    .logo-mark { width: 26px; height: 26px; font-size: 14px; }
+    .logo-img { height: 26px; }
     .gnb-call { font-size: 13px; padding: 8px 12px; }
     .hero h1 { font-size: 30px; }
   }
@@ -322,14 +321,9 @@
 <header class="gnb">
   <div class="container gnb-inner">
     <a class="logo" href="#top">
-      <span class="logo-mark">🏠</span>
+      <img class="logo-img" src="assets/logo.png" alt="그린홈시스 로고">
       그린홈시스
     </a>
-    <nav>
-      <a href="#toon">웹툰</a>
-      <a href="#trust">LX 전문성</a>
-      <a href="#promo">프로모션</a>
-    </nav>
     <a class="gnb-call" href="tel:1551-7704" style="margin-left:auto;">📞 1551-7704 무료견적</a>
   </div>
 </header>
@@ -469,7 +463,10 @@
 <div class="closing">
   <h2>지금 바로, 비교 견적 무료로 받아보세요</h2>
   <p>사양까지 투명하게 비교해 드립니다. 부담 없이 전화 주세요.</p>
-  <a class="btn btn-white" href="tel:1551-7704">📞 1551-7704</a>
+  <div class="closing-btns">
+    <a class="btn btn-point" href="https://gh-point.com/" target="_blank" rel="noopener">✨ 포인트 회원 등록하기</a>
+    <a class="btn btn-white" href="tel:1551-7704">📞 1551-7704</a>
+  </div>
 </div>
 
 <footer>
