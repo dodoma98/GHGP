@@ -197,13 +197,13 @@
   }
   .fig figcaption::after { content: "크게 보기 +"; margin-left: auto; font-weight: 600; font-size: 12.5px; color: var(--muted); }
 
-  /* business card */
+  /* business card — 위 자료 그리드와 양 끝 정렬(전체 폭) */
   .namecard {
-    display: grid; grid-template-columns: 1.9fr 1fr;
-    gap: 24px; align-items: center;
-    max-width: 1000px; margin: 0 auto;
+    display: grid; grid-template-columns: 2.9fr 1fr;
+    gap: 16px; align-items: stretch;
   }
   .namecard-img {
+    display: flex; align-items: center;
     border: 1px solid var(--green-line);
     border-radius: 16px;
     overflow: hidden;
@@ -211,8 +211,8 @@
     cursor: zoom-in;
     background: #fff;
   }
-  .namecard-btns { display: flex; flex-direction: column; gap: 14px; }
-  .namecard-btns .btn { width: 100%; font-size: 17px; padding: 19px 24px; }
+  .namecard-btns { display: flex; flex-direction: column; gap: 16px; }
+  .namecard-btns .btn { width: 100%; flex: 1; font-size: 19px; padding: 20px 24px; border-radius: 14px; }
   .btn-white { background: #fff; color: var(--green-deep); }
   .btn-white:hover { background: var(--green-soft); }
 
@@ -421,7 +421,7 @@
     <!-- 명함 -->
     <div class="namecard">
       <div class="namecard-img" data-full="assets/namecard.png">
-        <img src="assets/namecard.png" alt="주식회사 그린홈시스 명함 — 대표 김상대, LX하우시스 완성창 대리점, 대표번호 1551-7704" loading="lazy">
+        <img src="assets/namecard.png" alt="주식회사 그린홈시스 명함 — 대표 김상대, LX하우시스 완성창 대리점, 대표번호 1551-7704" loading="lazy" style="width:100%;">
       </div>
       <div class="namecard-btns">
         <a class="btn btn-white" style="border:1.5px solid var(--green-line);" href="https://greenhomesys.com/" target="_blank" rel="noopener">🌐 홈페이지 들어가기</a>
