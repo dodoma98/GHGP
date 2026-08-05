@@ -262,7 +262,12 @@
     font-size: 17px; font-weight: 800;
     padding: 16px; border-radius: 14px;
     box-shadow: 0 8px 24px rgba(20,60,35,.35);
+    opacity: 0; transform: translateY(130%);
+    transition: transform .35s ease, opacity .35s ease;
+    pointer-events: none;
   }
+  .float-call.show { opacity: 1; transform: none; pointer-events: auto; }
+  @media (prefers-reduced-motion: reduce) { .float-call { transition: none; } }
 
   /* lightbox */
   .lightbox {
@@ -540,6 +545,14 @@
   }
   lb.addEventListener('click', closeLb);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+  // 스크롤을 내리면 플로팅 전화 버튼 표시
+  const floatCall = document.querySelector('.float-call');
+  function toggleFloatCall() {
+    floatCall.classList.toggle('show', window.scrollY > 320);
+  }
+  window.addEventListener('scroll', toggleFloatCall, { passive: true });
+  toggleFloatCall();
 </script>
 </body>
 </html>
