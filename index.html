@@ -211,6 +211,7 @@
     cursor: zoom-in;
     background: #fff;
   }
+  .card-hint { display: none; text-align: center; color: var(--muted); font-size: 13px; margin: -6px 0 2px; }
   .namecard-btns { display: flex; flex-direction: column; gap: 16px; }
   .namecard-btns .btn { width: 100%; flex: 1; font-size: 19px; padding: 20px 24px; border-radius: 14px; }
   .btn-white { background: #fff; color: var(--green-deep); }
@@ -295,7 +296,13 @@
     .float-chip.p1 { left: 0; }
     .float-chip.p2 { right: 0; }
     .lx-cards { grid-template-columns: 1fr; }
-    .lx-docs { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto 48px; }
+    .lx-docs {
+      grid-template-columns: none;
+      grid-auto-flow: column; grid-auto-columns: 74%;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      padding-bottom: 10px; margin: 0 0 40px;
+    }
+    .lx-docs .fig { scroll-snap-align: center; }
     .namecard { grid-template-columns: 1fr; gap: 16px; }
     .float-call { display: flex; }
     section { padding: 56px 0; }
@@ -304,6 +311,10 @@
 
   /* 좁은 모바일: 그리드 한 줄로, 버튼 전체 폭 */
   @media (max-width: 640px) {
+    .namecard-img img { aspect-ratio: 1162 / 696; object-fit: cover; object-position: left center; }
+    .card-hint { display: block; }
+    .closing-btns { flex-direction: column; align-items: stretch; max-width: 420px; margin: 0 auto; }
+    .closing .btn { width: 100%; }
     .toon-grid { grid-template-columns: 1fr; gap: 16px; max-width: 460px; }
     .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
     .hero-ctas .btn { flex: 1 1 100%; }
@@ -423,6 +434,7 @@
       <div class="namecard-img" data-full="assets/namecard.png">
         <img src="assets/namecard.png" alt="주식회사 그린홈시스 명함 — 대표 김상대, LX하우시스 완성창 대리점, 대표번호 1551-7704" loading="lazy" style="width:100%;">
       </div>
+      <p class="card-hint">명함을 누르면 전체를 크게 볼 수 있어요</p>
       <div class="namecard-btns">
         <a class="btn btn-white" style="border:1.5px solid var(--green-line);" href="https://greenhomesys.com/" target="_blank" rel="noopener">🌐 홈페이지 들어가기</a>
         <a class="btn btn-primary" href="tel:1551-7704">📞 전화하기</a>
