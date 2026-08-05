@@ -12,7 +12,7 @@
 
 ## 운영 방법
 
-- **월간 프로모션 교체**: `assets/promo-monthly.jpg` 파일만 새 포스터로 갈아끼우고,
+- **월간 프로모션 교체**: `assets/promo-monthly.png` 파일만 새 포스터로 갈아끼우고,
   `index.html`에서 `8월 한정` 뱃지 텍스트와 카드 제목을 해당 월에 맞게 수정하면 됩니다.
 - **연락처 저장 버튼**: `assets/greenhomesys.vcf` (vCard) 파일을 내려받게 되어 있습니다.
   담당자 정보가 바뀌면 이 파일을 수정하세요.
