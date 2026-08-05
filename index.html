@@ -40,7 +40,7 @@
     line-height: 1.65;
     word-break: keep-all;
   }
-  img { max-width: 100%; display: block; }
+  img { max-width: 100%; height: auto; display: block; }
   a { color: inherit; text-decoration: none; }
   .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
 
@@ -70,14 +70,19 @@
   .gnb-call:hover { background: var(--green-deep); }
 
   /* ───────── hero ───────── */
-  .hero { background: linear-gradient(180deg, var(--bg-alt) 0%, #ffffff 100%); overflow: hidden; }
+  .hero {
+    background:
+      radial-gradient(640px 420px at 20% 82%, rgba(27,122,68,.13), transparent 70%),
+      linear-gradient(180deg, var(--bg-alt) 0%, #ffffff 100%);
+    overflow: hidden;
+  }
   .hero-inner {
-    display: grid; grid-template-columns: .9fr 1.1fr;
-    gap: 56px; align-items: center;
-    padding: 84px 0 76px;
+    display: grid; grid-template-columns: .82fr 1.18fr;
+    gap: 44px; align-items: end;
+    padding: 84px 0 0;
   }
   .hero-visual { order: 1; }
-  .hero-copy { order: 2; }
+  .hero-copy { order: 2; align-self: center; padding-bottom: 76px; }
   .hero-eyebrow {
     font-size: 19px; font-weight: 800; letter-spacing: .02em;
     color: var(--green-deep);
@@ -85,7 +90,7 @@
   }
   .hero-eyebrow em { font-style: normal; color: var(--amber); margin-right: 4px; }
   .hero h1 {
-    font-size: clamp(36px, 5.6vw, 68px);
+    font-size: clamp(36px, 5vw, 60px);
     line-height: 1.2; font-weight: 800; letter-spacing: -.03em;
     margin-bottom: 20px;
   }
@@ -117,9 +122,10 @@
   .btn-ghost:hover { border-color: var(--green); }
   .hero-visual { position: relative; }
   .hero-visual img {
-    border-radius: 20px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--green-line);
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto;
+    filter: drop-shadow(0 18px 28px rgba(20, 60, 35, .18));
   }
   .float-chip {
     position: absolute;
@@ -130,8 +136,8 @@
     box-shadow: 0 4px 14px rgba(20,60,35,.14);
     animation: bob 3.2s ease-in-out infinite;
   }
-  .float-chip.p1 { top: 8%; left: -20px; }
-  .float-chip.p2 { bottom: 12%; right: -14px; animation-delay: -1.6s; }
+  .float-chip.p1 { top: 2%; left: 4%; }
+  .float-chip.p2 { top: 14%; right: 2%; animation-delay: -1.6s; }
   @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
   @media (prefers-reduced-motion: reduce) { .float-chip { animation: none; } }
 
@@ -276,11 +282,11 @@
   /* 모바일·세로 태블릿 */
   @media (max-width: 900px) {
     .gnb nav { display: none; }
-    .hero-inner { grid-template-columns: 1fr; gap: 34px; padding: 44px 0 40px; }
-    .hero-copy { order: 1; }
-    .hero-visual { order: 2; max-width: 420px; margin: 0 auto; }
-    .float-chip.p1 { left: -6px; }
-    .float-chip.p2 { right: -4px; }
+    .hero-inner { grid-template-columns: 1fr; gap: 8px; padding: 44px 0 0; }
+    .hero-copy { order: 1; padding-bottom: 0; }
+    .hero-visual { order: 2; max-width: 340px; margin: 0 auto; }
+    .float-chip.p1 { left: 0; }
+    .float-chip.p2 { right: 0; }
     .lx-cards { grid-template-columns: 1fr; }
     .lx-docs { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto 48px; }
     .float-call { display: flex; }
@@ -338,7 +344,7 @@
       </div>
     </div>
     <div class="hero-visual">
-      <img src="assets/hero-sheep.png" alt="그린홈시스 마스코트 양 캐릭터" width="639" height="904">
+      <img src="assets/hero-greeny.png" alt="두 팔을 벌려 반기는 그린홈시스 마스코트 그리니" width="803" height="605">
       <span class="float-chip p1">+P 포인트 적립!</span>
       <span class="float-chip p2">시공할수록 쌓여요</span>
     </div>
