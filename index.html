@@ -40,7 +40,7 @@
     line-height: 1.65;
     word-break: keep-all;
   }
-  img { max-width: 100%; display: block; }
+  img { max-width: 100%; height: auto; display: block; }
   a { color: inherit; text-decoration: none; }
   .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
 
@@ -70,14 +70,21 @@
   .gnb-call:hover { background: var(--green-deep); }
 
   /* ───────── hero ───────── */
-  .hero { background: linear-gradient(180deg, var(--bg-alt) 0%, #ffffff 100%); overflow: hidden; }
-  .hero-inner {
-    display: grid; grid-template-columns: .9fr 1.1fr;
-    gap: 56px; align-items: center;
-    padding: 84px 0 76px;
+  .hero {
+    background:
+      radial-gradient(640px 420px at 20% 82%, rgba(27,122,68,.13), transparent 70%),
+      linear-gradient(180deg, var(--bg-alt) 0%, #ffffff 100%);
+    overflow: hidden;
   }
-  .hero-visual { order: 1; }
-  .hero-copy { order: 2; }
+  .hero-inner {
+    display: grid; grid-template-columns: .82fr 1.18fr;
+    grid-template-rows: auto auto;
+    column-gap: 44px; align-items: end;
+    padding: 84px 0 64px;
+  }
+  .hero-visual { grid-column: 1; grid-row: 1; }
+  .hero-copy { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+  .hero-ctas { grid-column: 1; grid-row: 2; margin-top: 26px; }
   .hero-eyebrow {
     font-size: 19px; font-weight: 800; letter-spacing: .02em;
     color: var(--green-deep);
@@ -85,7 +92,7 @@
   }
   .hero-eyebrow em { font-style: normal; color: var(--amber); margin-right: 4px; }
   .hero h1 {
-    font-size: clamp(36px, 5.6vw, 68px);
+    font-size: clamp(36px, 5vw, 60px);
     line-height: 1.2; font-weight: 800; letter-spacing: -.03em;
     margin-bottom: 20px;
   }
@@ -103,7 +110,8 @@
   .btn-point:hover { filter: brightness(1.05); }
   .hero-sub { font-size: 19px; color: var(--muted); max-width: 46ch; margin-bottom: 34px; }
   .hero-sub strong { color: var(--green-deep); font-weight: 800; }
-  .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero-ctas { display: flex; justify-content: center; }
+  .hero-ctas .btn-point { width: 100%; max-width: 470px; }
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     font-weight: 700; font-size: 16px;
@@ -117,9 +125,10 @@
   .btn-ghost:hover { border-color: var(--green); }
   .hero-visual { position: relative; }
   .hero-visual img {
-    border-radius: 20px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--green-line);
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto;
+    filter: drop-shadow(0 18px 28px rgba(20, 60, 35, .18));
   }
   .float-chip {
     position: absolute;
@@ -130,8 +139,8 @@
     box-shadow: 0 4px 14px rgba(20,60,35,.14);
     animation: bob 3.2s ease-in-out infinite;
   }
-  .float-chip.p1 { top: 8%; left: -20px; }
-  .float-chip.p2 { bottom: 12%; right: -14px; animation-delay: -1.6s; }
+  .float-chip.p1 { top: 2%; left: 4%; }
+  .float-chip.p2 { top: 14%; right: 2%; animation-delay: -1.6s; }
   @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
   @media (prefers-reduced-motion: reduce) { .float-chip { animation: none; } }
 
@@ -163,7 +172,8 @@
   .toon-hint { text-align: center; margin-top: 18px; color: var(--muted); font-size: 14px; }
 
   /* ───────── LX trust ───────── */
-  .lx-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 44px; }
+  /* 아래 자료 이미지와 같은 컬럼 폭으로 정렬 */
+  .lx-cards { display: grid; grid-template-columns: 1.067fr 1fr .996fr; gap: 16px; margin-bottom: 16px; }
   .lx-card {
     background: #fff; border: 1px solid var(--green-line);
     border-radius: var(--radius); padding: 26px 24px;
@@ -180,7 +190,7 @@
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
   /* 컬럼 폭을 각 이미지 비율에 맞춰 배분해 세 이미지의 렌더링 높이를 동일하게 맞춤 */
-  .lx-docs { display: grid; grid-template-columns: 1fr .996fr 1.067fr; gap: 16px; margin-bottom: 48px; align-items: stretch; }
+  .lx-docs { display: grid; grid-template-columns: 1.067fr 1fr .996fr; gap: 16px; margin-bottom: 48px; align-items: stretch; }
   .fig { background: #fff; border: 1px solid var(--green-line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; }
   .fig figcaption {
     padding: 13px 16px; font-size: 14.5px; font-weight: 700;
@@ -189,9 +199,13 @@
   }
   .fig figcaption::after { content: "크게 보기 +"; margin-left: auto; font-weight: 600; font-size: 12.5px; color: var(--muted); }
 
-  /* business card */
-  .namecard { max-width: 780px; margin: 0 auto; text-align: center; }
+  /* business card — 위 자료 그리드와 양 끝 정렬(전체 폭) */
+  .namecard {
+    display: grid; grid-template-columns: 2.9fr 1fr;
+    gap: 16px; align-items: stretch;
+  }
   .namecard-img {
+    display: flex; align-items: center;
     border: 1px solid var(--green-line);
     border-radius: 16px;
     overflow: hidden;
@@ -199,13 +213,16 @@
     cursor: zoom-in;
     background: #fff;
   }
-  .namecard-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+  .card-hint { display: none; text-align: center; color: var(--muted); font-size: 13px; margin: -6px 0 2px; }
+  .namecard-btns { display: flex; flex-direction: column; gap: 16px; }
+  .namecard-btns .btn { width: 100%; flex: 1; font-size: 19px; padding: 20px 24px; border-radius: 14px; }
   .btn-white { background: #fff; color: var(--green-deep); }
   .btn-white:hover { background: var(--green-soft); }
 
   /* ───────── promo ───────── */
   .promo { background: var(--bg-alt); }
-  .promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  /* 두 포스터 비율에 맞춰 컬럼 폭 배분 → 이미지 높이 동일 */
+  .promo-grid { display: grid; grid-template-columns: 1fr .957fr; gap: 20px; align-items: stretch; }
   .promo-card {
     background: #fff; border-radius: var(--radius);
     overflow: hidden; border: 1px solid var(--green-line);
@@ -225,7 +242,7 @@
     color: #fff; text-align: center;
     padding: 72px 20px;
   }
-  .closing h2 { font-size: clamp(26px, 3.4vw, 38px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 12px; }
+  .closing h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 14px; }
   .closing p { opacity: .9; margin-bottom: 30px; font-size: 16.5px; }
   .closing .btn { font-size: 19px; padding: 18px 38px; border-radius: 999px; }
   .closing-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
@@ -233,6 +250,7 @@
   footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
   footer b { color: var(--ink); }
   footer p { margin-bottom: 4px; }
+  .footer-logo { height: 30px; width: auto; margin: 18px auto 0; opacity: .9; }
 
   /* floating call (mobile) */
   .float-call {
@@ -264,8 +282,7 @@
   /* ───────── responsive ───────── */
   /* 데스크톱: 히어로 버튼 확대 */
   @media (min-width: 901px) {
-    .hero-ctas .btn { font-size: 19px; padding: 19px 36px; border-radius: 14px; }
-    .btn-point { font-size: 20px; }
+    .hero-ctas .btn { font-size: 21px; padding: 24px 36px; border-radius: 16px; }
   }
 
   /* 태블릿: 웹툰 4컷을 2×2로 */
@@ -276,13 +293,35 @@
   /* 모바일·세로 태블릿 */
   @media (max-width: 900px) {
     .gnb nav { display: none; }
-    .hero-inner { grid-template-columns: 1fr; gap: 34px; padding: 44px 0 40px; }
-    .hero-copy { order: 1; }
-    .hero-visual { order: 2; max-width: 420px; margin: 0 auto; }
-    .float-chip.p1 { left: -6px; }
-    .float-chip.p2 { right: -4px; }
-    .lx-cards { grid-template-columns: 1fr; }
-    .lx-docs { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto 48px; }
+    .gnb-call { display: none; }
+    .gnb-inner { justify-content: center; }
+    .logo { margin: 0 auto; }
+    .hero-copy { text-align: center; }
+    .hero-sub { margin-left: auto; margin-right: auto; }
+    .hero-ctas { justify-content: center; }
+    .hero-ctas .btn-point { width: 86%; }
+    /* 특징 카드 3개를 한 줄에 컴팩트하게 */
+    .lx-cards { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .lx-card { padding: 16px 8px; text-align: center; }
+    .lx-card .ico { width: 38px; height: 38px; font-size: 18px; margin: 0 auto 8px; border-radius: 10px; }
+    .lx-card h3 { font-size: 14px; margin-bottom: 0; }
+    .lx-card p { display: none; }
+    /* 스와이프 자료 카드: 비율 통일로 캡션 높이 정렬 (보증서만 살짝 세로 늘어남) */
+    .lx-docs .fig img { width: 100%; aspect-ratio: 1315 / 1879; object-fit: fill; }
+    .hero-inner { grid-template-columns: 1fr; grid-template-rows: none; gap: 8px; padding: 44px 0 34px; }
+    .hero-copy { grid-column: 1; grid-row: auto; order: 1; }
+    .hero-visual { grid-column: 1; grid-row: auto; order: 2; max-width: 340px; margin: 0 auto; }
+    .hero-ctas { grid-column: 1; grid-row: auto; order: 3; margin-top: 18px; }
+    .float-chip.p1 { left: 0; }
+    .float-chip.p2 { right: 0; }
+    .lx-docs {
+      grid-template-columns: none;
+      grid-auto-flow: column; grid-auto-columns: 74%;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      padding-bottom: 10px; margin: 0 0 40px;
+    }
+    .lx-docs .fig { scroll-snap-align: center; }
+    .namecard { grid-template-columns: 1fr; gap: 16px; }
     .float-call { display: flex; }
     section { padding: 56px 0; }
     footer { padding-bottom: 110px; }
@@ -290,9 +329,12 @@
 
   /* 좁은 모바일: 그리드 한 줄로, 버튼 전체 폭 */
   @media (max-width: 640px) {
+    .namecard-img img { aspect-ratio: 1162 / 696; object-fit: cover; object-position: left center; }
+    .card-hint { display: block; }
+    .closing-btns { flex-direction: column; align-items: stretch; max-width: 420px; margin: 0 auto; }
+    .closing .btn { width: 100%; }
     .toon-grid { grid-template-columns: 1fr; gap: 16px; max-width: 460px; }
     .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
-    .hero-ctas .btn { flex: 1 1 100%; }
     .namecard-btns .btn { flex: 1 1 100%; }
   }
 
@@ -329,18 +371,19 @@
       <p class="hero-eyebrow"><em>NEW</em> 그린홈시스 신규 서비스</p>
       <h1><span class="pt">포인트 적립 서비스</span><br><span class="open">OPEN!</span></h1>
       <p class="hero-sub">
-        고객 등록만 하셔도 첫 회원가입 포인트를 적립해드립니다.<br>
+        고객 등록만 하셔도<br>
+        첫 회원가입 포인트를<br>
+        적립해드립니다.<br>
         <strong>무료 견적, 무료 실측, 무료 포인트까지!</strong>
       </p>
-      <div class="hero-ctas">
-        <a class="btn btn-point" href="https://gh-point.com/" target="_blank" rel="noopener">✨ 포인트 서비스 더 알아보기</a>
-        <a class="btn btn-primary" href="tel:1551-7704">📞 무료 견적 받기</a>
-      </div>
     </div>
     <div class="hero-visual">
-      <img src="assets/hero-sheep.png" alt="그린홈시스 마스코트 양 캐릭터" width="639" height="904">
+      <img src="assets/hero-greeny.png" alt="두 팔을 벌려 반기는 그린홈시스 마스코트 그리니" width="803" height="605">
       <span class="float-chip p1">+P 포인트 적립!</span>
       <span class="float-chip p2">시공할수록 쌓여요</span>
+    </div>
+    <div class="hero-ctas">
+      <a class="btn btn-point" href="https://gh-point.com/" target="_blank" rel="noopener">✨ 포인트 서비스 더 알아보기</a>
     </div>
   </div>
 </div>
@@ -374,9 +417,9 @@
 
     <div class="lx-cards">
       <div class="lx-card">
-        <div class="ico">🏅</div>
-        <h3><em>10년</em> 품질보증</h3>
-        <p>LX하우시스 본사에서 직접 창호 몸체 10년 품질보증을 해드립니다. 업계 최장 수준입니다.</p>
+        <div class="ico">🤝</div>
+        <h3>원스톱 서비스</h3>
+        <p>상담부터 시공, A/S 접수까지 LX하우시스 본사에서 모든 관리를 해드립니다.</p>
       </div>
       <div class="lx-card">
         <div class="ico">⚡</div>
@@ -384,13 +427,17 @@
         <p>거주 세대도 하루 만에 완벽하게 시공합니다. 철거·사다리차·시공비까지 모두 포함입니다.</p>
       </div>
       <div class="lx-card">
-        <div class="ico">🤝</div>
-        <h3>원스톱 서비스</h3>
-        <p>상담부터 시공, A/S 접수까지 LX하우시스 본사에서 모든 관리를 해드립니다.</p>
+        <div class="ico">🏅</div>
+        <h3><em>10년</em> 품질보증</h3>
+        <p>LX하우시스 본사에서 직접 창호 몸체 10년 품질보증을 해드립니다. 업계 최장 수준입니다.</p>
       </div>
     </div>
 
     <div class="lx-docs">
+      <figure class="fig" data-full="assets/lx-warranty.png">
+        <img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy">
+        <figcaption>10년 품질보증제도</figcaption>
+      </figure>
       <figure class="fig" data-full="assets/lx-vueframe-1.png">
         <img src="assets/lx-vueframe-1.png" alt="LX Z:IN 뷰프레임 제품 설명서" loading="lazy">
         <figcaption>뷰프레임 소개</figcaption>
@@ -399,19 +446,16 @@
         <img src="assets/lx-vueframe-2.png" alt="LX하우시스 완성창 시스템과 제품 라인업" loading="lazy">
         <figcaption>완성창 시스템</figcaption>
       </figure>
-      <figure class="fig" data-full="assets/lx-warranty.png">
-        <img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy">
-        <figcaption>10년 품질보증제도</figcaption>
-      </figure>
     </div>
 
     <!-- 명함 -->
     <div class="namecard">
       <div class="namecard-img" data-full="assets/namecard.png">
-        <img src="assets/namecard.png" alt="주식회사 그린홈시스 명함 — 대표 김상대, LX하우시스 완성창 대리점, 대표번호 1551-7704" loading="lazy">
+        <img src="assets/namecard.png" alt="주식회사 그린홈시스 명함 — 대표 김상대, LX하우시스 완성창 대리점, 대표번호 1551-7704" loading="lazy" style="width:100%;">
       </div>
+      <p class="card-hint">명함을 누르면 전체를 크게 볼 수 있어요</p>
       <div class="namecard-btns">
-        <a class="btn btn-white" style="border:1.5px solid var(--green-line);" href="assets/greenhomesys.vcf" download>📇 연락처 저장</a>
+        <a class="btn btn-white" style="border:1.5px solid var(--green-line);" href="https://greenhomesys.com/" target="_blank" rel="noopener">🌐 홈페이지 들어가기</a>
         <a class="btn btn-primary" href="tel:1551-7704">📞 전화하기</a>
       </div>
     </div>
@@ -443,14 +487,14 @@
         <img src="assets/promo-monthly.png" alt="8월 프로모션 — 금액 구간별 최대 250만원 할인, 인테리어 연계 5% 할인, 유튜브·인스타 리뷰 할인" loading="lazy" data-full="assets/promo-monthly.png">
       </div>
     </div>
-    <p class="promo-note">월간 프로모션은 매달 새로운 혜택으로 찾아옵니다. 자세한 조건은 전화로 문의해 주세요.</p>
+    <p class="promo-note">월간 프로모션은 매달 새로운 혜택으로 찾아옵니다.<br>자세한 조건은 전화로 문의해 주세요.</p>
   </div>
 </section>
 
 <!-- ══════════ ⑤ 마감 CTA + 푸터 ══════════ -->
 <div class="closing">
-  <h2>지금 바로, 비교 견적 무료로 받아보세요</h2>
-  <p>사양까지 투명하게 비교해 드립니다. 부담 없이 전화 주세요.</p>
+  <h2>지금 바로,<br>실측 견적 무료로 받아보세요!</h2>
+  <p>사양까지 투명하게 비교해 드립니다.<br>부담 없이 전화 주세요.</p>
   <div class="closing-btns">
     <a class="btn btn-point" href="https://gh-point.com/" target="_blank" rel="noopener">✨ 포인트 회원 등록하기</a>
     <a class="btn btn-white" href="tel:1551-7704">📞 1551-7704</a>
@@ -462,6 +506,7 @@
     <p><b>주식회사 그린홈시스</b> · 대표 김상대 · LX하우시스 완성창 대리점</p>
     <p>서울특별시 금천구 디지털로10길 37 아스크타워 1401호</p>
     <p>TEL 1551-7704 · Green-homesys@naver.com</p>
+    <img class="footer-logo" src="assets/logo.png" alt="그린홈시스 로고" loading="lazy">
   </div>
 </footer>
 
