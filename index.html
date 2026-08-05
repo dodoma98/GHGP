@@ -290,12 +290,24 @@
   /* 모바일·세로 태블릿 */
   @media (max-width: 900px) {
     .gnb nav { display: none; }
+    .gnb-call { display: none; }
+    .gnb-inner { justify-content: center; }
+    .logo { margin: 0 auto; }
+    .hero-copy { text-align: center; }
+    .hero-sub { margin-left: auto; margin-right: auto; }
+    /* 특징 카드 3개를 한 줄에 컴팩트하게 */
+    .lx-cards { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .lx-card { padding: 16px 8px; text-align: center; }
+    .lx-card .ico { width: 38px; height: 38px; font-size: 18px; margin: 0 auto 8px; border-radius: 10px; }
+    .lx-card h3 { font-size: 14px; margin-bottom: 0; }
+    .lx-card p { display: none; }
+    /* 스와이프 자료 카드: 비율 통일로 캡션 높이 정렬 (보증서만 살짝 세로 늘어남) */
+    .lx-docs .fig img { width: 100%; aspect-ratio: 1315 / 1879; object-fit: fill; }
     .hero-inner { grid-template-columns: 1fr; gap: 8px; padding: 44px 0 0; }
     .hero-copy { order: 1; padding-bottom: 0; }
     .hero-visual { order: 2; max-width: 340px; margin: 0 auto; }
     .float-chip.p1 { left: 0; }
     .float-chip.p2 { right: 0; }
-    .lx-cards { grid-template-columns: 1fr; }
     .lx-docs {
       grid-template-columns: none;
       grid-auto-flow: column; grid-auto-columns: 74%;
