@@ -250,7 +250,7 @@
   .closing h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 14px; }
   .closing p { opacity: .9; margin-bottom: 30px; font-size: 16.5px; }
   .closing .btn { font-size: 19px; padding: 18px 38px; border-radius: 999px; }
-  .closing-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; max-width: 760px; margin: 0 auto; }
+  .closing-btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 620px; margin: 0 auto; }
   .closing .btn-line { border: 1.5px solid rgba(255,255,255,.55); color: #fff; }
   .closing .btn-line:hover { border-color: #fff; background: rgba(255,255,255,.1); }
 
@@ -346,8 +346,10 @@
   @media (max-width: 640px) {
     .namecard-img img { aspect-ratio: 1162 / 696; object-fit: cover; object-position: left center; }
     .card-hint { display: block; }
-    .closing-btns { flex-direction: column; align-items: stretch; max-width: 420px; margin: 0 auto; }
-    .closing .btn { width: 100%; }
+    .closing-btns { max-width: 420px; gap: 12px; }
+    .closing .btn { width: 100%; padding-left: 12px; padding-right: 12px; }
+    .closing .btn-point, .closing .btn-white { grid-column: 1 / -1; }
+    .closing .btn-line { font-size: 15px; }
     .toon-grid { grid-template-columns: 1fr; gap: 16px; max-width: 460px; }
     .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
     .coupon-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
