@@ -236,6 +236,10 @@
   .badge-month { background: var(--amber-soft); color: #8a6100; }
   .promo-card img { cursor: zoom-in; width: 100%; }
   .promo-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 20px; }
+  .coupon-head { text-align: center; margin: 56px 0 22px; }
+  .coupon-head h3 { font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+  .coupon-head p { color: var(--muted); font-size: 15px; }
+  .coupon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
 
   /* ───────── closing cta ───────── */
   .closing {
@@ -344,6 +348,7 @@
     .closing .btn { width: 100%; }
     .toon-grid { grid-template-columns: 1fr; gap: 16px; max-width: 460px; }
     .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+    .coupon-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
     .namecard-btns .btn { flex: 1 1 100%; }
   }
 
@@ -497,6 +502,27 @@
       </div>
     </div>
     <p class="promo-note">월간 프로모션은 매달 새로운 혜택으로 찾아옵니다.<br>자세한 조건은 전화로 문의해 주세요.</p>
+
+    <div class="coupon-head">
+      <h3>시공 계약 고객님께 드리는 제휴 할인 쿠폰</h3>
+      <p>그린홈시스에서 창호 시공을 계약하신 분들 한정으로, 아래 두 가지 쿠폰을 사용하실 수 있어요.</p>
+    </div>
+    <div class="coupon-grid">
+      <div class="promo-card">
+        <div class="head">
+          <span class="badge badge-always">시공 고객 전용</span>
+          <h3>썬아머 단열필름 20% 특별 할인</h3>
+        </div>
+        <img src="assets/coupon-film.png" alt="썬아머 단열필름 20% 특별 할인 쿠폰 — 그린홈시스 창호 시공 고객 한정, 발행일로부터 2년" loading="lazy" data-full="assets/coupon-film.png">
+      </div>
+      <div class="promo-card">
+        <div class="head">
+          <span class="badge badge-always">시공 고객 전용</span>
+          <h3>알이즈웰 인테리어 연계 5% 추가 할인</h3>
+        </div>
+        <img src="assets/coupon-interior.png" alt="알이즈웰 디자인 인테리어 계약 시 5% 추가 할인 쿠폰 — 가족·지인 양도 가능, 발행일로부터 2년" loading="lazy" data-full="assets/coupon-interior.png">
+      </div>
+    </div>
   </div>
 </section>
 
