@@ -191,7 +191,9 @@
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
   /* 컬럼 폭을 각 이미지 비율에 맞춰 배분해 세 이미지의 렌더링 높이를 동일하게 맞춤 */
-  .lx-docs { display: grid; grid-template-columns: 1.067fr 1fr .996fr; gap: 16px; margin-bottom: 48px; align-items: stretch; }
+  .lx-docs { display: grid; grid-template-columns: 1.067fr 1fr .996fr; gap: 16px; margin-bottom: 20px; align-items: stretch; }
+  .catalog-cta { display: flex; justify-content: center; margin-bottom: 48px; }
+  .catalog-cta .btn { font-size: 17px; padding: 16px 34px; }
   .fig { background: #fff; border: 1px solid var(--green-line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; }
   .fig figcaption {
     padding: 13px 16px; font-size: 14.5px; font-weight: 700;
@@ -336,6 +338,8 @@
       padding-bottom: 10px; margin: 0 0 40px;
     }
     .lx-docs .fig { scroll-snap-align: center; }
+    .catalog-cta { margin-bottom: 40px; }
+    .catalog-cta .btn { width: 100%; max-width: 420px; }
     .namecard { grid-template-columns: 1fr; gap: 16px; }
     .float-call { display: flex; }
     section { padding: 56px 0; }
@@ -464,6 +468,9 @@
         <img src="assets/lx-vueframe-2.png" alt="LX하우시스 완성창 시스템과 제품 라인업" loading="lazy">
         <figcaption>완성창 시스템</figcaption>
       </figure>
+    </div>
+    <div class="catalog-cta">
+      <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드 (PDF)</a>
     </div>
 
     <!-- 명함 -->
