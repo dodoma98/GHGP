@@ -108,9 +108,16 @@
     font-size: 17px;
   }
   .btn-point:hover { filter: brightness(1.05); }
-  .hero-sub { font-size: 19px; color: var(--muted); margin-bottom: 34px; }
+  .hero-sub { font-size: 19px; color: var(--muted); margin-bottom: 16px; }
   .hero-sub strong { color: var(--green-deep); font-weight: 800; font-size: 1.18em; }
-  .hero-sub .instant { font-size: 1.3em; }
+  .hero-sub .instant {
+    display: inline-block;
+    font-size: 1.55em;
+    animation: pulse 2s ease-in-out infinite;
+    transform-origin: left center;
+  }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  @media (prefers-reduced-motion: reduce) { .hero-sub .instant { animation: none; } }
   .m-br { display: none; }
   .hero-ctas { display: flex; justify-content: flex-start; }
   .hero-ctas .btn-point { width: 100%; max-width: 470px; }
