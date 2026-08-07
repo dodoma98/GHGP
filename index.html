@@ -113,9 +113,12 @@
   .hero-sub .instant {
     display: inline-block;
     font-size: 1.55em;
-    background: linear-gradient(110deg, var(--green-deep) 42%, #58c98b 50%, var(--green-deep) 58%);
-    background-size: 250% 100%;
-    background-position: 120% 0;
+    background-image:
+      linear-gradient(110deg, transparent 30%, #58c98b 50%, transparent 70%),
+      linear-gradient(var(--green-deep), var(--green-deep));
+    background-size: 60% 100%, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: -150% 0, 0 0;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -124,7 +127,7 @@
     transform-origin: left center;
   }
   @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-  @keyframes shine { 0% { background-position: 120% 0; } 28% { background-position: -100% 0; } 100% { background-position: -100% 0; } }
+  @keyframes shine { 0% { background-position: -150% 0, 0 0; } 28% { background-position: 250% 0, 0 0; } 100% { background-position: 250% 0, 0 0; } }
   @media (prefers-reduced-motion: reduce) {
     .hero-sub .instant { animation: none; background: none; color: var(--green-deep); -webkit-text-fill-color: currentColor; }
   }
