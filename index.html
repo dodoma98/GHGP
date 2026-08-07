@@ -113,11 +113,21 @@
   .hero-sub .instant {
     display: inline-block;
     font-size: 1.55em;
-    animation: pulse 2s ease-in-out infinite;
+    background: linear-gradient(110deg, var(--green-deep) 42%, #58c98b 50%, var(--green-deep) 58%);
+    background-size: 250% 100%;
+    background-position: 120% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: pulse 2s ease-in-out infinite, shine 4.5s linear infinite;
     transform-origin: left center;
   }
   @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-  @media (prefers-reduced-motion: reduce) { .hero-sub .instant { animation: none; } }
+  @keyframes shine { 0% { background-position: 120% 0; } 28% { background-position: -100% 0; } 100% { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-sub .instant { animation: none; background: none; color: var(--green-deep); -webkit-text-fill-color: currentColor; }
+  }
   .m-br { display: none; }
   .hero-ctas { display: flex; justify-content: flex-start; }
   .hero-ctas .btn-point { width: 100%; max-width: 470px; }
