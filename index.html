@@ -192,6 +192,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,.2);
   }
   .toon-hint { text-align: center; margin-top: 18px; color: var(--muted); font-size: 14px; }
+  .process-fig { max-width: 900px; margin: 32px auto 0; }
 
   /* ───────── LX trust ───────── */
   .lx-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
@@ -230,7 +231,7 @@
   .lx-card h3 em { font-style: normal; color: var(--lx-red); }
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
-  .catalog-cta { display: flex; justify-content: center; margin-bottom: 20px; }
+  .catalog-cta { display: flex; justify-content: flex-start; margin: 20px 0 0; }
   .catalog-cta .btn {
     font-size: 17px; padding: 16px 34px;
     background: var(--lx-red);
@@ -254,7 +255,7 @@
   /* ───────── promo ───────── */
   .promo { background: var(--bg-alt); }
   /* 두 포스터 비율에 맞춰 컬럼 폭 배분 → 이미지 높이 동일 */
-  .promo-grid { display: grid; grid-template-columns: 1fr .957fr; gap: 20px; align-items: stretch; }
+  .promo-grid { display: grid; grid-template-columns: 1fr .952fr; gap: 20px; align-items: stretch; }
   .promo-card {
     background: #fff; border-radius: var(--radius);
     overflow: hidden; border: 1px solid var(--green-line);
@@ -347,6 +348,7 @@
     .lx-cards { gap: 10px; margin-bottom: 24px; }
     .lx-band { height: 170px; margin-bottom: 28px; }
     .warranty-box { grid-template-columns: 1fr; gap: 18px; margin-bottom: 32px; }
+    .catalog-cta { justify-content: center; }
     .lx-card { padding: 16px 8px; text-align: center; }
     .lx-card .ico { width: 38px; height: 38px; font-size: 18px; margin: 0 auto 8px; border-radius: 10px; }
     .lx-card h3 { font-size: 14px; margin-bottom: 0; }
@@ -444,6 +446,9 @@
       <div class="toon-cut" data-full="assets/toon-4.png"><span class="num">4</span><img src="assets/toon-4.png" alt="웹툰 4컷 — 그린홈시스가 더 좋은 이유 비교표" loading="lazy"></div>
     </div>
     <p class="toon-hint">컷을 누르면 크게 볼 수 있어요</p>
+    <figure class="fig process-fig" data-full="assets/process.png">
+      <img src="assets/process.png" alt="그린홈시스는 이렇게 시공합니다 — 1DAY 시공·NFC 인증·10년 보증, 시공 프로세스 5단계" loading="lazy">
+    </figure>
   </div>
 </section>
 
@@ -497,10 +502,10 @@
           <li>LX하우시스 본사 직접 보증·A/S 접수</li>
         </ul>
         <p class="hint">이미지를 누르면 전체 내용을 크게 볼 수 있어요</p>
+        <div class="catalog-cta">
+          <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드 (PDF)</a>
+        </div>
       </div>
-    </div>
-    <div class="catalog-cta">
-      <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드 (PDF)</a>
     </div>
 
     <div class="namecard-btns">
@@ -522,9 +527,9 @@
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-always">상시 혜택</span>
-          <h3>거래처 첫 주문 최대 100만원 할인</h3>
+          <h3>거래처 모집 — 가입 즉시 300,000P 지급</h3>
         </div>
-        <img src="assets/promo-always.jpg" alt="거래처 모집 — 첫 주문 최대 100만원 할인" loading="lazy" data-full="assets/promo-always.jpg">
+        <img src="assets/promo-always.png" alt="거래처 모집 — 가입 즉시 바로 쓸 수 있는 300,000포인트, 발주할 때마다 포인트 적립" loading="lazy" data-full="assets/promo-always.png">
       </div>
       <div class="promo-card">
         <div class="head">
