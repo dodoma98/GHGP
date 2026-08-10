@@ -194,6 +194,14 @@
   .toon-hint { text-align: center; margin-top: 18px; color: var(--muted); font-size: 14px; }
 
   /* ───────── LX trust ───────── */
+  #trust { position: relative; overflow: hidden; }
+  #trust > .container { position: relative; z-index: 1; }
+  .lx-marquee { position: absolute; inset: 0; opacity: .08; pointer-events: none; overflow: hidden; }
+  .lx-marquee-track { display: flex; height: 100%; width: max-content; animation: marquee 80s linear infinite; }
+  .lx-marquee-track img { height: 100%; width: auto; max-width: none; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .lx-marquee-track { animation: none; } }
+
   /* 보증서 이미지 + 특징 카드 세로 스택 */
   .lx-split { display: grid; grid-template-columns: 3.1fr 1fr; gap: 16px; align-items: stretch; max-width: 860px; margin: 0 auto 20px; }
   .lx-cards { display: flex; flex-direction: column; gap: 16px; }
@@ -431,6 +439,12 @@
 
 <!-- ══════════ ③ LX하우시스 전문성 + 명함 ══════════ -->
 <section id="trust">
+  <div class="lx-marquee" aria-hidden="true">
+    <div class="lx-marquee-track">
+      <img src="assets/lx-strip.jpg" alt="">
+      <img src="assets/lx-strip.jpg" alt="">
+    </div>
+  </div>
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">Why GreenHomeSys</span>
