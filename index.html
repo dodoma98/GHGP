@@ -203,8 +203,18 @@
   @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @media (prefers-reduced-motion: reduce) { .lx-marquee-track { animation: none; } }
 
-  .warranty-link { text-align: center; margin-bottom: 16px; }
-  .warranty-link .btn { cursor: zoom-in; }
+  .warranty-box {
+    display: grid; grid-template-columns: 1fr 1.05fr;
+    gap: 32px; align-items: center;
+    max-width: 900px; margin: 0 auto 40px;
+  }
+  .warranty-copy h3 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
+  .warranty-copy h3 em { font-style: normal; color: var(--lx-red); }
+  .warranty-copy > p { color: var(--muted); font-size: 15.5px; margin-bottom: 14px; }
+  .warranty-copy ul { list-style: none; display: grid; gap: 8px; margin-bottom: 14px; }
+  .warranty-copy li { padding-left: 24px; position: relative; font-size: 15.5px; }
+  .warranty-copy li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
+  .warranty-copy .hint { color: var(--muted); font-size: 13px; }
   .lx-card {
     background: #fff; border: 1px solid var(--green-line);
     border-radius: var(--radius); padding: 26px 24px;
@@ -336,6 +346,7 @@
     /* 특징 카드 3개를 한 줄에 컴팩트하게 */
     .lx-cards { gap: 10px; margin-bottom: 24px; }
     .lx-band { height: 170px; margin-bottom: 28px; }
+    .warranty-box { grid-template-columns: 1fr; gap: 18px; margin-bottom: 32px; }
     .lx-card { padding: 16px 8px; text-align: center; }
     .lx-card .ico { width: 38px; height: 38px; font-size: 18px; margin: 0 auto 8px; border-radius: 10px; }
     .lx-card h3 { font-size: 14px; margin-bottom: 0; }
@@ -472,7 +483,22 @@
   </div>
 
   <div class="container">
-    <p class="warranty-link"><a class="btn btn-ghost" data-full="assets/lx-warranty.png">📄 10년 품질보증제도 자세히 보기</a></p>
+    <div class="warranty-box">
+      <figure class="fig" data-full="assets/lx-warranty.png">
+        <img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy">
+        <figcaption>10년 품질보증제도</figcaption>
+      </figure>
+      <div class="warranty-copy">
+        <h3>창호 몸체 <em>10년</em>, 본사가 직접 보증합니다</h3>
+        <p>정품 창호 + 정품 유리 + 직영시공으로 계약하시면 기본 2년이 아닌 최장 10년 품질보증을 받으세요.</p>
+        <ul>
+          <li>창호 주요 몸체 <strong>10년</strong> 보증</li>
+          <li>하드웨어(잠금장치 등) <strong>5년</strong> 보증</li>
+          <li>LX하우시스 본사 직접 보증·A/S 접수</li>
+        </ul>
+        <p class="hint">이미지를 누르면 전체 내용을 크게 볼 수 있어요</p>
+      </div>
+    </div>
     <div class="catalog-cta">
       <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드 (PDF)</a>
     </div>
