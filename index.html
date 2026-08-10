@@ -194,22 +194,21 @@
   .toon-hint { text-align: center; margin-top: 18px; color: var(--muted); font-size: 14px; }
 
   /* ───────── LX trust ───────── */
-  #trust { position: relative; overflow: hidden; }
-  #trust > .container { position: relative; z-index: 1; }
-  .lx-marquee { position: absolute; inset: 0; opacity: .16; pointer-events: none; overflow: hidden; }
-  .lx-marquee-track { display: flex; height: 100%; width: max-content; animation: marquee 80s linear infinite; }
+  .lx-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
+
+  /* 시공 사례 마퀴 밴드 */
+  .lx-band { height: 260px; overflow: hidden; margin-bottom: 40px; }
+  .lx-marquee-track { display: flex; height: 100%; width: max-content; animation: marquee 60s linear infinite; }
   .lx-marquee-track img { height: 100%; width: auto; max-width: none; }
   @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @media (prefers-reduced-motion: reduce) { .lx-marquee-track { animation: none; } }
 
-  /* 보증서 이미지 + 특징 카드 세로 스택 */
-  .lx-split { display: grid; grid-template-columns: 3.1fr 1fr; gap: 16px; align-items: stretch; max-width: 860px; margin: 0 auto 20px; }
-  .lx-cards { display: flex; flex-direction: column; gap: 16px; }
+  .warranty-link { text-align: center; margin-bottom: 16px; }
+  .warranty-link .btn { cursor: zoom-in; }
   .lx-card {
     background: #fff; border: 1px solid var(--green-line);
     border-radius: var(--radius); padding: 26px 24px;
     box-shadow: var(--shadow);
-    flex: 1; display: flex; flex-direction: column; justify-content: center;
   }
   .lx-card .ico {
     width: 46px; height: 46px; border-radius: 12px;
@@ -221,7 +220,7 @@
   .lx-card h3 em { font-style: normal; color: var(--lx-red); }
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
-  .catalog-cta { display: flex; justify-content: center; margin-bottom: 48px; }
+  .catalog-cta { display: flex; justify-content: center; margin-bottom: 20px; }
   .catalog-cta .btn {
     font-size: 17px; padding: 16px 34px;
     background: var(--lx-red);
@@ -334,9 +333,9 @@
     .hero-sub { margin-left: auto; margin-right: auto; }
     .hero-ctas { justify-content: center; }
     .hero-ctas .btn-point { width: 86%; }
-    .lx-split { grid-template-columns: 1fr; }
     /* 특징 카드 3개를 한 줄에 컴팩트하게 */
-    .lx-cards { flex-direction: row; gap: 10px; }
+    .lx-cards { gap: 10px; margin-bottom: 24px; }
+    .lx-band { height: 170px; margin-bottom: 28px; }
     .lx-card { padding: 16px 8px; text-align: center; }
     .lx-card .ico { width: 38px; height: 38px; font-size: 18px; margin: 0 auto 8px; border-radius: 10px; }
     .lx-card h3 { font-size: 14px; margin-bottom: 0; }
@@ -439,12 +438,6 @@
 
 <!-- ══════════ ③ LX하우시스 전문성 + 명함 ══════════ -->
 <section id="trust">
-  <div class="lx-marquee" aria-hidden="true">
-    <div class="lx-marquee-track">
-      <img src="assets/lx-strip.jpg" alt="">
-      <img src="assets/lx-strip.jpg" alt="">
-    </div>
-  </div>
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">Why GreenHomeSys</span>
@@ -452,29 +445,34 @@
       <p>정품 창호 + 정품 유리 + 본사 직영시공.<br>같은 가격이라도 사양이 다릅니다.</p>
     </div>
 
-    <div class="lx-split">
-      <figure class="fig" data-full="assets/lx-warranty.png">
-        <img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy">
-        <figcaption>10년 품질보증제도</figcaption>
-      </figure>
-      <div class="lx-cards">
-        <div class="lx-card">
-          <div class="ico">🤝</div>
-          <h3>원스톱 서비스</h3>
-          <p>상담부터 시공, A/S 접수까지 LX하우시스 본사에서 모든 관리를 해드립니다.</p>
-        </div>
-        <div class="lx-card">
-          <div class="ico">⚡</div>
-          <h3><em>1Day</em> 시공</h3>
-          <p>거주 세대도 하루 만에 완벽하게 시공합니다. 철거·사다리차·시공비까지 모두 포함입니다.</p>
-        </div>
-        <div class="lx-card">
-          <div class="ico">🏅</div>
-          <h3><em>10년</em> 품질보증</h3>
-          <p>LX하우시스 본사에서 직접 창호 몸체 10년 품질보증을 해드립니다. 업계 최장 수준입니다.</p>
-        </div>
+    <div class="lx-cards">
+      <div class="lx-card">
+        <div class="ico">🤝</div>
+        <h3>원스톱 서비스</h3>
+        <p>상담부터 시공, A/S 접수까지 LX하우시스 본사에서 모든 관리를 해드립니다.</p>
+      </div>
+      <div class="lx-card">
+        <div class="ico">⚡</div>
+        <h3><em>1Day</em> 시공</h3>
+        <p>거주 세대도 하루 만에 완벽하게 시공합니다. 철거·사다리차·시공비까지 모두 포함입니다.</p>
+      </div>
+      <div class="lx-card">
+        <div class="ico">🏅</div>
+        <h3><em>10년</em> 품질보증</h3>
+        <p>LX하우시스 본사에서 직접 창호 몸체 10년 품질보증을 해드립니다. 업계 최장 수준입니다.</p>
       </div>
     </div>
+  </div>
+
+  <div class="lx-band">
+    <div class="lx-marquee-track">
+      <img src="assets/lx-strip.jpg" alt="LX하우시스 창호 시공 사례 모음">
+      <img src="assets/lx-strip.jpg" alt="" aria-hidden="true">
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="warranty-link"><a class="btn btn-ghost" data-full="assets/lx-warranty.png">📄 10년 품질보증제도 자세히 보기</a></p>
     <div class="catalog-cta">
       <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드 (PDF)</a>
     </div>
