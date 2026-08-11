@@ -15,5 +15,8 @@
 
 ## 운영 방법
 
+- **자료실(archive.html) 자료 추가**: 파일을 `assets/`에 올린 뒤, `archive.html`의 `doc-item` 블록을
+  복사해 제목·경로만 바꾸면 됩니다. PDF는 `href`+`download`, 이미지는 `data-full`(크게 보기)로 연결하세요.
+
 - **월간 프로모션 교체**: `assets/promo-monthly.png` 파일만 새 포스터로 갈아끼우고,
   `index.html`에서 `8월 한정` 뱃지 텍스트와 카드 제목을 해당 월에 맞게 수정하면 됩니다.
