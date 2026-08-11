@@ -14,7 +14,9 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preload" as="image" href="assets/hero-greeny.webp" fetchpriority="high">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"></noscript>
 <style>
   :root {
     --green: #1b7a44;
@@ -424,7 +426,7 @@
       </p>
     </div>
     <div class="hero-visual">
-      <img src="assets/hero-greeny.png" alt="두 팔을 벌려 반기는 그린홈시스 마스코트 그리니" width="803" height="605">
+      <img src="assets/hero-greeny.webp" alt="두 팔을 벌려 반기는 그린홈시스 마스코트 그리니" width="803" height="605" fetchpriority="high" decoding="async">
       <span class="float-chip p1">+P 포인트 적립!</span>
       <span class="float-chip p2">시공할수록 쌓여요</span>
     </div>
@@ -443,14 +445,14 @@
       <p>견적서 세 장을 받아도 뭐가 다른지 알 수 없는 창호 시공.<br>그린홈시스는 사양까지 투명하게 비교해 드립니다.</p>
     </div>
     <div class="toon-grid">
-      <div class="toon-cut" data-full="assets/toon-1.png"><span class="num">1</span><img src="assets/toon-1.png" alt="웹툰 1컷 — 업체마다 다른 견적에 혼란스러운 고객" loading="lazy"></div>
-      <div class="toon-cut" data-full="assets/toon-2.png"><span class="num">2</span><img src="assets/toon-2.png" alt="웹툰 2컷 — 브랜드마다 사양이 달라 비교가 어려운 상황" loading="lazy"></div>
-      <div class="toon-cut" data-full="assets/toon-3.png"><span class="num">3</span><img src="assets/toon-3.png" alt="웹툰 3컷 — 걱정 끝! 그린홈시스가 해결해드릴게요" loading="lazy"></div>
-      <div class="toon-cut" data-full="assets/toon-4.png"><span class="num">4</span><img src="assets/toon-4.png" alt="웹툰 4컷 — 그린홈시스가 더 좋은 이유 비교표" loading="lazy"></div>
+      <div class="toon-cut" data-full="assets/toon-1.webp"><span class="num">1</span><img src="assets/toon-1.webp" alt="웹툰 1컷 — 업체마다 다른 견적에 혼란스러운 고객" loading="lazy" width="822" height="1242" decoding="async"></div>
+      <div class="toon-cut" data-full="assets/toon-2.webp"><span class="num">2</span><img src="assets/toon-2.webp" alt="웹툰 2컷 — 브랜드마다 사양이 달라 비교가 어려운 상황" loading="lazy" width="822" height="1242" decoding="async"></div>
+      <div class="toon-cut" data-full="assets/toon-3.webp"><span class="num">3</span><img src="assets/toon-3.webp" alt="웹툰 3컷 — 걱정 끝! 그린홈시스가 해결해드릴게요" loading="lazy" width="819" height="1238" decoding="async"></div>
+      <div class="toon-cut" data-full="assets/toon-4.webp"><span class="num">4</span><img src="assets/toon-4.webp" alt="웹툰 4컷 — 그린홈시스가 더 좋은 이유 비교표" loading="lazy" width="822" height="1238" decoding="async"></div>
     </div>
     <p class="toon-hint">컷을 누르면 크게 볼 수 있어요</p>
-    <figure class="fig process-fig" data-full="assets/process.png">
-      <img src="assets/process.png" alt="그린홈시스 시공 프로세스 5단계 — 무료 방문 상담, 정밀 실측, 맞춤 제작, 전문 시공, 최종 점검 및 관리" loading="lazy">
+    <figure class="fig process-fig" data-full="assets/process.webp">
+      <img src="assets/process.webp" alt="그린홈시스 시공 프로세스 5단계 — 무료 방문 상담, 정밀 실측, 맞춤 제작, 전문 시공, 최종 점검 및 관리" loading="lazy" width="1111" height="371" decoding="async">
     </figure>
     <div class="namecard-btns">
       <a class="btn btn-white" style="border:1.5px solid var(--green-line);" href="https://greenhomesys.com/" target="_blank" rel="noopener">🌐 홈페이지 들어가기</a>
@@ -489,15 +491,15 @@
 
   <div class="lx-band">
     <div class="lx-marquee-track">
-      <img src="assets/lx-strip.jpg" alt="LX하우시스 창호 시공 사례 모음">
-      <img src="assets/lx-strip.jpg" alt="" aria-hidden="true">
+      <img src="assets/lx-strip.webp" alt="LX하우시스 창호 시공 사례 모음" width="3526" height="520" loading="lazy" decoding="async">
+      <img src="assets/lx-strip.webp" alt="" aria-hidden="true" width="3526" height="520" loading="lazy" decoding="async">
     </div>
   </div>
 
   <div class="container">
     <div class="warranty-box">
-      <figure class="fig" data-full="assets/lx-warranty.png">
-        <img src="assets/lx-warranty.png" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy">
+      <figure class="fig" data-full="assets/lx-warranty.webp">
+        <img src="assets/lx-warranty.webp" alt="LX하우시스 10년 품질보증제도 안내" loading="lazy" width="1052" height="1409" decoding="async">
         <figcaption>10년 품질보증제도</figcaption>
       </figure>
       <div class="warranty-copy">
@@ -532,15 +534,15 @@
           <span class="badge badge-always">상시 혜택</span>
           <h3>거래처 모집 — 가입 즉시 300,000P 지급</h3>
         </div>
-        <img src="assets/promo-always.png" alt="거래처 모집 — 가입 즉시 바로 쓸 수 있는 300,000포인트, 발주할 때마다 포인트 적립" loading="lazy" data-full="assets/promo-always.png">
+        <img src="assets/promo-always.webp" alt="거래처 모집 — 가입 즉시 바로 쓸 수 있는 300,000포인트, 발주할 때마다 포인트 적립" loading="lazy" data-full="assets/promo-always.webp" width="1086" height="1448" decoding="async">
       </div>
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-month">8월 한정</span>
           <h3>이달의 프로모션 — 최대 250만원 할인</h3>
         </div>
-        <!-- 매달 assets/promo-monthly.png 만 교체하면 됩니다 -->
-        <img src="assets/promo-monthly.png" alt="8월 프로모션 — 금액 구간별 최대 250만원 할인, 인테리어 연계 5% 할인, 유튜브·인스타 리뷰 할인" loading="lazy" data-full="assets/promo-monthly.png">
+        <!-- 매달 assets/promo-monthly.webp 만 교체하면 됩니다 -->
+        <img src="assets/promo-monthly.webp" alt="8월 프로모션 — 금액 구간별 최대 250만원 할인, 인테리어 연계 5% 할인, 유튜브·인스타 리뷰 할인" loading="lazy" data-full="assets/promo-monthly.webp" width="1350" height="1890" decoding="async">
       </div>
     </div>
     <p class="promo-note">월간 프로모션은 매달 새로운 혜택으로 찾아옵니다.<br>자세한 조건은 전화로 문의해 주세요.</p>
@@ -555,14 +557,14 @@
           <span class="badge badge-always">시공 고객 전용</span>
           <h3>썬아머 단열필름 20% 특별 할인</h3>
         </div>
-        <img src="assets/coupon-film.png" alt="썬아머 단열필름 20% 특별 할인 쿠폰 — 그린홈시스 창호 시공 고객 한정, 발행일로부터 2년" loading="lazy" data-full="assets/coupon-film.png">
+        <img src="assets/coupon-film.webp" alt="썬아머 단열필름 20% 특별 할인 쿠폰 — 그린홈시스 창호 시공 고객 한정, 발행일로부터 2년" loading="lazy" data-full="assets/coupon-film.webp" width="1536" height="1024" decoding="async">
       </div>
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-always">시공 고객 전용</span>
           <h3>알이즈웰 인테리어 연계 5% 추가 할인</h3>
         </div>
-        <img src="assets/coupon-interior.png" alt="알이즈웰 디자인 인테리어 계약 시 5% 추가 할인 쿠폰 — 가족·지인 양도 가능, 발행일로부터 2년" loading="lazy" data-full="assets/coupon-interior.png">
+        <img src="assets/coupon-interior.webp" alt="알이즈웰 디자인 인테리어 계약 시 5% 추가 할인 쿠폰 — 가족·지인 양도 가능, 발행일로부터 2년" loading="lazy" data-full="assets/coupon-interior.webp" width="1536" height="1024" decoding="async">
       </div>
     </div>
   </div>
@@ -585,7 +587,7 @@
     <p><b>주식회사 그린홈시스</b> · 대표 김상대 · LX하우시스 완성창 대리점</p>
     <p>서울특별시 금천구 디지털로10길 37 아스크타워 1401호</p>
     <p>TEL 1551-7704 · Green-homesys@naver.com</p>
-    <img class="footer-logo" src="assets/logo.png" alt="그린홈시스 로고" loading="lazy">
+    <img class="footer-logo" src="assets/logo.png" alt="그린홈시스 로고" loading="lazy" decoding="async">
   </div>
 </footer>
 
