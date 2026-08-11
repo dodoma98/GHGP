@@ -132,7 +132,7 @@
     .hero-sub .instant { animation: none; background: none; color: var(--green-deep); -webkit-text-fill-color: currentColor; }
   }
   .m-br { display: none; }
-  .d-br { display: inline; }
+  .d-br, .d-only { display: inline; }
   .hero-ctas { display: flex; justify-content: flex-start; }
   .hero-ctas .btn-point { width: 100%; max-width: 470px; }
   .btn {
@@ -360,14 +360,14 @@
     .hero-ctas { margin-bottom: 0; }
     .hero-copy { grid-column: 1; grid-row: auto; order: 1; }
     .m-br { display: inline; }
-    .d-br { display: none; }
+    .d-br, .d-only { display: none; }
     .hero-sub strong { font-size: 1em; }
     .hero-visual { grid-column: 1; grid-row: auto; order: 2; max-width: 340px; margin: 0 auto; }
     .hero-ctas { grid-column: 1; grid-row: auto; order: 3; margin-top: 18px; }
     .float-chip.p1 { left: 0; }
     .float-chip.p2 { right: 0; }
     .catalog-cta { margin-bottom: 40px; }
-    .catalog-cta .btn { width: 100%; max-width: 420px; }
+    .catalog-cta .btn { width: 100%; max-width: 420px; font-size: 16px; padding-left: 12px; padding-right: 12px; }
     .float-call { display: flex; }
     section { padding: 56px 0; }
     footer { padding-bottom: 110px; }
@@ -510,7 +510,7 @@
         </ul>
         <p class="hint">이미지를 누르면 전체 내용을 크게 볼 수 있어요</p>
         <div class="catalog-cta">
-          <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드 (PDF)</a>
+          <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드<span class="d-only"> (PDF)</span></a>
         </div>
       </div>
     </div>
