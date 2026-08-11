@@ -387,33 +387,49 @@
 </style>
 <style>
   .archive { min-height: 60vh; }
-  .doc-list { display: grid; gap: 14px; max-width: 760px; margin: 0 auto; }
+  /* 데스크톱: 3·2·2 카드 배치 (6컬럼 그리드, 카드당 2컬럼) */
+  .doc-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; max-width: 980px; margin: 0 auto; }
   .doc-item {
-    display: flex; align-items: center; gap: 16px;
+    grid-column: span 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    text-align: center; gap: 10px;
     background: #fff; border: 1px solid var(--green-line);
-    border-radius: var(--radius); padding: 18px 22px;
+    border-radius: var(--radius); padding: 26px 18px 22px;
     box-shadow: var(--shadow);
     transition: transform .12s, border-color .15s;
     cursor: pointer;
   }
+  /* 2·3행(2개씩)은 가운데 정렬: 4번째·6번째 카드를 2번 컬럼부터 시작 */
+  .doc-item:nth-child(4), .doc-item:nth-child(6) { grid-column: 2 / span 2; }
   .doc-item:hover { transform: translateY(-2px); border-color: var(--green); }
   .doc-ico {
-    width: 46px; height: 46px; border-radius: 12px; flex: none;
+    width: 52px; height: 52px; border-radius: 14px; flex: none;
     background: var(--green-soft);
-    display: grid; place-items: center; font-size: 22px;
+    display: grid; place-items: center; font-size: 25px;
   }
   .doc-info { min-width: 0; }
-  .doc-info b { display: block; font-size: 16px; }
+  .doc-info b { display: block; font-size: 16px; line-height: 1.4; }
   .doc-info small { color: var(--muted); font-size: 13.5px; }
   .doc-act {
-    margin-left: auto; flex: none;
+    margin-top: auto; flex: none;
     font-size: 13.5px; font-weight: 700; color: var(--green);
     border: 1.5px solid var(--green-line); border-radius: 999px;
-    padding: 7px 14px; white-space: nowrap;
+    padding: 7px 18px; white-space: nowrap;
   }
+  .doc-item:hover .doc-act { border-color: var(--green); }
   .doc-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
-  @media (max-width: 640px) {
-    .doc-item { padding: 15px 16px; gap: 12px; }
+  /* 모바일: 한 줄씩 가로형 카드로 */
+  @media (max-width: 760px) {
+    .doc-list { grid-template-columns: 1fr; max-width: 520px; gap: 14px; }
+    .doc-item, .doc-item:nth-child(4), .doc-item:nth-child(6) { grid-column: auto; }
+    .doc-item {
+      flex-direction: row; text-align: left; align-items: center;
+      gap: 14px; padding: 15px 16px;
+    }
+    .doc-ico { width: 46px; height: 46px; border-radius: 12px; font-size: 22px; }
+    .doc-act { margin-top: 0; margin-left: auto; }
+  }
+  @media (max-width: 480px) {
     .doc-act { display: none; }
   }
 </style>
