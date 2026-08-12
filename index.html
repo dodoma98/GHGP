@@ -148,6 +148,7 @@
     transition: transform .12s, background .15s;
   }
   .btn:active { transform: scale(.97); }
+  button.btn { border: none; font-family: inherit; cursor: pointer; }
   .btn-primary { background: var(--green); color: #fff; }
   .btn-primary:hover { background: var(--green-deep); }
   .btn-ghost { background: #fff; color: var(--green); border: 1.5px solid var(--green-line); }
@@ -311,6 +312,44 @@
   }
   .float-call.show { opacity: 1; transform: none; pointer-events: auto; }
   @media (prefers-reduced-motion: reduce) { .float-call { transition: none; } }
+
+  /* 카탈로그 뷰어 */
+  .cat-viewer {
+    position: fixed; inset: 0; z-index: 110;
+    background: rgba(12, 22, 15, .94);
+    display: none; flex-direction: column;
+  }
+  .cat-viewer.open { display: flex; }
+  .cat-bar {
+    flex: none; display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: rgba(20, 45, 30, .96);
+    color: #fff;
+  }
+  .cat-bar b { font-size: 15.5px; font-weight: 800; }
+  .cat-bar .count { font-size: 13.5px; opacity: .8; margin-left: auto; }
+  .cat-bar .dl {
+    font-size: 13.5px; font-weight: 700; color: #fff;
+    border: 1.5px solid rgba(255,255,255,.5); border-radius: 999px;
+    padding: 7px 14px; white-space: nowrap;
+  }
+  .cat-bar .dl:hover { background: rgba(255,255,255,.12); }
+  .cat-bar .x {
+    background: none; border: none; color: #fff;
+    font-size: 30px; line-height: 1; cursor: pointer; padding: 0 4px;
+  }
+  .cat-pages { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 12px 40px; }
+  .cat-pages img {
+    width: 100%; max-width: 900px; margin: 0 auto 14px;
+    border-radius: 6px; background: #fff;
+  }
+  .cat-hint { text-align: center; color: rgba(255,255,255,.75); font-size: 13.5px; padding: 4px 0 14px; }
+  @media (max-width: 640px) {
+    .cat-bar b { font-size: 14px; }
+    .cat-bar .count { display: none; }
+    .cat-pages { padding: 10px 8px 30px; }
+    .cat-pages img { margin-bottom: 10px; }
+  }
 
   /* lightbox */
   .lightbox {
@@ -517,7 +556,7 @@
         </ul>
         <p class="hint">이미지를 누르면 전체 내용을 크게 볼 수 있어요</p>
         <div class="catalog-cta">
-          <a class="btn btn-primary" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 다운로드<span class="d-only"> (PDF)</span></a>
+          <button class="btn btn-primary" type="button" id="catOpen">📕 LX하우시스 카탈로그 바로 보기</button>
         </div>
       </div>
     </div>
@@ -599,6 +638,42 @@
 <!-- 모바일 플로팅 전화 버튼 -->
 <a class="float-call" href="tel:1551-7704">📞 무료 견적 1551-7704</a>
 
+<!-- 카탈로그 뷰어 -->
+<div class="cat-viewer" id="catViewer" role="dialog" aria-modal="true" aria-label="LX하우시스 카탈로그">
+  <div class="cat-bar">
+    <b>📕 LX하우시스 카탈로그</b>
+    <span class="count">전 23페이지 · 아래로 넘겨보세요</span>
+    <a class="dl" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">PDF 저장</a>
+    <button class="x" type="button" aria-label="닫기">×</button>
+  </div>
+  <div class="cat-pages" id="catPages">
+    <img data-src="assets/catalog/p01.webp" alt="LX하우시스 카탈로그 1페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p02.webp" alt="LX하우시스 카탈로그 2페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p03.webp" alt="LX하우시스 카탈로그 3페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p04.webp" alt="LX하우시스 카탈로그 4페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p05.webp" alt="LX하우시스 카탈로그 5페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p06.webp" alt="LX하우시스 카탈로그 6페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p07.webp" alt="LX하우시스 카탈로그 7페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p08.webp" alt="LX하우시스 카탈로그 8페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p09.webp" alt="LX하우시스 카탈로그 9페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p10.webp" alt="LX하우시스 카탈로그 10페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p11.webp" alt="LX하우시스 카탈로그 11페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p12.webp" alt="LX하우시스 카탈로그 12페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p13.webp" alt="LX하우시스 카탈로그 13페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p14.webp" alt="LX하우시스 카탈로그 14페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p15.webp" alt="LX하우시스 카탈로그 15페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p16.webp" alt="LX하우시스 카탈로그 16페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p17.webp" alt="LX하우시스 카탈로그 17페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p18.webp" alt="LX하우시스 카탈로그 18페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p19.webp" alt="LX하우시스 카탈로그 19페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p20.webp" alt="LX하우시스 카탈로그 20페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p21.webp" alt="LX하우시스 카탈로그 21페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p22.webp" alt="LX하우시스 카탈로그 22페이지" width="1012" height="1432">
+    <img data-src="assets/catalog/p23.webp" alt="LX하우시스 카탈로그 23페이지" width="1012" height="1432">
+    <p class="cat-hint">— 카탈로그 끝 —</p>
+  </div>
+</div>
+
 <!-- 라이트박스 -->
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="이미지 크게 보기">
   <button class="close" aria-label="닫기">×</button>
@@ -622,6 +697,30 @@
   }
   lb.addEventListener('click', closeLb);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+
+  // 카탈로그 뷰어
+  const catViewer = document.getElementById('catViewer');
+  const catPages = document.getElementById('catPages');
+  let catLoaded = false;
+  function openCat() {
+    if (!catLoaded) {
+      catPages.querySelectorAll('img[data-src]').forEach((img, i) => {
+        if (i < 3) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
+        else { img.loading = 'lazy'; img.src = img.dataset.src; img.removeAttribute('data-src'); }
+      });
+      catLoaded = true;
+    }
+    catViewer.classList.add('open');
+    catPages.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeCat() {
+    catViewer.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('catOpen').addEventListener('click', openCat);
+  catViewer.querySelector('.x').addEventListener('click', closeCat);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCat(); });
 
   // 스크롤을 내리면 플로팅 전화 버튼 표시
   const floatCall = document.querySelector('.float-call');
