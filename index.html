@@ -240,11 +240,14 @@
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
   .catalog-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: 20px 0 0; }
+  .catalog-cta .btn { width: 100%; max-width: 420px; }
   .catalog-cta .btn {
     font-size: 17px; padding: 16px 34px;
     background: var(--lx-red);
   }
   .catalog-cta .btn:hover { background: #8c1d27; }
+  .catalog-cta .btn-system { background: #1c5fa8; }
+  .catalog-cta .btn-system:hover { background: #164b85; }
   .fig { background: #fff; border: 1px solid var(--green-line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; }
   .fig figcaption {
     padding: 13px 16px; font-size: 14.5px; font-weight: 700;
@@ -559,7 +562,7 @@
           <button class="btn btn-primary doc-open" type="button"
                   data-title="📕 LX하우시스 카탈로그" data-dir="assets/catalog" data-pages="23"
                   data-pdf="assets/lx-catalog.pdf" data-file="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 바로 보기</button>
-          <button class="btn btn-primary doc-open" type="button"
+          <button class="btn btn-primary btn-system doc-open" type="button"
                   data-title="📘 LX하우시스 시스템 창호" data-dir="assets/system" data-pages="45"
                   data-pdf="assets/lx-system-window.pdf" data-file="LX하우시스 시스템 창호.pdf">📘 LX하우시스 시스템 창호 바로 보기</button>
         </div>
