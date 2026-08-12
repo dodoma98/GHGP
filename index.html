@@ -58,6 +58,7 @@
   .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
   .logo-img { height: 44px; width: auto; }
   .gnb nav { display: flex; gap: 30px; margin-left: auto; font-size: 21px; font-weight: 700; color: var(--muted); }
+  .gnb nav a { white-space: nowrap; }
   .gnb nav a:hover, .gnb nav a.active { color: var(--green); }
   .gnb-call {
     display: inline-flex; align-items: center; gap: 8px;
@@ -337,7 +338,7 @@
   /* 모바일·세로 태블릿 */
   @media (max-width: 900px) {
     .gnb-call { display: none; }
-    .gnb nav { gap: 20px; font-size: 19px; }
+    .gnb nav { gap: 14px; font-size: 17px; }
     .hero-copy { text-align: center; }
     .hero-sub { margin-left: auto; margin-right: auto; }
     .hero-ctas { justify-content: center; }
@@ -386,8 +387,9 @@
 
   /* 초소형 화면: 헤더 압축 */
   @media (max-width: 380px) {
-    .gnb-inner { gap: 10px; height: 56px; }
-    .logo-img { height: 34px; }
+    .gnb-inner { gap: 8px; height: 56px; }
+    .logo-img { height: 30px; }
+    .gnb nav { gap: 10px; font-size: 15px; }
     .gnb-call { font-size: 13px; padding: 8px 12px; }
     .hero h1 { font-size: 30px; }
   }
@@ -404,6 +406,7 @@
     <nav>
       <a href="index.html" class="active">메인</a>
       <a href="archive.html">자료실</a>
+      <a href="reviews.html">사례&amp;리뷰</a>
     </nav>
     <a class="gnb-call" href="tel:1551-7704" style="margin-left:auto;">📞 1551-7704 무료견적</a>
   </div>

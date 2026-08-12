@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>자료실 — 그린홈시스 | LX하우시스 완성창 대리점</title>
-<meta name="description" content="그린홈시스 자료실 — 자재 생산지 증명, 시험 성적서, 품질보증서 등 공식 서류 모음">
+<title>사례&amp;리뷰 — 그린홈시스 | LX하우시스 완성창 대리점</title>
+<meta name="description" content="그린홈시스 사례&리뷰 — 블로그 시공사례와 숨고 고객 리뷰를 한곳에서 확인하세요">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/pretendard-core.woff2" crossorigin>
@@ -386,47 +386,30 @@
   }
 </style>
 <style>
-  .archive { min-height: 60vh; }
-  /* 데스크톱: 2개씩 3줄 배치 */
-  .doc-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 880px; margin: 0 auto; }
-  .doc-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    text-align: center; gap: 10px;
+  .channels { min-height: 60vh; }
+  .ch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 880px; margin: 0 auto; }
+  .ch-card {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: 14px;
     background: #fff; border: 1px solid var(--green-line);
-    border-radius: var(--radius); padding: 26px 18px 22px;
+    border-radius: var(--radius); padding: 40px 28px 34px;
     box-shadow: var(--shadow);
     transition: transform .12s, border-color .15s;
-    cursor: pointer;
   }
-  .doc-item:hover { transform: translateY(-2px); border-color: var(--green); }
-  .doc-ico {
-    width: 52px; height: 52px; border-radius: 14px; flex: none;
+  .ch-card:hover { transform: translateY(-2px); border-color: var(--green); }
+  .ch-ico {
+    width: 72px; height: 72px; border-radius: 20px; flex: none;
     background: var(--green-soft);
-    display: grid; place-items: center; font-size: 25px;
+    display: grid; place-items: center; font-size: 36px;
   }
-  .doc-info { min-width: 0; }
-  .doc-info b { display: block; font-size: 16px; line-height: 1.4; }
-  .doc-info small { color: var(--muted); font-size: 13.5px; }
-  .doc-act {
-    margin-top: auto; flex: none;
-    font-size: 13.5px; font-weight: 700; color: var(--green);
-    border: 1.5px solid var(--green-line); border-radius: 999px;
-    padding: 7px 18px; white-space: nowrap;
-  }
-  .doc-item:hover .doc-act { border-color: var(--green); }
-  .doc-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
-  /* 모바일: 한 줄씩 가로형 카드로 */
+  .ch-card h3 { font-size: 21px; font-weight: 800; letter-spacing: -.02em; }
+  .ch-card .ch-tag { font-size: 13.5px; font-weight: 700; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: 4px 14px; }
+  .ch-card p { color: var(--muted); font-size: 15.5px; }
+  .ch-card .btn { margin-top: 10px; width: 100%; max-width: 300px; font-size: 17px; padding: 15px 20px; }
+  .ch-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
   @media (max-width: 760px) {
-    .doc-list { grid-template-columns: 1fr; max-width: 520px; gap: 14px; }
-    .doc-item {
-      flex-direction: row; text-align: left; align-items: center;
-      gap: 14px; padding: 15px 16px;
-    }
-    .doc-ico { width: 46px; height: 46px; border-radius: 12px; font-size: 22px; }
-    .doc-act { margin-top: 0; margin-left: auto; }
-  }
-  @media (max-width: 480px) {
-    .doc-act { display: none; }
+    .ch-grid { grid-template-columns: 1fr; max-width: 520px; gap: 16px; }
+    .ch-card { padding: 30px 22px 26px; }
   }
 </style>
 </head>
@@ -439,57 +422,39 @@
     </a>
     <nav>
       <a href="index.html">메인</a>
-      <a href="archive.html" class="active">자료실</a>
-      <a href="reviews.html">사례&amp;리뷰</a>
+      <a href="archive.html">자료실</a>
+      <a href="reviews.html" class="active">사례&amp;리뷰</a>
     </nav>
     <a class="gnb-call" href="tel:1551-7704" style="margin-left:auto;">📞 1551-7704 무료견적</a>
   </div>
 </header>
 
-<section class="archive">
+<section class="channels">
   <div class="container">
     <div class="sec-head">
-      <span class="eyebrow">Documents</span>
-      <h2>자료실</h2>
-      <p>자재 생산지 증명, 시험 성적서 등<br>그린홈시스가 사용하는 자재의 공식 서류를 확인하실 수 있습니다.</p>
+      <span class="eyebrow">Cases &amp; Reviews</span>
+      <h2>사례&amp;리뷰</h2>
+      <p>그린홈시스의 실제 시공 현장과<br>고객님들이 남겨주신 생생한 후기를 확인해 보세요.</p>
     </div>
 
-    <div class="doc-list">
-      <!-- 새 자료 추가: 아래 doc-item 블록을 복사해 파일 경로·제목만 바꾸면 됩니다.
-           PDF는 href+download, 이미지는 data-full(라이트박스)로 연결하세요. -->
-      <a class="doc-item" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">
-        <span class="doc-ico">📕</span>
-        <span class="doc-info"><b>LX하우시스 제품 카탈로그</b><small>전체 제품 카탈로그 · PDF</small></span>
-        <span class="doc-act">다운로드</span>
-      </a>
-      <a class="doc-item" href="assets/lx-system-window.pdf" download="LX하우시스 시스템 창호.pdf">
-        <span class="doc-ico">📘</span>
-        <span class="doc-info"><b>LX하우시스 시스템 창호</b><small>시스템 창호 제품 자료 · PDF</small></span>
-        <span class="doc-act">다운로드</span>
-      </a>
-      <a class="doc-item" href="assets/lx-ks-cert.pdf" download="LX하우시스 KS인증서(청주공장).pdf">
-        <span class="doc-ico">🏅</span>
-        <span class="doc-info"><b>KS인증서</b><small>LX하우시스 청주공장 · PDF</small></span>
-        <span class="doc-act">다운로드</span>
-      </a>
-      <div class="doc-item" data-full="assets/lx-warranty.webp">
-        <span class="doc-ico">📄</span>
-        <span class="doc-info"><b>10년 품질보증제도 안내</b><small>LX하우시스 본사 품질보증 · 이미지</small></span>
-        <span class="doc-act">크게 보기</span>
+    <div class="ch-grid">
+      <div class="ch-card">
+        <span class="ch-ico">📷</span>
+        <span class="ch-tag">네이버 블로그</span>
+        <h3>시공사례 모음</h3>
+        <p>아파트·주택 창호 시공 현장의 생생한 사진과<br>작업 과정을 블로그에서 소개합니다.</p>
+        <a class="btn btn-primary" href="https://blog.naver.com/PostList.naver?blogId=green_homesys&amp;from=postList&amp;categoryNo=4" target="_blank" rel="noopener">📷 시공사례 보러가기</a>
       </div>
-      <a class="doc-item" href="assets/lx-test-report-window.xlsx" download="LX하우시스 창호 시험성적서.xlsx">
-        <span class="doc-ico">📊</span>
-        <span class="doc-info"><b>창호 시험 성적서</b><small>LX Hausys WindowDB · 엑셀</small></span>
-        <span class="doc-act">다운로드</span>
-      </a>
-      <a class="doc-item" href="assets/lx-test-report-al-window.xlsx" download="LX하우시스 AL 창호 시험성적서.xlsx">
-        <span class="doc-ico">📊</span>
-        <span class="doc-info"><b>AL(알루미늄) 창호 시험 성적서</b><small>LX Hausys AL WindowDB · 엑셀</small></span>
-        <span class="doc-act">다운로드</span>
-      </a>
+      <div class="ch-card">
+        <span class="ch-ico">⭐</span>
+        <span class="ch-tag">숨고 · 전문가 매칭 플랫폼</span>
+        <h3>고객 리뷰</h3>
+        <p>숨고에서 그린홈시스를 만난 고객님들의<br>실제 평가와 리뷰를 확인하실 수 있습니다.</p>
+        <a class="btn btn-primary" href="https://soomgo.com/profile/users/4073420" target="_blank" rel="noopener">⭐ 고객 리뷰 보러가기</a>
+      </div>
     </div>
 
-    <p class="doc-note">자료는 계속 추가될 예정입니다.<br>필요한 서류는 전화(1551-7704)로 요청하셔도 됩니다.</p>
+    <p class="ch-note">사례와 리뷰는 계속 쌓이는 중입니다.<br>버튼을 누르면 새 탭에서 열려요.</p>
   </div>
 </section>
 
