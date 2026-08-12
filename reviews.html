@@ -413,6 +413,8 @@
   @media (max-width: 760px) {
     .thumb-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .thumb-grid.cols3 { grid-template-columns: repeat(2, 1fr); }
+    /* 홀수 개일 때 마지막 썸네일은 가운데 정렬 */
+    .thumb-grid a:last-child:nth-child(odd) { grid-column: 1 / -1; width: calc(50% - 5px); margin: 0 auto; }
   }
 
   /* 브랜드 컬러: 네이버 블로그(밝은 연두) · 숨고(보라) */
@@ -462,6 +464,9 @@
   @media (max-width: 760px) {
     .ch-card { padding: 24px 16px 22px; }
     .sg-panel { flex-direction: column; gap: 18px; padding: 20px 18px; }
+    /* 통계 칩 3개를 한 줄에 */
+    .sg-stats { flex-wrap: nowrap; }
+    .sg-stat { flex: 1; min-width: 0; padding: 8px 6px; }
   }
 </style>
 </head>
