@@ -404,6 +404,21 @@
     background: var(--bg-alt);
   }
   .ch-hint { color: var(--muted); font-size: 13px; }
+
+  /* 브랜드 컬러: 네이버 블로그(밝은 연두) · 숨고(보라) */
+  .ch-blog { border-color: #b8e8cd; }
+  .ch-blog .ch-tag { background: #e4f9ed; color: #029d47; }
+  .ch-blog .ch-frame { border-color: #b8e8cd; }
+  .ch-blog .btn { background: #03c75a; }
+  .ch-blog .btn:hover { background: #02a94d; }
+  .ch-sg { border-color: #d8cdfb; }
+  .ch-sg .ch-tag { background: #f0ebfe; color: #693bf5; }
+  .ch-sg .btn { background: #693bf5; }
+  .ch-sg .btn:hover { background: #5730d9; }
+  .ch-sg .sg-panel { border-color: #d8cdfb; background: linear-gradient(135deg, #fdfcff, #f4f0fe); }
+  .ch-sg .sg-avatar { border-color: #d8cdfb; }
+  .ch-sg .sg-stat { border-color: #e2dafc; }
+  .ch-sg .sg-side li::before { color: #693bf5; }
   .ch-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
 
   /* 숨고 프로필 요약 — 데스크톱은 가로형 */
@@ -466,14 +481,14 @@
     </div>
 
     <div class="ch-grid">
-      <div class="ch-card">
+      <div class="ch-card ch-blog">
         <span class="ch-tag">📷 네이버 블로그 · 시공사례</span>
         <h3>시공사례 모음</h3>
         <iframe class="ch-frame" src="https://m.blog.naver.com/PostList.naver?blogId=green_homesys&amp;categoryNo=4" title="그린홈시스 블로그 시공사례 미리보기" loading="lazy"></iframe>
         <p class="ch-hint">화면을 위아래로 넘기면서 바로 볼 수 있어요</p>
         <a class="btn btn-primary" href="https://blog.naver.com/PostList.naver?blogId=green_homesys&amp;from=postList&amp;categoryNo=4" target="_blank" rel="noopener">📷 블로그에서 크게 보기</a>
       </div>
-      <div class="ch-card">
+      <div class="ch-card ch-sg">
         <span class="ch-tag">⭐ 숨고 · 전문가 매칭 플랫폼</span>
         <h3>고객 리뷰</h3>
         <div class="sg-panel">
