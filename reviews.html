@@ -57,7 +57,7 @@
   .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
   .logo-img { height: 44px; width: auto; }
   .gnb nav { display: flex; gap: 30px; margin-left: auto; font-size: 21px; font-weight: 700; color: var(--muted); }
-  .gnb nav a { white-space: nowrap; }
+  .gnb nav a { white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
   .gnb nav a:hover, .gnb nav a.active { color: var(--green); }
   .gnb-call {
     display: inline-flex; align-items: center; gap: 8px;
@@ -457,23 +457,26 @@
   .sg-avatar img { width: 100%; height: 100%; object-fit: contain; }
   .sg-name b { display: block; font-size: 19px; font-weight: 800; line-height: 1.35; }
   .sg-name small { color: var(--muted); font-size: 13.5px; }
-  .sg-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sg-stats { display: flex; flex-wrap: nowrap; gap: 8px; }
   .sg-stat {
     background: #fff; border: 1px solid var(--green-line); border-radius: 10px;
-    padding: 8px 14px; font-size: 14px; color: var(--muted);
-    text-align: center; min-width: 96px;
+    padding: 8px 10px; font-size: 14px; color: var(--muted);
+    text-align: center; flex: 1; min-width: 0;
+    white-space: nowrap;
   }
   .sg-stat b { display: block; font-size: 18px; font-weight: 800; color: var(--ink); }
   .sg-stat .star { color: var(--amber); }
   .sg-side { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
   .sg-side li { list-style: none; padding-left: 28px; position: relative; font-size: 17.5px; font-weight: 600; }
   .sg-side li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
+  @media (max-width: 380px) {
+    .sg-stat { font-size: 12.5px; padding: 8px 4px; }
+    .sg-stat b { font-size: 16px; }
+  }
   @media (max-width: 760px) {
     .ch-card { padding: 24px 16px 22px; }
     .sg-panel { flex-direction: column; gap: 18px; padding: 20px 18px; }
-    /* 통계 칩 3개를 한 줄에 */
-    .sg-stats { flex-wrap: nowrap; }
-    .sg-stat { flex: 1; min-width: 0; padding: 8px 6px; }
+    .sg-stat { padding: 8px 6px; }
   }
 </style>
 </head>

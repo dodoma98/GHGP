@@ -63,7 +63,7 @@
   .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
   .logo-img { height: 44px; width: auto; }
   .gnb nav { display: flex; gap: 30px; margin-left: auto; font-size: 21px; font-weight: 700; color: var(--muted); }
-  .gnb nav a { white-space: nowrap; }
+  .gnb nav a { white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
   .gnb nav a:hover, .gnb nav a.active { color: var(--green); }
   .gnb-call {
     display: inline-flex; align-items: center; gap: 8px;
@@ -239,7 +239,7 @@
   .lx-card h3 em { font-style: normal; color: var(--lx-red); }
   .lx-card p { font-size: 14.5px; color: var(--muted); }
 
-  .catalog-cta { display: flex; justify-content: flex-start; margin: 20px 0 0; }
+  .catalog-cta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: 20px 0 0; }
   .catalog-cta .btn {
     font-size: 17px; padding: 16px 34px;
     background: var(--lx-red);
@@ -395,7 +395,7 @@
     .namecard-btns { flex-direction: column; align-items: center; gap: 12px; max-width: 420px; }
     .namecard-btns .btn { width: 100%; }
     .warranty-box { grid-template-columns: 1fr; gap: 18px; margin-bottom: 32px; }
-    .catalog-cta { justify-content: center; }
+    .catalog-cta { align-items: center; }
     .lx-card { padding: 16px 8px; text-align: center; }
     .lx-card .ico { width: 38px; height: 38px; font-size: 18px; margin: 0 auto 8px; border-radius: 10px; }
     .lx-card h3 { font-size: 14px; margin-bottom: 0; }
@@ -556,7 +556,12 @@
         </ul>
         <p class="hint">이미지를 누르면 전체 내용을 크게 볼 수 있어요</p>
         <div class="catalog-cta">
-          <button class="btn btn-primary" type="button" id="catOpen">📕 LX하우시스 카탈로그 바로 보기</button>
+          <button class="btn btn-primary doc-open" type="button"
+                  data-title="📕 LX하우시스 카탈로그" data-dir="assets/catalog" data-pages="23"
+                  data-pdf="assets/lx-catalog.pdf" data-file="LX하우시스 카탈로그.pdf">📕 LX하우시스 카탈로그 바로 보기</button>
+          <button class="btn btn-primary doc-open" type="button"
+                  data-title="📘 LX하우시스 시스템 창호" data-dir="assets/system" data-pages="45"
+                  data-pdf="assets/lx-system-window.pdf" data-file="LX하우시스 시스템 창호.pdf">📘 LX하우시스 시스템 창호 바로 보기</button>
         </div>
       </div>
     </div>
@@ -638,40 +643,15 @@
 <!-- 모바일 플로팅 전화 버튼 -->
 <a class="float-call" href="tel:1551-7704">📞 무료 견적 1551-7704</a>
 
-<!-- 카탈로그 뷰어 -->
-<div class="cat-viewer" id="catViewer" role="dialog" aria-modal="true" aria-label="LX하우시스 카탈로그">
+<!-- 자료 뷰어 (카탈로그 · 시스템 창호) -->
+<div class="cat-viewer" id="catViewer" role="dialog" aria-modal="true" aria-label="자료 보기">
   <div class="cat-bar">
-    <b>📕 LX하우시스 카탈로그</b>
-    <span class="count">전 23페이지 · 아래로 넘겨보세요</span>
-    <a class="dl" href="assets/lx-catalog.pdf" download="LX하우시스 카탈로그.pdf">PDF 저장</a>
+    <b id="catTitle">자료</b>
+    <span class="count" id="catCount"></span>
+    <a class="dl" id="catDl" href="#" download>PDF 저장</a>
     <button class="x" type="button" aria-label="닫기">×</button>
   </div>
-  <div class="cat-pages" id="catPages">
-    <img data-src="assets/catalog/p01.webp" alt="LX하우시스 카탈로그 1페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p02.webp" alt="LX하우시스 카탈로그 2페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p03.webp" alt="LX하우시스 카탈로그 3페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p04.webp" alt="LX하우시스 카탈로그 4페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p05.webp" alt="LX하우시스 카탈로그 5페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p06.webp" alt="LX하우시스 카탈로그 6페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p07.webp" alt="LX하우시스 카탈로그 7페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p08.webp" alt="LX하우시스 카탈로그 8페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p09.webp" alt="LX하우시스 카탈로그 9페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p10.webp" alt="LX하우시스 카탈로그 10페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p11.webp" alt="LX하우시스 카탈로그 11페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p12.webp" alt="LX하우시스 카탈로그 12페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p13.webp" alt="LX하우시스 카탈로그 13페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p14.webp" alt="LX하우시스 카탈로그 14페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p15.webp" alt="LX하우시스 카탈로그 15페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p16.webp" alt="LX하우시스 카탈로그 16페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p17.webp" alt="LX하우시스 카탈로그 17페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p18.webp" alt="LX하우시스 카탈로그 18페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p19.webp" alt="LX하우시스 카탈로그 19페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p20.webp" alt="LX하우시스 카탈로그 20페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p21.webp" alt="LX하우시스 카탈로그 21페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p22.webp" alt="LX하우시스 카탈로그 22페이지" width="1012" height="1432">
-    <img data-src="assets/catalog/p23.webp" alt="LX하우시스 카탈로그 23페이지" width="1012" height="1432">
-    <p class="cat-hint">— 카탈로그 끝 —</p>
-  </div>
+  <div class="cat-pages" id="catPages"></div>
 </div>
 
 <!-- 라이트박스 -->
@@ -698,17 +678,35 @@
   lb.addEventListener('click', closeLb);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
 
-  // 카탈로그 뷰어
+  // 자료 뷰어 (세로 스크롤)
   const catViewer = document.getElementById('catViewer');
   const catPages = document.getElementById('catPages');
-  let catLoaded = false;
-  function openCat() {
-    if (!catLoaded) {
-      catPages.querySelectorAll('img[data-src]').forEach((img, i) => {
-        if (i < 3) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
-        else { img.loading = 'lazy'; img.src = img.dataset.src; img.removeAttribute('data-src'); }
-      });
-      catLoaded = true;
+  const catTitle = document.getElementById('catTitle');
+  const catCount = document.getElementById('catCount');
+  const catDl = document.getElementById('catDl');
+  let catCurrent = '';
+  function openDoc(btn) {
+    const dir = btn.dataset.dir;
+    const pages = +btn.dataset.pages;
+    catTitle.textContent = btn.dataset.title;
+    catCount.textContent = `전 ${pages}페이지 · 아래로 넘겨보세요`;
+    catDl.href = btn.dataset.pdf;
+    catDl.setAttribute('download', btn.dataset.file);
+    if (catCurrent !== dir) {
+      catPages.innerHTML = '';
+      for (let i = 1; i <= pages; i++) {
+        const img = document.createElement('img');
+        img.src = `${dir}/p${String(i).padStart(2, '0')}.webp`;
+        img.alt = `${btn.dataset.title} ${i}페이지`;
+        img.width = 1012; img.height = 1432;
+        if (i > 3) img.loading = 'lazy';
+        catPages.appendChild(img);
+      }
+      const end = document.createElement('p');
+      end.className = 'cat-hint';
+      end.textContent = '— 끝 —';
+      catPages.appendChild(end);
+      catCurrent = dir;
     }
     catViewer.classList.add('open');
     catPages.scrollTop = 0;
@@ -718,7 +716,7 @@
     catViewer.classList.remove('open');
     document.body.style.overflow = '';
   }
-  document.getElementById('catOpen').addEventListener('click', openCat);
+  document.querySelectorAll('.doc-open').forEach(b => b.addEventListener('click', () => openDoc(b)));
   catViewer.querySelector('.x').addEventListener('click', closeCat);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCat(); });
 
