@@ -399,7 +399,7 @@
   .ch-card .ch-tag { font-size: 13.5px; font-weight: 700; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: 4px 14px; }
   .ch-card .btn { margin-top: 4px; width: 100%; max-width: 340px; font-size: 16px; padding: 13px 20px; }
   .ch-frame {
-    width: 100%; height: 560px;
+    width: 100%; height: 680px;
     border: 1px solid var(--green-line); border-radius: 12px;
     background: var(--bg-alt);
   }
@@ -485,7 +485,7 @@
       <div class="ch-card ch-blog">
         <span class="ch-tag">📷 네이버 블로그 · 시공사례</span>
         <h3>시공사례 모음</h3>
-        <iframe class="ch-frame" src="https://m.blog.naver.com/PostList.naver?blogId=green_homesys&amp;categoryNo=4" title="그린홈시스 블로그 시공사례 미리보기" loading="lazy"></iframe>
+        <iframe class="ch-frame" id="blogFrame" src="https://m.blog.naver.com/PostList.naver?blogId=green_homesys&amp;categoryNo=4" title="그린홈시스 블로그 시공사례 미리보기" loading="lazy"></iframe>
         <p class="ch-hint">화면을 위아래로 넘기면서 바로 볼 수 있어요</p>
         <a class="btn btn-primary" href="https://blog.naver.com/PostList.naver?blogId=green_homesys&amp;from=postList&amp;categoryNo=4" target="_blank" rel="noopener">📷 블로그에서 크게 보기</a>
       </div>
@@ -547,6 +547,12 @@
 </div>
 
 <script>
+  // 블로그 미리보기: 데스크톱은 PC 화면, 모바일은 모바일 화면
+  const blogFrame = document.getElementById('blogFrame');
+  if (blogFrame && !matchMedia('(max-width: 760px)').matches) {
+    blogFrame.src = 'https://blog.naver.com/PostList.naver?blogId=green_homesys&from=postList&categoryNo=4';
+  }
+
   const lb = document.getElementById('lightbox');
   const lbImg = lb.querySelector('img');
   document.querySelectorAll('[data-full]').forEach(el => {
