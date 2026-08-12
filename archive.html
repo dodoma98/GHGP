@@ -385,10 +385,9 @@
 </style>
 <style>
   .archive { min-height: 60vh; }
-  /* 데스크톱: 3·2·2 카드 배치 (6컬럼 그리드, 카드당 2컬럼) */
-  .doc-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; max-width: 980px; margin: 0 auto; }
+  /* 데스크톱: 2개씩 3줄 배치 */
+  .doc-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 880px; margin: 0 auto; }
   .doc-item {
-    grid-column: span 2;
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     text-align: center; gap: 10px;
     background: #fff; border: 1px solid var(--green-line);
@@ -397,8 +396,6 @@
     transition: transform .12s, border-color .15s;
     cursor: pointer;
   }
-  /* 2·3행(2개씩)은 가운데 정렬: 4번째·6번째 카드를 2번 컬럼부터 시작 */
-  .doc-item:nth-child(4), .doc-item:nth-child(6) { grid-column: 2 / span 2; }
   .doc-item:hover { transform: translateY(-2px); border-color: var(--green); }
   .doc-ico {
     width: 52px; height: 52px; border-radius: 14px; flex: none;
@@ -419,7 +416,6 @@
   /* 모바일: 한 줄씩 가로형 카드로 */
   @media (max-width: 760px) {
     .doc-list { grid-template-columns: 1fr; max-width: 520px; gap: 14px; }
-    .doc-item, .doc-item:nth-child(4), .doc-item:nth-child(6) { grid-column: auto; }
     .doc-item {
       flex-direction: row; text-align: left; align-items: center;
       gap: 14px; padding: 15px 16px;
@@ -468,16 +464,16 @@
         <span class="doc-info"><b>LX하우시스 시스템 창호</b><small>시스템 창호 제품 자료 · PDF</small></span>
         <span class="doc-act">다운로드</span>
       </a>
-      <div class="doc-item" data-full="assets/lx-warranty.webp">
-        <span class="doc-ico">📄</span>
-        <span class="doc-info"><b>10년 품질보증제도 안내</b><small>LX하우시스 본사 품질보증 · 이미지</small></span>
-        <span class="doc-act">크게 보기</span>
-      </div>
       <a class="doc-item" href="assets/lx-ks-cert.pdf" download="LX하우시스 KS인증서(청주공장).pdf">
         <span class="doc-ico">🏅</span>
         <span class="doc-info"><b>KS인증서</b><small>LX하우시스 청주공장 · PDF</small></span>
         <span class="doc-act">다운로드</span>
       </a>
+      <div class="doc-item" data-full="assets/lx-warranty.webp">
+        <span class="doc-ico">📄</span>
+        <span class="doc-info"><b>10년 품질보증제도 안내</b><small>LX하우시스 본사 품질보증 · 이미지</small></span>
+        <span class="doc-act">크게 보기</span>
+      </div>
       <a class="doc-item" href="assets/lx-test-report-window.xlsx" download="LX하우시스 창호 시험성적서.xlsx">
         <span class="doc-ico">📊</span>
         <span class="doc-info"><b>창호 시험 성적서</b><small>LX Hausys WindowDB · 엑셀</small></span>
