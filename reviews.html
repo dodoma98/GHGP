@@ -436,18 +436,19 @@
   .ch-sg .sg-panel { border-color: #d8cdfb; background: linear-gradient(135deg, #fdfcff, #f4f0fe); }
   .ch-sg .sg-avatar { border-color: #d8cdfb; }
   .ch-sg .sg-stat { border-color: #e2dafc; }
+  .ch-sg .sg-side { border-left-color: #e2dafc; }
   .ch-sg .sg-side li::before { color: #693bf5; }
   .ch-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
 
   /* 숨고 프로필 요약 — 데스크톱은 가로형 */
   .sg-panel {
-    display: flex; align-items: stretch; gap: 28px; width: 100%;
+    display: flex; align-items: stretch; gap: 32px; width: 100%;
     text-align: left;
     border: 1px solid var(--green-line); border-radius: 12px;
     padding: 26px 28px;
     background: linear-gradient(135deg, #fbfdfb, var(--bg-alt));
   }
-  .sg-main { flex: 1.1; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .sg-main { flex: 0 1 auto; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
   .sg-head { display: flex; align-items: center; gap: 14px; }
   .sg-avatar {
     width: 64px; height: 64px; flex: none; border-radius: 16px;
@@ -461,12 +462,15 @@
   .sg-stat {
     background: #fff; border: 1px solid var(--green-line); border-radius: 10px;
     padding: 8px 10px; font-size: 14px; color: var(--muted);
-    text-align: center; flex: 1; min-width: 0;
+    text-align: center; flex: 0 0 auto; min-width: 92px;
     white-space: nowrap;
   }
   .sg-stat b { display: block; font-size: 18px; font-weight: 800; color: var(--ink); }
   .sg-stat .star { color: var(--amber); }
-  .sg-side { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+  .sg-side {
+    flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; justify-content: center;
+    padding-left: 32px; border-left: 1px solid var(--green-line);
+  }
   .sg-side li { list-style: none; padding-left: 28px; position: relative; font-size: 17.5px; font-weight: 600; }
   .sg-side li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
   @media (max-width: 380px) {
@@ -476,7 +480,8 @@
   @media (max-width: 760px) {
     .ch-card { padding: 24px 16px 22px; }
     .sg-panel { flex-direction: column; gap: 18px; padding: 20px 18px; }
-    .sg-stat { padding: 8px 6px; }
+    .sg-side { padding-left: 0; border-left: none; }
+    .sg-stat { flex: 1; min-width: 0; padding: 8px 6px; }
   }
 </style>
 </head>
