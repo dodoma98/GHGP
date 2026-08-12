@@ -407,7 +407,9 @@
 
   /* 블로그 글 썸네일 그리드 */
   .thumb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; }
-  .thumb-grid.cols3 { grid-template-columns: repeat(3, 1fr); max-width: 640px; margin: 0 auto; }
+  .thumb-grid.cols3 { grid-template-columns: repeat(4, 1fr); }
+  .thumb-grid.cols3 a { aspect-ratio: 1 / 1; background: #fff; display: grid; place-items: center; }
+  .thumb-grid.cols3 img { width: 100%; height: 100%; object-fit: contain; }
   .thumb-grid a {
     display: block; border-radius: 12px; overflow: hidden;
     border: 1px solid var(--green-line);
@@ -515,6 +517,7 @@
         <span class="ch-tag">📖 네이버 블로그 · 창호 정보</span>
         <h3>알아두면 좋은 창호 정보</h3>
         <div class="thumb-grid cols3">
+          <a href="https://blog.naver.com/green_homesys/224354154952" target="_blank" rel="noopener"><img src="assets/blog/info-0.webp" alt="창호업체, 어떻게 봐야 할까요? — 샷시교체 전 헷갈리는 개념 정리" width="640" height="480" loading="lazy" decoding="async"></a>
           <a href="https://blog.naver.com/green_homesys/224361646996" target="_blank" rel="noopener"><img src="assets/blog/info-1.webp" alt="샷시 원데이시공 — 여름휴가 활용한 하루만에 창호교체" width="640" height="640" loading="lazy" decoding="async"></a>
           <a href="https://blog.naver.com/green_homesys/224360364603" target="_blank" rel="noopener"><img src="assets/blog/info-2.webp" alt="우리집도 시스템창 되나요? — 시스템창 변경 조건 정리" width="640" height="640" loading="lazy" decoding="async"></a>
           <a href="https://blog.naver.com/green_homesys/224356370104" target="_blank" rel="noopener"><img src="assets/blog/info-3.webp" alt="아이 있는 집 안전 창호 — 샷시교체 전 3가지 확인" width="640" height="643" loading="lazy" decoding="async"></a>
