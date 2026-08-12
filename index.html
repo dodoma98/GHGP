@@ -142,7 +142,7 @@
     transition: transform .12s, background .15s;
   }
   .btn:active { transform: scale(.97); }
-  .btn-primary { background: var(--green); color: #fff; box-shadow: 0 6px 18px rgba(27,122,68,.28); }
+  .btn-primary { background: var(--green); color: #fff; }
   .btn-primary:hover { background: var(--green-deep); }
   .btn-ghost { background: #fff; color: var(--green); border: 1.5px solid var(--green-line); }
   .btn-ghost:hover { border-color: var(--green); }
@@ -236,7 +236,6 @@
   .catalog-cta .btn {
     font-size: 17px; padding: 16px 34px;
     background: var(--lx-red);
-    box-shadow: 0 6px 18px rgba(166, 36, 47, .3);
   }
   .catalog-cta .btn:hover { background: #8c1d27; }
   .fig { background: #fff; border: 1px solid var(--green-line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: zoom-in; }
@@ -282,7 +281,7 @@
   }
   .closing h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 14px; }
   .closing p { opacity: .9; margin-bottom: 30px; font-size: 16.5px; }
-  .closing .btn { font-size: 19px; padding: 18px 38px; border-radius: 999px; }
+  .closing .btn { font-size: 19px; padding: 18px 38px; border-radius: 999px; box-shadow: none; }
   .closing-btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 620px; margin: 0 auto; }
   .closing .btn-line { border: 1.5px solid rgba(255,255,255,.55); color: #fff; }
   .closing .btn-line:hover { border-color: #fff; background: rgba(255,255,255,.1); }
@@ -300,7 +299,6 @@
     background: var(--green); color: #fff;
     font-size: 17px; font-weight: 800;
     padding: 16px; border-radius: 14px;
-    box-shadow: 0 8px 24px rgba(20,60,35,.35);
     opacity: 0; transform: translateY(130%);
     transition: transform .35s ease, opacity .35s ease;
     pointer-events: none;
@@ -327,7 +325,8 @@
   /* ───────── responsive ───────── */
   /* 데스크톱: 히어로 버튼 확대 */
   @media (min-width: 901px) {
-    .hero-ctas .btn { font-size: 25px; font-weight: 800; padding: 26px 38px; border-radius: 18px; }
+    .hero-ctas .btn { font-size: 28px; font-weight: 800; padding: 28px 40px; border-radius: 18px; }
+    .hero-ctas .btn-point { max-width: 540px; }
   }
 
   /* 태블릿: 웹툰 4컷을 2×2로 */
