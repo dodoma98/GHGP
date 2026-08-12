@@ -54,6 +54,11 @@
   .gnb-inner {
     display: flex; align-items: center; gap: 28px;
     height: 64px;
+    position: relative;
+  }
+  /* 데스크톱: 메뉴를 화면 정중앙에 고정 */
+  @media (min-width: 901px) {
+    .gnb nav { position: absolute; left: 50%; transform: translateX(-50%); margin-left: 0; }
   }
   .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
   .logo-img { height: 44px; width: auto; }
