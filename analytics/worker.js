@@ -22,7 +22,7 @@
  *  - 변수 ALLOW_ORIGIN       : 집계를 허용할 사이트 주소들, 쉼표로 구분
  *                              예: https://ghgp.replit.app,https://greenhomesys.com
  *  - 변수 SITE_NAMES         : 사이트 코드와 표시 이름, 쉼표로 구분 (선택)
- *                              예: ghgp=판매 페이지,home=홈페이지,point=포인트
+ *                              예: ghgp=영업 페이지,home=그린홈시스,viablanc=비아블랑
  */
 
 const SESSION_HOURS = 12;
@@ -78,7 +78,7 @@ async function collect(request, env) {
   const event = String(body.event || 'view').slice(0, 60);
   const site = String(body.site || 'ghgp').slice(0, 30);
   const device = /Mobi|Android|iPhone|iPad/i.test(ua) ? 'mobile' : 'desktop';
-  const ref = refLabel(body.ref);
+  const ref = refLabel(body.ref, body.from);
 
   await env.DB.prepare(
     'INSERT INTO hits (ts, day, site, visitor, page, ref, device, event) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
@@ -105,7 +105,19 @@ function siteNames(env) {
   return map;
 }
 
-function refLabel(raw) {
+// 링크에 ?from=blog 처럼 표시를 달아 보내면 그 값을 우선 사용합니다.
+// 네이버 블로그·리틀리 등은 유입 정보를 넘겨주지 않아 이 방법이 필요합니다.
+const FROM_NAMES = {
+  blog: '네이버 블로그', littly: '리틀리', insta: '인스타그램', instagram: '인스타그램',
+  youtube: '유튜브', kakao: '카카오톡', band: '밴드', card: '명함 QR', sms: '문자',
+  soomgo: '숨고', naver: '네이버',
+};
+
+function refLabel(raw, from) {
+  if (from) {
+    const key = String(from).toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20);
+    if (key) return FROM_NAMES[key] || key;
+  }
   if (!raw) return 'direct';
   let host;
   try {

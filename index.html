@@ -756,8 +756,17 @@
     if (localStorage.getItem('ghgp_notrack') === '1') return;
   } catch (e) {}
 
+  // 링크에 ?from=blog 같은 표시가 붙어 있으면 유입 경로로 기억해 둡니다.
+  var from = '';
+  try {
+    var qs = new URLSearchParams(location.search);
+    from = qs.get('from') || qs.get('utm_source') || '';
+    if (from) sessionStorage.setItem('ghgp_from', from);
+    else from = sessionStorage.getItem('ghgp_from') || '';
+  } catch (e) {}
+
   function send(event) {
-    var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, event: event });
+    var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, from: from, event: event });
     try {
       if (navigator.sendBeacon) {
         navigator.sendBeacon(ENDPOINT, new Blob([data], { type: 'text/plain' }));
