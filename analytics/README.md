@@ -44,6 +44,11 @@
 2. 이름 `ghgp-stats` → **Deploy**
 3. **Edit code** 를 눌러 편집기를 열고, 기존 코드를 전부 지운 뒤 `worker.js` 내용을 붙여넣고 **Deploy**
 
+기본 주소는 `ghgp-stats.<계정>.workers.dev` 형태입니다.
+우리 도메인으로 쓰려면 Worker 화면 → **Settings → Domains & Routes → Add → Custom domain** 에서
+`dashboard.greenhomesys.com` 을 연결합니다. (해당 도메인의 DNS가 Cloudflare에서 관리되고 있어야 합니다.)
+연결 후에도 기존 workers.dev 주소는 함께 동작하므로 중간에 끊기지 않습니다.
+
 ### 3. Worker에 설정값 연결
 Worker 화면 → **Settings**
 
@@ -68,7 +73,7 @@ Worker 화면 → **Settings**
 각 사이트 HTML 맨 아래 집계 코드에서 두 줄을 채웁니다.
 
 ```js
-var ENDPOINT = 'https://ghgp-stats.○○○.workers.dev/collect';  // Worker 주소 + /collect
+var ENDPOINT = 'https://dashboard.greenhomesys.com/collect';  // Worker 주소 + /collect
 var SITE = 'ghgp';   // 이 사이트를 구분할 이름
 ```
 
@@ -134,7 +139,7 @@ var SITE = 'ghgp';   // 이 사이트를 구분할 이름
 
 ## 사용법
 
-- **대시보드 주소**: Worker 주소 그대로 (예: `https://ghgp-stats.○○○.workers.dev`)
+- **대시보드 주소**: Worker 주소 그대로 (예: `https://dashboard.greenhomesys.com`)
 - 비밀번호를 넣으면 12시간 동안 로그인이 유지됩니다. 검색엔진에는 노출되지 않습니다.
 
 ### 보이는 항목
