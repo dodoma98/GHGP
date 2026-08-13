@@ -12,11 +12,17 @@
  *    되돌릴 수 없는 해시로 바꾼 뒤 버립니다. 이 식별자는 매일 0시에 초기화됩니다.
  *  - 쿠키를 심지 않습니다. (관리자 로그인 쿠키만 예외)
  *
+ * 여러 사이트를 하나의 대시보드에서 봅니다. 각 사이트의 집계 코드가 보내는
+ * site 값(ghgp, home, point ...)으로 구분하며, 대시보드 위쪽에서 골라 볼 수 있습니다.
+ *
  * 필요한 설정 (Cloudflare 화면에서 지정)
  *  - D1 데이터베이스 바인딩 이름: DB
  *  - 비밀 변수 DASH_PASSWORD : 대시보드 로그인 비밀번호
  *  - 비밀 변수 SECRET        : 쿠키 서명·해시에 쓰는 아무 긴 문자열
- *  - 변수 ALLOW_ORIGIN       : 집계를 허용할 사이트 주소 (예: https://ghgp.replit.app)
+ *  - 변수 ALLOW_ORIGIN       : 집계를 허용할 사이트 주소들, 쉼표로 구분
+ *                              예: https://ghgp.replit.app,https://greenhomesys.com
+ *  - 변수 SITE_NAMES         : 사이트 코드와 표시 이름, 쉼표로 구분 (선택)
+ *                              예: ghgp=판매 페이지,home=홈페이지,point=포인트
  */
 
 const SESSION_HOURS = 12;
@@ -25,7 +31,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (request.method === 'OPTIONS') return preflight(env);
+    if (request.method === 'OPTIONS') return preflight(env, request.headers.get('Origin') || '');
     if (url.pathname === '/collect' && request.method === 'POST') return collect(request, env);
     if (url.pathname === '/login' && request.method === 'POST') return login(request, env);
     if (url.pathname === '/logout') return logout(env);
@@ -47,13 +53,13 @@ export default {
 
 async function collect(request, env) {
   const origin = request.headers.get('Origin') || '';
-  if (env.ALLOW_ORIGIN && origin !== env.ALLOW_ORIGIN) {
+  if (!originAllowed(origin, env)) {
     return new Response('forbidden', { status: 403 });
   }
 
   const ua = request.headers.get('User-Agent') || '';
   if (/bot|crawler|spider|crawling|slurp|bingpreview|facebookexternalhit/i.test(ua)) {
-    return corsOk(env); // 검색엔진 로봇은 집계에서 제외
+    return corsOk(env, origin); // 검색엔진 로봇은 집계에서 제외
   }
 
   let body;
@@ -70,14 +76,33 @@ async function collect(request, env) {
 
   const page = String(body.page || '/').slice(0, 120);
   const event = String(body.event || 'view').slice(0, 60);
+  const site = String(body.site || 'ghgp').slice(0, 30);
   const device = /Mobi|Android|iPhone|iPad/i.test(ua) ? 'mobile' : 'desktop';
   const ref = refLabel(body.ref);
 
   await env.DB.prepare(
-    'INSERT INTO hits (ts, day, visitor, page, ref, device, event) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).bind(now, day, visitor, page, ref, device, event).run();
+    'INSERT INTO hits (ts, day, site, visitor, page, ref, device, event) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(now, day, site, visitor, page, ref, device, event).run();
 
-  return corsOk(env);
+  return corsOk(env, origin);
+}
+
+function allowedOrigins(env) {
+  return (env.ALLOW_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function originAllowed(origin, env) {
+  const list = allowedOrigins(env);
+  return list.length === 0 || list.includes(origin);
+}
+
+function siteNames(env) {
+  const map = {};
+  (env.SITE_NAMES || '').split(',').forEach(pair => {
+    const [k, v] = pair.split('=').map(s => (s || '').trim());
+    if (k && v) map[k] = v;
+  });
+  return map;
 }
 
 function refLabel(raw) {
@@ -103,34 +128,45 @@ function refLabel(raw) {
 async function stats(url, env) {
   const days = Math.min(parseInt(url.searchParams.get('days') || '30', 10) || 30, 180);
   const from = kstDay(Math.floor(Date.now() / 1000) - days * 86400);
+  const site = (url.searchParams.get('site') || 'all').slice(0, 30);
 
-  const q = (sql, ...args) => env.DB.prepare(sql).bind(...args).all();
+  // site=all 이면 전체, 아니면 해당 사이트만
+  const cond = site === 'all' ? '' : ' AND site=?';
+  const args = site === 'all' ? [from] : [from, site];
+  const q = (sql, extra = []) => env.DB.prepare(sql).bind(...args, ...extra).all();
 
-  const [daily, pages, refs, devices, events, hours, totals] = await Promise.all([
+  const [daily, pages, refs, devices, events, hours, totals, bySite, allSites] = await Promise.all([
     q(`SELECT day, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
-        WHERE event='view' AND day>=? GROUP BY day ORDER BY day`, from),
-    q(`SELECT page, COUNT(*) n, COUNT(DISTINCT visitor) uv FROM hits
-        WHERE event='view' AND day>=? GROUP BY page ORDER BY n DESC LIMIT 20`, from),
+        WHERE event='view' AND day>=?${cond} GROUP BY day ORDER BY day`),
+    q(`SELECT site, page, COUNT(*) n FROM hits
+        WHERE event='view' AND day>=?${cond} GROUP BY site, page ORDER BY n DESC LIMIT 25`),
     q(`SELECT ref, COUNT(DISTINCT visitor) n FROM hits
-        WHERE event='view' AND day>=? GROUP BY ref ORDER BY n DESC LIMIT 12`, from),
+        WHERE event='view' AND day>=?${cond} GROUP BY ref ORDER BY n DESC LIMIT 12`),
     q(`SELECT device, COUNT(DISTINCT visitor) n FROM hits
-        WHERE event='view' AND day>=? GROUP BY device`, from),
+        WHERE event='view' AND day>=?${cond} GROUP BY device`),
     q(`SELECT event, COUNT(*) n FROM hits
-        WHERE event<>'view' AND day>=? GROUP BY event ORDER BY n DESC LIMIT 20`, from),
+        WHERE event<>'view' AND day>=?${cond} GROUP BY event ORDER BY n DESC LIMIT 20`),
     q(`SELECT CAST(strftime('%H', datetime(ts,'unixepoch','+9 hours')) AS INTEGER) h, COUNT(*) n
-        FROM hits WHERE event='view' AND day>=? GROUP BY h ORDER BY h`, from),
+        FROM hits WHERE event='view' AND day>=?${cond} GROUP BY h ORDER BY h`),
     q(`SELECT COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
-        WHERE event='view' AND day>=?`, from),
+        WHERE event='view' AND day>=?${cond}`),
+    // 사이트별 비교는 항상 전체 기준
+    env.DB.prepare(`SELECT site, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
+        WHERE event='view' AND day>=? GROUP BY site ORDER BY uv DESC`).bind(from).all(),
+    env.DB.prepare(`SELECT DISTINCT site FROM hits ORDER BY site`).all(),
   ]);
 
   const today = kstDay(Math.floor(Date.now() / 1000));
   const todayRow = (daily.results || []).find(r => r.day === today) || { uv: 0, pv: 0 };
 
   return json({
-    days,
+    days, site,
+    names: siteNames(env),
+    sites: (allSites.results || []).map(r => r.site),
     today: { uv: todayRow.uv, pv: todayRow.pv },
     total: (totals.results || [])[0] || { uv: 0, pv: 0 },
     daily: daily.results || [],
+    bySite: bySite.results || [],
     pages: pages.results || [],
     refs: refs.results || [],
     devices: devices.results || [],
@@ -193,16 +229,18 @@ async function dailyHash(raw, day, secret) {
   return [...new Uint8Array(buf)].slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-function corsHeaders(env) {
+function corsHeaders(env, origin) {
+  const list = allowedOrigins(env);
+  const allow = list.length === 0 ? '*' : (list.includes(origin) ? origin : list[0]);
   return {
-    'Access-Control-Allow-Origin': env.ALLOW_ORIGIN || '*',
+    'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
   };
 }
-const preflight = env => new Response(null, { status: 204, headers: corsHeaders(env) });
-const corsOk = env => new Response('ok', { headers: corsHeaders(env) });
+const preflight = (env, origin) => new Response(null, { status: 204, headers: corsHeaders(env, origin) });
+const corsOk = (env, origin) => new Response('ok', { headers: corsHeaders(env, origin) });
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
 const html = (body, status = 200) =>
@@ -263,6 +301,7 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
 <header>
   <div><h1>그린홈시스 대시보드</h1><p class="muted" id="range">불러오는 중…</p></div>
   <div class="sp">
+    <select id="site"><option value="all">전체 사이트</option></select>
     <select id="days">
       <option value="7">최근 7일</option>
       <option value="30" selected>최근 30일</option>
@@ -279,6 +318,7 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
 </div>
 <div class="grid">
   <div class="card full"><h2>일별 방문자</h2><div id="chart"></div></div>
+  <div class="card full" id="siteCard"><h2>사이트별 비교</h2><div id="bySite"></div></div>
   <div class="card"><h2>페이지별 조회</h2><div id="pages"></div></div>
   <div class="card"><h2>유입 경로</h2><div id="refs"></div></div>
   <div class="card"><h2>버튼·자료 클릭</h2><div id="events"></div></div>
@@ -317,23 +357,52 @@ function chart(el, daily){
       d.day.slice(5) + '</text>').join('') +
     '<text x="' + P + '" y="18" font-size="11" fill="#5e6e62">최대 ' + max + '명</text></svg>';
 }
+let SITE_NAMES = {};
+function siteLabel(code){ return SITE_NAMES[code] || code; }
+
 async function load(){
   const days = document.getElementById('days').value;
-  const r = await fetch('/api/stats?days=' + days);
+  const site = document.getElementById('site').value;
+  const r = await fetch('/api/stats?days=' + days + '&site=' + encodeURIComponent(site));
   if (!r.ok) { location.reload(); return; }
   const d = await r.json();
-  document.getElementById('range').textContent = '최근 ' + d.days + '일 기준 · 한국시간';
+  SITE_NAMES = d.names || {};
+
+  // 사이트 선택 메뉴 채우기 (처음 한 번)
+  const sel = document.getElementById('site');
+  if (sel.options.length === 1 && d.sites.length) {
+    d.sites.forEach(function(code){
+      const o = document.createElement('option');
+      o.value = code; o.textContent = siteLabel(code);
+      sel.appendChild(o);
+    });
+    sel.value = d.site;
+  }
+  const scope = d.site === 'all' ? '전체 사이트' : siteLabel(d.site);
+  document.getElementById('range').textContent = scope + ' · 최근 ' + d.days + '일 · 한국시간';
   document.getElementById('k1').textContent = d.today.uv.toLocaleString();
   document.getElementById('k2').textContent = d.today.pv.toLocaleString();
   document.getElementById('k3').textContent = d.total.uv.toLocaleString();
   document.getElementById('k4').textContent = d.total.pv.toLocaleString();
   chart(document.getElementById('chart'), d.daily);
-  table(document.getElementById('pages'), d.pages, r => PAGE_NAMES[r.page] || r.page, 'n');
+
+  const siteCard = document.getElementById('siteCard');
+  if (d.bySite.length > 1) {
+    siteCard.style.display = '';
+    table(document.getElementById('bySite'), d.bySite,
+      r => siteLabel(r.site) + ' · 조회 ' + r.pv.toLocaleString(), 'uv');
+  } else {
+    siteCard.style.display = 'none';
+  }
+
+  table(document.getElementById('pages'), d.pages,
+    r => (d.site === 'all' && d.sites.length > 1 ? '[' + siteLabel(r.site) + '] ' : '') + (PAGE_NAMES[r.page] || r.page), 'n');
   table(document.getElementById('refs'), d.refs, r => r.ref === 'direct' ? '직접 접속' : r.ref, 'n');
   table(document.getElementById('events'), d.events, r => EVENT_NAMES[r.event] || r.event, 'n');
   table(document.getElementById('devices'), d.devices, r => r.device === 'mobile' ? '모바일' : 'PC', 'n');
   table(document.getElementById('hours'), d.hours.map(h => ({ label: h.h + '시', n: h.n })), r => r.label, 'n');
 }
 document.getElementById('days').addEventListener('change', load);
+document.getElementById('site').addEventListener('change', load);
 load();
 </script></div></body></html>`;

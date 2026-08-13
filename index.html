@@ -749,6 +749,7 @@
 <script>
 (function () {
   var ENDPOINT = ''; // 예: https://ghgp-stats.<계정>.workers.dev/collect
+  var SITE = 'ghgp';  // 이 사이트를 대시보드에서 구분할 이름
   if (!ENDPOINT) return;
   try {
     if (location.search.indexOf('notrack=1') > -1) localStorage.setItem('ghgp_notrack', '1');
@@ -756,7 +757,7 @@
   } catch (e) {}
 
   function send(event) {
-    var data = JSON.stringify({ page: location.pathname, ref: document.referrer, event: event });
+    var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, event: event });
     try {
       if (navigator.sendBeacon) {
         navigator.sendBeacon(ENDPOINT, new Blob([data], { type: 'text/plain' }));
