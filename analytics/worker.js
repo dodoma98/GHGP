@@ -187,12 +187,18 @@ async function stats(url, env, request) {
   const todayRow = (daily.results || []).find(r => r.day === today) || { uv: 0, pv: 0 };
 
   const myIp = request ? (request.headers.get('CF-Connecting-IP') || '') : '';
+  const names = siteNames(env);
+  // 기록이 있는 사이트 + 설정에 등록해 둔 사이트를 합쳐 목록을 만듭니다.
+  // (아직 방문이 없는 사이트도 선택 메뉴에 보이도록)
+  const recorded = (allSites.results || []).map(r => r.site);
+  const sites = [...new Set([...recorded, ...Object.keys(names)])].sort();
+
   return json({
     days, site,
     myIp,
     excluded: ipExcluded(myIp, env),
-    names: siteNames(env),
-    sites: (allSites.results || []).map(r => r.site),
+    names,
+    sites,
     today: { uv: todayRow.uv, pv: todayRow.pv },
     total: (totals.results || [])[0] || { uv: 0, pv: 0 },
     daily: daily.results || [],
@@ -354,6 +360,7 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
   <div class="card"><h2>버튼·자료 클릭</h2><div id="events"></div></div>
   <div class="card"><h2>기기 · 시간대</h2><div id="devices"></div><div id="hours" style="margin-top:14px"></div></div>
 </div>
+<p class="card" id="emptyHint" style="margin-top:18px;display:none;line-height:1.7;font-size:14.5px"></p>
 <p class="muted" id="ipInfo" style="margin-top:18px;text-align:center"></p>
 <script>
 const PAGE_NAMES = {'/':'메인','/index.html':'메인','/archive.html':'자료실','/reviews.html':'사례&리뷰'};
@@ -432,6 +439,17 @@ async function load(){
   table(document.getElementById('events'), d.events, r => EVENT_NAMES[r.event] || r.event, 'n');
   table(document.getElementById('devices'), d.devices, r => r.device === 'mobile' ? '모바일' : 'PC', 'n');
   table(document.getElementById('hours'), d.hours.map(h => ({ label: h.h + '시', n: h.n })), r => r.label, 'n');
+
+  var emptyEl = document.getElementById('emptyHint');
+  if (d.total.pv === 0) {
+    emptyEl.style.display = '';
+    emptyEl.innerHTML = '<b>아직 쌓인 기록이 없습니다.</b><br>'
+      + '① 각 사이트를 새로 배포했는지 ② Worker 설정의 ALLOW_ORIGIN 에 그 사이트 주소가 들어 있는지 '
+      + '③ 지금 보고 계신 회선이 EXCLUDE_IPS 로 제외되어 있지는 않은지 확인해 보세요. '
+      + '(제외된 회선에서 방문하면 기록이 남지 않습니다 — 휴대폰 데이터로 접속해 확인해 보시는 것이 확실합니다.)';
+  } else {
+    emptyEl.style.display = 'none';
+  }
 
   var ipEl = document.getElementById('ipInfo');
   if (d.myIp) {
