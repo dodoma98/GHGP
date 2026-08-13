@@ -152,56 +152,77 @@ function refLabel(raw, from) {
 
 /* ───────────── 집계 ───────────── */
 
+// 조회 기간 선택지. bucket = 그래프 한 칸의 단위
+const RANGES = {
+  '5m':  { sec: 300,      bucket: 300,   unit: 'minute', label: '실시간 (최근 5분)' },
+  '1h':  { sec: 3600,     bucket: 300,   unit: 'minute', label: '최근 1시간' },
+  '12h': { sec: 43200,    bucket: 3600,  unit: 'hour',   label: '최근 12시간' },
+  '24h': { sec: 86400,    bucket: 3600,  unit: 'hour',   label: '최근 24시간' },
+  '7d':  { sec: 604800,   bucket: 86400, unit: 'day',    label: '최근 7일' },
+  '30d': { sec: 2592000,  bucket: 86400, unit: 'day',    label: '최근 30일' },
+  '90d': { sec: 7776000,  bucket: 86400, unit: 'day',    label: '최근 90일' },
+};
+
 async function stats(url, env, request) {
-  const days = Math.min(parseInt(url.searchParams.get('days') || '30', 10) || 30, 180);
-  const from = kstDay(Math.floor(Date.now() / 1000) - days * 86400);
+  const key = url.searchParams.get('range') || '30d';
+  const R = RANGES[key] || RANGES['30d'];
+  const now = Math.floor(Date.now() / 1000);
+  const fromTs = now - R.sec;
   const site = (url.searchParams.get('site') || 'all').slice(0, 30);
 
   // site=all 이면 전체, 아니면 해당 사이트만
   const cond = site === 'all' ? '' : ' AND site=?';
-  const args = site === 'all' ? [from] : [from, site];
+  const args = site === 'all' ? [fromTs] : [fromTs, site];
   const q = (sql, extra = []) => env.DB.prepare(sql).bind(...args, ...extra).all();
 
-  const [daily, pages, refs, devices, events, hours, totals, bySite, allSites] = await Promise.all([
-    q(`SELECT day, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
-        WHERE event='view' AND day>=?${cond} GROUP BY day ORDER BY day`),
+  // 그래프 가로축 눈금 문구 (한국시간 기준)
+  const fmt = R.unit === 'day' ? '%m-%d' : R.unit === 'hour' ? '%H' : '%H:%M';
+  const bucketExpr = `strftime('${fmt}', datetime((ts/${R.bucket})*${R.bucket},'unixepoch','+9 hours'))`;
+
+  const todayStart = Math.floor(Date.now() / 1000) - (Math.floor(Date.now() / 1000) + 9 * 3600) % 86400;
+
+  const [series, pages, refs, devices, events, hours, totals, todayRow, bySite, allSites] = await Promise.all([
+    q(`SELECT ${bucketExpr} label, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
+        WHERE event='view' AND ts>=?${cond} GROUP BY 1 ORDER BY MIN(ts)`),
     q(`SELECT site, page, COUNT(*) n FROM hits
-        WHERE event='view' AND day>=?${cond} GROUP BY site, page ORDER BY n DESC LIMIT 25`),
+        WHERE event='view' AND ts>=?${cond} GROUP BY site, page ORDER BY n DESC LIMIT 25`),
     q(`SELECT ref, COUNT(DISTINCT visitor) n FROM hits
-        WHERE event='view' AND day>=?${cond} GROUP BY ref ORDER BY n DESC LIMIT 12`),
+        WHERE event='view' AND ts>=?${cond} GROUP BY ref ORDER BY n DESC LIMIT 12`),
     q(`SELECT device, COUNT(DISTINCT visitor) n FROM hits
-        WHERE event='view' AND day>=?${cond} GROUP BY device`),
+        WHERE event='view' AND ts>=?${cond} GROUP BY device`),
     q(`SELECT event, COUNT(*) n FROM hits
-        WHERE event<>'view' AND day>=?${cond} GROUP BY event ORDER BY n DESC LIMIT 20`),
+        WHERE event<>'view' AND ts>=?${cond} GROUP BY event ORDER BY n DESC LIMIT 20`),
     q(`SELECT CAST(strftime('%H', datetime(ts,'unixepoch','+9 hours')) AS INTEGER) h, COUNT(*) n
-        FROM hits WHERE event='view' AND day>=?${cond} GROUP BY h ORDER BY h`),
+        FROM hits WHERE event='view' AND ts>=?${cond} GROUP BY h ORDER BY h`),
     q(`SELECT COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
-        WHERE event='view' AND day>=?${cond}`),
-    // 사이트별 비교는 항상 전체 기준
+        WHERE event='view' AND ts>=?${cond}`),
+    // 오늘 숫자는 기간 선택과 무관하게 항상 '오늘 0시부터'
+    env.DB.prepare(`SELECT COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
+        WHERE event='view' AND ts>=?${cond}`).bind(...(site === 'all' ? [todayStart] : [todayStart, site])).all(),
+    // 사이트별 비교는 선택한 기간 기준, 전체 사이트 대상
     env.DB.prepare(`SELECT site, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
-        WHERE event='view' AND day>=? GROUP BY site ORDER BY uv DESC`).bind(from).all(),
+        WHERE event='view' AND ts>=? GROUP BY site ORDER BY uv DESC`).bind(fromTs).all(),
     env.DB.prepare(`SELECT DISTINCT site FROM hits ORDER BY site`).all(),
   ]);
-
-  const today = kstDay(Math.floor(Date.now() / 1000));
-  const todayRow = (daily.results || []).find(r => r.day === today) || { uv: 0, pv: 0 };
 
   const myIp = request ? (request.headers.get('CF-Connecting-IP') || '') : '';
   const names = siteNames(env);
   // 기록이 있는 사이트 + 설정에 등록해 둔 사이트를 합쳐 목록을 만듭니다.
-  // (아직 방문이 없는 사이트도 선택 메뉴에 보이도록)
   const recorded = (allSites.results || []).map(r => r.site);
   const sites = [...new Set([...recorded, ...Object.keys(names)])].sort();
 
   return json({
-    days, site,
+    range: key,
+    rangeLabel: R.label,
+    unit: R.unit,
+    site,
     myIp,
     excluded: ipExcluded(myIp, env),
     names,
     sites,
-    today: { uv: todayRow.uv, pv: todayRow.pv },
+    today: (todayRow.results || [])[0] || { uv: 0, pv: 0 },
     total: (totals.results || [])[0] || { uv: 0, pv: 0 },
-    daily: daily.results || [],
+    series: series.results || [],
     bySite: bySite.results || [],
     pages: pages.results || [],
     refs: refs.results || [],
@@ -335,13 +356,17 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
 <header>
-  <div><h1>그린홈시스 대시보드</h1><p class="muted" id="range">불러오는 중…</p></div>
+  <div><h1>그린홈시스 대시보드</h1><p class="muted" id="scope">불러오는 중…</p></div>
   <div class="sp">
     <select id="site"><option value="all">전체 사이트</option></select>
-    <select id="days">
-      <option value="7">최근 7일</option>
-      <option value="30" selected>최근 30일</option>
-      <option value="90">최근 90일</option>
+    <select id="range">
+      <option value="5m">실시간 (최근 5분)</option>
+      <option value="1h">최근 1시간</option>
+      <option value="12h">최근 12시간</option>
+      <option value="24h">최근 24시간</option>
+      <option value="7d">최근 7일</option>
+      <option value="30d" selected>최근 30일</option>
+      <option value="90d">최근 90일</option>
     </select>
     <a class="btn" href="/logout">로그아웃</a>
   </div>
@@ -349,11 +374,11 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
 <div class="kpis">
   <div class="kpi"><b id="k1">–</b><span>오늘 방문자</span></div>
   <div class="kpi"><b id="k2">–</b><span>오늘 조회수</span></div>
-  <div class="kpi"><b id="k3">–</b><span>기간 방문자</span></div>
-  <div class="kpi"><b id="k4">–</b><span>기간 조회수</span></div>
+  <div class="kpi"><b id="k3">–</b><span id="k3l">기간 방문자</span></div>
+  <div class="kpi"><b id="k4">–</b><span id="k4l">기간 조회수</span></div>
 </div>
 <div class="grid">
-  <div class="card full"><h2>일별 방문자</h2><div id="chart"></div></div>
+  <div class="card full"><h2 id="chartTitle">방문자 추이</h2><div id="chart"></div></div>
   <div class="card full" id="siteCard"><h2>사이트별 비교</h2><div id="bySite"></div></div>
   <div class="card"><h2>페이지별 조회</h2><div id="pages"></div></div>
   <div class="card"><h2>유입 경로</h2><div id="refs"></div></div>
@@ -377,31 +402,34 @@ function table(el, rows, labelFn, key){
     '<td>' + r[key].toLocaleString() + '</td></tr>').join('') + '</table>'
     : '<p class="empty">아직 기록이 없습니다.</p>';
 }
-function chart(el, daily){
-  if (!daily.length) { el.innerHTML = '<p class="empty">아직 기록이 없습니다.</p>'; return; }
-  const W = 900, H = 220, P = 30, max = Math.max(1, ...daily.map(d => d.uv));
-  const x = i => P + i * (W - P*2) / Math.max(1, daily.length - 1);
+function chart(el, rows, unit){
+  if (!rows.length) { el.innerHTML = '<p class="empty">이 기간에는 기록이 없습니다.</p>'; return; }
+  const suffix = unit === 'hour' ? '시' : '';
+  const W = 900, H = 220, P = 30, max = Math.max(1, ...rows.map(d => d.uv));
+  const x = i => rows.length === 1 ? W/2 : P + i * (W - P*2) / (rows.length - 1);
   const y = v => H - P - v / max * (H - P*2);
-  const pts = daily.map((d,i) => x(i) + ',' + y(d.uv)).join(' ');
-  const area = 'M' + x(0) + ',' + (H-P) + ' L' + pts.split(' ').join(' L') + ' L' + x(daily.length-1) + ',' + (H-P) + ' Z';
-  const ticks = daily.filter((_,i) => i % Math.ceil(daily.length/6) === 0 || i === daily.length-1);
+  const pts = rows.map((d,i) => x(i) + ',' + y(d.uv)).join(' ');
+  const area = 'M' + x(0) + ',' + (H-P) + ' L' + pts.split(' ').join(' L') + ' L' + x(rows.length-1) + ',' + (H-P) + ' Z';
+  const step = Math.ceil(rows.length / 6);
   el.innerHTML =
-    '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="일별 방문자 추이">' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="방문자 추이">' +
     '<path d="' + area + '" fill="#e8f3eb"/>' +
     '<polyline points="' + pts + '" fill="none" stroke="#1b7a44" stroke-width="2.5" stroke-linejoin="round"/>' +
-    daily.map((d,i) => '<circle cx="' + x(i) + '" cy="' + y(d.uv) + '" r="3" fill="#1b7a44"><title>' +
-      d.day + ' · 방문자 ' + d.uv + '명</title></circle>').join('') +
-    ticks.map(d => '<text x="' + x(daily.indexOf(d)) + '" y="' + (H-8) + '" font-size="11" fill="#5e6e62" text-anchor="middle">' +
-      d.day.slice(5) + '</text>').join('') +
+    rows.map((d,i) => '<circle cx="' + x(i) + '" cy="' + y(d.uv) + '" r="3.5" fill="#1b7a44"><title>' +
+      esc(d.label) + suffix + ' · 방문자 ' + d.uv + '명 / 조회 ' + d.pv + '회</title></circle>').join('') +
+    rows.map((d,i) => (i % step === 0 || i === rows.length-1)
+      ? '<text x="' + x(i) + '" y="' + (H-8) + '" font-size="11" fill="#5e6e62" text-anchor="middle">' +
+        esc(d.label) + suffix + '</text>' : '').join('') +
     '<text x="' + P + '" y="18" font-size="11" fill="#5e6e62">최대 ' + max + '명</text></svg>';
 }
 let SITE_NAMES = {};
 function siteLabel(code){ return SITE_NAMES[code] || code; }
 
+let timer = null;
 async function load(){
-  const days = document.getElementById('days').value;
+  const range = document.getElementById('range').value;
   const site = document.getElementById('site').value;
-  const r = await fetch('/api/stats?days=' + days + '&site=' + encodeURIComponent(site));
+  const r = await fetch('/api/stats?range=' + range + '&site=' + encodeURIComponent(site));
   if (!r.ok) { location.reload(); return; }
   const d = await r.json();
   SITE_NAMES = d.names || {};
@@ -417,12 +445,23 @@ async function load(){
     sel.value = d.site;
   }
   const scope = d.site === 'all' ? '전체 사이트' : siteLabel(d.site);
-  document.getElementById('range').textContent = scope + ' · 최근 ' + d.days + '일 · 한국시간';
+  const now = new Date();
+  const hhmm = ('0'+now.getHours()).slice(-2) + ':' + ('0'+now.getMinutes()).slice(-2) + ':' + ('0'+now.getSeconds()).slice(-2);
+  document.getElementById('scope').textContent = scope + ' · ' + d.rangeLabel + ' · 한국시간 · ' + hhmm + ' 기준';
+  document.getElementById('chartTitle').textContent =
+    d.unit === 'day' ? '일별 방문자' : d.unit === 'hour' ? '시간별 방문자' : '분 단위 방문자';
+
+  // 짧은 기간을 보고 있을 때는 자동으로 새로고침합니다.
+  if (timer) clearInterval(timer);
+  var auto = { '5m': 15000, '1h': 30000, '12h': 60000, '24h': 120000 }[d.range];
+  if (auto) timer = setInterval(load, auto);
   document.getElementById('k1').textContent = d.today.uv.toLocaleString();
   document.getElementById('k2').textContent = d.today.pv.toLocaleString();
   document.getElementById('k3').textContent = d.total.uv.toLocaleString();
   document.getElementById('k4').textContent = d.total.pv.toLocaleString();
-  chart(document.getElementById('chart'), d.daily);
+  document.getElementById('k3l').textContent = d.rangeLabel + ' 방문자';
+  document.getElementById('k4l').textContent = d.rangeLabel + ' 조회수';
+  chart(document.getElementById('chart'), d.series, d.unit);
 
   const siteCard = document.getElementById('siteCard');
   if (d.bySite.length > 1) {
@@ -459,7 +498,7 @@ async function load(){
         + 'Cloudflare 설정의 EXCLUDE_IPS 에 넣으면 사무실 방문이 집계에서 빠집니다.';
   }
 }
-document.getElementById('days').addEventListener('change', load);
+document.getElementById('range').addEventListener('change', load);
 document.getElementById('site').addEventListener('change', load);
 load();
 </script></div></body></html>`;
