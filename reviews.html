@@ -635,5 +635,51 @@
   window.addEventListener('scroll', toggleFloatCall, { passive: true });
   toggleFloatCall();
 </script>
+<!-- 방문 집계 (개인정보 수집 없음). ENDPOINT가 비어 있으면 아무 동작도 하지 않습니다. -->
+<script>
+(function () {
+  var ENDPOINT = ''; // 예: https://ghgp-stats.<계정>.workers.dev/collect
+  if (!ENDPOINT) return;
+  try {
+    if (location.search.indexOf('notrack=1') > -1) localStorage.setItem('ghgp_notrack', '1');
+    if (localStorage.getItem('ghgp_notrack') === '1') return;
+  } catch (e) {}
+
+  function send(event) {
+    var data = JSON.stringify({ page: location.pathname, ref: document.referrer, event: event });
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(ENDPOINT, new Blob([data], { type: 'text/plain' }));
+        return;
+      }
+    } catch (e) {}
+    fetch(ENDPOINT, { method: 'POST', body: data, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(function () {});
+  }
+
+  send('view');
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a, button');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    var name = null;
+
+    if (a.classList.contains('doc-open')) name = a.dataset.dir && a.dataset.dir.indexOf('system') > -1 ? 'system' : 'catalog';
+    else if (href.indexOf('tel:') === 0) name = 'call';
+    else if (href.indexOf('gh-point.com') > -1) name = 'point';
+    else if (href.indexOf('soomgo.com') > -1) name = 'soomgo';
+    else if (href.indexOf('blog.naver.com') > -1) name = 'blog';
+    else if (a.hasAttribute('download') || a.closest('.doc-item')) name = 'download';
+    else if (href.indexOf('%ea%b2%ac%ec%a0%81') > -1) name = 'quote';
+    else if (href.indexOf('%ea%b1%b0%eb%9e%98%ec%b2%98') > -1) name = 'partner';
+    else if (href.indexOf('greenhomesys.com') > -1) name = 'homepage';
+
+    if (name) send(name);
+  }, true);
+
+  var v = document.querySelector('.story-video video');
+  if (v) v.addEventListener('play', function once() { send('video'); v.removeEventListener('play', once); });
+})();
+</script>
 </body>
 </html>
