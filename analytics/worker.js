@@ -23,6 +23,10 @@
  *                              예: https://ghgp.replit.app,https://greenhomesys.com
  *  - 변수 SITE_NAMES         : 사이트 코드와 표시 이름, 쉼표로 구분 (선택)
  *                              예: ghgp=영업 페이지,home=그린홈시스,viablanc=비아블랑
+ *  - 변수 EXCLUDE_IPS        : 집계에서 뺄 IP, 쉼표로 구분 (선택)
+ *                              사무실 IP를 넣으면 그 회선의 방문은 기록되지 않습니다.
+ *                              끝을 점으로 끝내면 앞부분만 일치해도 제외: 121.130.5.
+ *                              (이 값도 저장되지 않고 비교에만 쓰입니다)
  */
 
 const SESSION_HOURS = 12;
@@ -40,7 +44,7 @@ export default {
     const ok = await hasSession(request, env);
     if (url.pathname === '/api/stats') {
       if (!ok) return json({ error: 'unauthorized' }, 401);
-      return stats(url, env);
+      return stats(url, env, request);
     }
     if (url.pathname === '/' || url.pathname === '/index.html') {
       return html(ok ? DASHBOARD_HTML : LOGIN_HTML);
@@ -72,6 +76,10 @@ async function collect(request, env) {
   const now = Math.floor(Date.now() / 1000);
   const day = kstDay(now);
   const ip = request.headers.get('CF-Connecting-IP') || '';
+
+  // 사무실 등 내부 회선에서의 접속은 집계하지 않습니다.
+  if (ipExcluded(ip, env)) return corsOk(env, origin);
+
   const visitor = await dailyHash(ip + ua, day, env.SECRET || 'ghgp');
 
   const page = String(body.page || '/').slice(0, 120);
@@ -85,6 +93,13 @@ async function collect(request, env) {
   ).bind(now, day, site, visitor, page, ref, device, event).run();
 
   return corsOk(env, origin);
+}
+
+// EXCLUDE_IPS 에 적힌 주소면 true. '121.130.5.' 처럼 점으로 끝내면 앞부분 일치도 제외됩니다.
+function ipExcluded(ip, env) {
+  if (!ip) return false;
+  return (env.EXCLUDE_IPS || '').split(',').map(s => s.trim()).filter(Boolean)
+    .some(rule => rule.endsWith('.') ? ip.startsWith(rule) : ip === rule);
 }
 
 function allowedOrigins(env) {
@@ -137,7 +152,7 @@ function refLabel(raw, from) {
 
 /* ───────────── 집계 ───────────── */
 
-async function stats(url, env) {
+async function stats(url, env, request) {
   const days = Math.min(parseInt(url.searchParams.get('days') || '30', 10) || 30, 180);
   const from = kstDay(Math.floor(Date.now() / 1000) - days * 86400);
   const site = (url.searchParams.get('site') || 'all').slice(0, 30);
@@ -171,8 +186,11 @@ async function stats(url, env) {
   const today = kstDay(Math.floor(Date.now() / 1000));
   const todayRow = (daily.results || []).find(r => r.day === today) || { uv: 0, pv: 0 };
 
+  const myIp = request ? (request.headers.get('CF-Connecting-IP') || '') : '';
   return json({
     days, site,
+    myIp,
+    excluded: ipExcluded(myIp, env),
     names: siteNames(env),
     sites: (allSites.results || []).map(r => r.site),
     today: { uv: todayRow.uv, pv: todayRow.pv },
@@ -336,6 +354,7 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
   <div class="card"><h2>버튼·자료 클릭</h2><div id="events"></div></div>
   <div class="card"><h2>기기 · 시간대</h2><div id="devices"></div><div id="hours" style="margin-top:14px"></div></div>
 </div>
+<p class="muted" id="ipInfo" style="margin-top:18px;text-align:center"></p>
 <script>
 const PAGE_NAMES = {'/':'메인','/index.html':'메인','/archive.html':'자료실','/reviews.html':'사례&리뷰'};
 const EVENT_NAMES = {
@@ -413,6 +432,14 @@ async function load(){
   table(document.getElementById('events'), d.events, r => EVENT_NAMES[r.event] || r.event, 'n');
   table(document.getElementById('devices'), d.devices, r => r.device === 'mobile' ? '모바일' : 'PC', 'n');
   table(document.getElementById('hours'), d.hours.map(h => ({ label: h.h + '시', n: h.n })), r => r.label, 'n');
+
+  var ipEl = document.getElementById('ipInfo');
+  if (d.myIp) {
+    ipEl.innerHTML = d.excluded
+      ? '지금 접속한 회선(' + esc(d.myIp) + ')은 집계에서 제외되어 있습니다.'
+      : '지금 접속한 회선: <b>' + esc(d.myIp) + '</b> — 사무실에서 보고 계신다면 이 주소를 '
+        + 'Cloudflare 설정의 EXCLUDE_IPS 에 넣으면 사무실 방문이 집계에서 빠집니다.';
+  }
 }
 document.getElementById('days').addEventListener('change', load);
 document.getElementById('site').addEventListener('change', load);

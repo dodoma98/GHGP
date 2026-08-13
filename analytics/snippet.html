@@ -14,9 +14,29 @@
   var SITE = 'home';  // ← 사이트마다 다르게: 그린홈시스 홈페이지 home, 비아블랑 viablanc
   if (!ENDPOINT) return;
   try {
-    if (location.search.indexOf('notrack=1') > -1) localStorage.setItem('ghgp_notrack', '1');
+    if (location.search.indexOf('notrack=1') > -1) {
+      localStorage.setItem('ghgp_notrack', '1');
+      notice('이 기기의 방문은 앞으로 집계되지 않습니다.');
+    }
+    if (location.search.indexOf('notrack=0') > -1) {
+      localStorage.removeItem('ghgp_notrack');
+      notice('이 기기의 방문 집계를 다시 시작합니다.');
+    }
     if (localStorage.getItem('ghgp_notrack') === '1') return;
   } catch (e) {}
+
+  // 제외 설정이 됐는지 눈으로 확인할 수 있게 잠깐 안내를 띄웁니다.
+  function notice(msg) {
+    document.addEventListener('DOMContentLoaded', function () {
+      var el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = 'position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:9999;'
+        + 'background:#14532d;color:#fff;font-size:15px;font-weight:700;padding:13px 20px;'
+        + 'border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90%;text-align:center';
+      document.body.appendChild(el);
+      setTimeout(function () { el.remove(); }, 4000);
+    });
+  }
 
   // 링크에 ?from=blog 같은 표시가 붙어 있으면 유입 경로로 기억해 둡니다.
   var from = '';
