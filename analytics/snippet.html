@@ -10,9 +10,18 @@
 <!-- 방문 집계 (개인정보 수집 없음). ENDPOINT가 비어 있으면 아무 동작도 하지 않습니다. -->
 <script>
 (function () {
-  var ENDPOINT = 'https://dashboard.greenhomesys.com/collect';
+  // 예비 주소가 필요하면 아래 목록에 한 줄 더 추가하세요.
+  // 첫 번째 주소가 어떤 통신망에서 열리지 않으면 다음 주소로 자동 전환합니다.
+  var ENDPOINTS = [
+    'https://dashboard.greenhomesys.com/collect'
+  ];
   var SITE = 'home';  // ← 사이트마다 다르게: 그린홈시스 홈페이지 home, 비아블랑 viablanc
-  if (!ENDPOINT) return;
+  if (!ENDPOINTS.length) return;
+  var ENDPOINT = ENDPOINTS[0];
+  try {
+    var remembered = sessionStorage.getItem('ghgp_ep');
+    if (remembered && ENDPOINTS.indexOf(remembered) > -1) ENDPOINT = remembered;
+  } catch (e) {}
   try {
     if (location.search.indexOf('notrack=1') > -1) {
       localStorage.setItem('ghgp_notrack', '1');
@@ -56,52 +65,70 @@
         + 'box-shadow:0 8px 28px rgba(0,0,0,.35);white-space:pre-wrap;font-family:inherit';
       box.textContent = '집계 자가 진단 중…';
       document.body.appendChild(box);
-      var lines = ['[ 집계 자가 진단 ]', '보내는 주소: ' + (ENDPOINT || '(설정 안 됨)'), '사이트 이름표: ' + SITE];
-      if (!ENDPOINT) {
+      var lines = ['[ 집계 자가 진단 ]', '사이트 이름표: ' + SITE];
+      if (!ENDPOINTS.length) {
         lines.push('', '결과: 실패 — 이 페이지에 집계 서버 주소가 비어 있습니다.');
         lines.push('배포가 최신이 아닐 수 있습니다. git sync 후 다시 배포해 주세요.');
         box.textContent = lines.join('\n');
         return;
       }
-      fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ site: SITE, page: location.pathname, ref: '', from: 'selftest', event: 'view' })
-      }).then(function (r) {
-        return r.text().then(function (t) { return { status: r.status, text: t }; });
-      }).then(function (res) {
-        lines.push('', '서버 응답 코드: ' + res.status);
-        if (res.status === 200 && res.text.indexOf('"saved":true') > -1) {
-          lines.push('결과: 성공 — 기록이 저장되었습니다. 대시보드에서 확인해 보세요.');
-        } else if (res.status === 200) {
-          lines.push('결과: 서버에는 닿았지만 저장되지 않았습니다.');
-          lines.push(res.text);
-        } else if (res.status === 403) {
-          lines.push('결과: 거부됨 — Cloudflare 설정의 ALLOW_ORIGIN 에 이 사이트 주소가 없습니다.');
-          lines.push(res.text);
-        } else {
-          lines.push('결과: 오류', res.text);
+      // 주소를 하나씩 모두 시험해서, 어느 주소가 열리고 어느 주소가 막히는지 보여줍니다.
+      var body = JSON.stringify({ site: SITE, page: location.pathname, ref: '', from: 'selftest', event: 'view' });
+      var ok = false;
+      (function check(n) {
+        if (n >= ENDPOINTS.length) {
+          lines.push('', ok
+            ? '→ 위에서 성공한 주소로 자동 전환되어 앞으로 정상 집계됩니다.'
+            : '→ 모든 주소가 막혀 있습니다. 이 통신망에서 서버에 닿지 못합니다.');
+          box.textContent = lines.join('\n');
+          return;
         }
-        box.textContent = lines.join('\n');
-      }).catch(function (e) {
-        lines.push('', '결과: 서버에 연결하지 못했습니다.');
-        lines.push('주소가 틀렸거나 Worker가 배포되지 않았을 수 있습니다.');
-        lines.push(String(e));
-        box.textContent = lines.join('\n');
-      });
+        var url = ENDPOINTS[n];
+        lines.push('', '[' + (n + 1) + '] ' + url);
+        box.textContent = lines.join('\n') + '\n    확인 중…';
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: body })
+          .then(function (r) { return r.text().then(function (t) { return { status: r.status, text: t }; }); })
+          .then(function (res) {
+            lines.push('    서버 응답 코드: ' + res.status);
+            if (res.status === 200 && res.text.indexOf('"saved":true') > -1) {
+              ok = true;
+              lines.push('    결과: 성공 — 기록이 저장되었습니다.');
+              try { sessionStorage.setItem('ghgp_ep', url); } catch (e) {}
+            } else if (res.status === 200) {
+              lines.push('    결과: 서버에는 닿았지만 저장되지 않았습니다.');
+              lines.push('    ' + res.text);
+            } else if (res.status === 403) {
+              lines.push('    결과: 거부됨 — ALLOW_ORIGIN 에 이 사이트 주소가 없습니다.');
+              lines.push('    ' + res.text);
+            } else {
+              lines.push('    결과: 오류', '    ' + res.text);
+            }
+            check(n + 1);
+          })
+          .catch(function (e) {
+            lines.push('    결과: 이 주소에는 연결하지 못했습니다. (' + String(e) + ')');
+            check(n + 1);
+          });
+      })(0);
     });
     return;
   }
 
   function send(event) {
     var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, from: from, event: event });
-    try {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(ENDPOINT, new Blob([data], { type: 'text/plain' }));
-        return;
-      }
-    } catch (e) {}
-    fetch(ENDPOINT, { method: 'POST', body: data, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(function () {});
+    // 최근에 성공한 주소를 먼저 쓰고, 연결이 안 되면 나머지 주소를 차례로 시도합니다.
+    var list = ENDPOINTS.slice();
+    var i = list.indexOf(ENDPOINT);
+    if (i > 0) { list.splice(i, 1); list.unshift(ENDPOINT); }
+    (function attempt(n) {
+      if (n >= list.length) return;
+      fetch(list[n], { method: 'POST', body: data, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
+        .then(function () {
+          ENDPOINT = list[n];
+          try { sessionStorage.setItem('ghgp_ep', ENDPOINT); } catch (e) {}
+        })
+        .catch(function () { attempt(n + 1); });
+    })(0);
   }
 
   send('view');
