@@ -780,6 +780,78 @@
   window.addEventListener('scroll', toggleFloatCall, { passive: true });
   toggleFloatCall();
 </script>
+<!-- 주소 뒤에 ?videotest=1 을 붙이면 영상 되감기가 왜 안 되는지 화면에 알려줍니다. -->
+<script>
+(function () {
+  if (location.search.indexOf('videotest=1') === -1) return;
+  document.addEventListener('DOMContentLoaded', function () {
+    var v = document.querySelector('.story-video video');
+    var src = v ? (v.querySelector('source') || {}).src || v.currentSrc : '';
+    var box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:12px;right:12px;top:12px;z-index:99999;background:#0d1a12;'
+      + 'color:#fff;font-size:14px;line-height:1.7;padding:16px 18px;border-radius:12px;'
+      + 'box-shadow:0 8px 28px rgba(0,0,0,.35);white-space:pre-wrap;font-family:inherit';
+    box.textContent = '영상 진단 중…';
+    document.body.appendChild(box);
+    var lines = ['[ 영상 되감기 진단 ]'];
+    var show = function () { box.textContent = lines.join('\n'); };
+
+    if (!v) { lines.push('', '영상을 찾지 못했습니다.'); return show(); }
+
+    // 1) 서버가 "파일 일부만 주세요" 요청을 받아주는지 확인합니다. 이게 되감기의 조건입니다.
+    fetch(src, { headers: { Range: 'bytes=0-99' } }).then(function (r) {
+      var ranged = r.status === 206;
+      lines.push('', '[1] 서버가 구간 요청을 받아주는가');
+      lines.push('    응답 코드: ' + r.status + (ranged ? ' (206 = 받아줌)' : ' (206이 아님)'));
+      lines.push('    Accept-Ranges: ' + (r.headers.get('accept-ranges') || '(없음)'));
+      lines.push('    Content-Range: ' + (r.headers.get('content-range') || '(없음)'));
+      show();
+      return ranged;
+    }).catch(function (e) {
+      lines.push('', '[1] 구간 요청 확인 실패: ' + e);
+      show();
+      return false;
+    }).then(function (ranged) {
+      // 2) 브라우저가 실제로 이동할 수 있는 상태인지 확인합니다.
+      lines.push('', '[2] 브라우저 상태');
+      var done = function () {
+        // 영상 정보를 못 읽은 상태에서는 이동 결과가 거짓으로 나오므로 판정에서 제외합니다.
+        var loaded = v.readyState >= 1 && isFinite(v.duration);
+        lines.push('    영상 길이: ' + (loaded ? v.duration.toFixed(1) + '초' : '알 수 없음'));
+        lines.push('    이동 가능 구간: ' + (v.seekable.length
+          ? '0 ~ ' + v.seekable.end(v.seekable.length - 1).toFixed(1) + '초' : '없음'));
+        var before = v.currentTime;
+        v.currentTime = Math.min(5, (loaded ? v.duration : 10) / 2);
+        setTimeout(function () {
+          var moved = loaded && Math.abs(v.currentTime - before) > 0.5;
+          lines.push('    이동 시도: ' + (loaded
+            ? before.toFixed(1) + '초 → ' + v.currentTime.toFixed(1) + '초' + (moved ? ' (성공)' : ' (제자리)')
+            : '영상 정보를 못 읽어 판단 불가'));
+          lines.push('', '결론: ' + (!ranged
+            ? '서버가 구간 요청(206)을 지원하지 않습니다.\n      이 경우 되감기가 원래 불가능합니다. → 영상을 다른 곳에 올려야 합니다.'
+            : moved
+              ? '되감기가 정상 동작합니다.'
+              : loaded
+                ? '서버는 정상인데 브라우저가 이동하지 못했습니다. 영상 파일 문제일 수 있습니다.'
+                : '서버는 구간 요청을 정상 지원합니다.\n      되감기가 안 된다면 영상 파일이나 브라우저 쪽 문제입니다.'));
+          show();
+        }, 2500);
+        show();
+      };
+      if (v.readyState >= 1) return done();
+      v.preload = 'metadata';
+      v.load();
+      var t = setTimeout(function () { lines.push('    (정보를 읽지 못했습니다)'); done(); }, 8000);
+      v.addEventListener('loadedmetadata', function () { clearTimeout(t); done(); }, { once: true });
+      v.addEventListener('error', function () {
+        clearTimeout(t);
+        lines.push('    재생 오류: ' + (v.error ? v.error.code : '알 수 없음'));
+        done();
+      }, { once: true });
+    });
+  });
+})();
+</script>
 <!-- 방문 집계 (개인정보 수집 없음). ENDPOINT가 비어 있으면 아무 동작도 하지 않습니다. -->
 <script>
 (function () {
