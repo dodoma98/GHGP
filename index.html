@@ -542,8 +542,11 @@
     <div class="story-video">
       <video controls playsinline preload="metadata" width="720" height="1280"
              poster="assets/story-poster.webp" aria-label="그린홈시스 소개 영상 — 그리니 탐정">
+        <!-- 되감기가 되려면 서버가 구간 요청(206)을 지원해야 합니다.
+             Replit 정적 호스팅은 지원하지 않아 R2로 옮겼고, 아래 사본은 R2 장애 시 대비용입니다. -->
+        <source src="https://video.greenhomesys.com/story.mp4" type="video/mp4">
         <source src="assets/story.mp4" type="video/mp4">
-        이 브라우저에서는 영상을 재생할 수 없습니다. <a href="assets/story.mp4">영상 내려받기</a>
+        이 브라우저에서는 영상을 재생할 수 없습니다. <a href="https://video.greenhomesys.com/story.mp4">영상 내려받기</a>
       </video>
     </div>
     <p class="toon-hint">재생 버튼을 누르면 영상이 시작됩니다</p>
@@ -798,7 +801,10 @@
 
     if (!v) { lines.push('', '영상을 찾지 못했습니다.'); return show(); }
 
+    lines.push('', '영상 주소: ' + src);
     // 1) 서버가 "파일 일부만 주세요" 요청을 받아주는지 확인합니다. 이게 되감기의 조건입니다.
+    //    영상을 다른 도메인에 두면 이 확인만 브라우저에 막힐 수 있는데(재생에는 지장 없음),
+    //    그때는 서버 탓으로 단정하지 않고 아래 [2] 실제 이동 결과로 판단합니다.
     fetch(src, { headers: { Range: 'bytes=0-99' } }).then(function (r) {
       var ranged = r.status === 206;
       lines.push('', '[1] 서버가 구간 요청을 받아주는가');
@@ -806,11 +812,13 @@
       lines.push('    Accept-Ranges: ' + (r.headers.get('accept-ranges') || '(없음)'));
       lines.push('    Content-Range: ' + (r.headers.get('content-range') || '(없음)'));
       show();
-      return ranged;
-    }).catch(function (e) {
-      lines.push('', '[1] 구간 요청 확인 실패: ' + e);
+      return ranged ? 'yes' : 'no';
+    }).catch(function () {
+      lines.push('', '[1] 서버가 구간 요청을 받아주는가');
+      lines.push('    확인 불가 — 다른 도메인이라 브라우저가 이 검사만 막았습니다.');
+      lines.push('    (재생에는 영향이 없습니다. 아래 [2] 결과로 판단합니다.)');
       show();
-      return false;
+      return 'unknown';
     }).then(function (ranged) {
       // 2) 브라우저가 실제로 이동할 수 있는 상태인지 확인합니다.
       lines.push('', '[2] 브라우저 상태');
@@ -827,13 +835,14 @@
           lines.push('    이동 시도: ' + (loaded
             ? before.toFixed(1) + '초 → ' + v.currentTime.toFixed(1) + '초' + (moved ? ' (성공)' : ' (제자리)')
             : '영상 정보를 못 읽어 판단 불가'));
-          lines.push('', '결론: ' + (!ranged
-            ? '서버가 구간 요청(206)을 지원하지 않습니다.\n      이 경우 되감기가 원래 불가능합니다. → 영상을 다른 곳에 올려야 합니다.'
-            : moved
-              ? '되감기가 정상 동작합니다.'
+          // 실제로 이동에 성공했으면 그것이 가장 확실한 근거이므로 무엇보다 우선합니다.
+          lines.push('', '결론: ' + (moved
+            ? '되감기가 정상 동작합니다.'
+            : ranged === 'no'
+              ? '서버가 구간 요청(206)을 지원하지 않습니다.\n      이 경우 되감기가 원래 불가능합니다. → 영상을 다른 곳에 올려야 합니다.'
               : loaded
-                ? '서버는 정상인데 브라우저가 이동하지 못했습니다. 영상 파일 문제일 수 있습니다.'
-                : '서버는 구간 요청을 정상 지원합니다.\n      되감기가 안 된다면 영상 파일이나 브라우저 쪽 문제입니다.'));
+                ? '영상은 읽혔는데 이동하지 못했습니다. 영상 파일 문제일 수 있습니다.'
+                : '영상 정보를 읽지 못해 판단하지 못했습니다.\n      재생 버튼을 눌러 본 뒤 다시 시도해 보세요.'));
           show();
         }, 2500);
         show();
