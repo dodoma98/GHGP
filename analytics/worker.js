@@ -62,7 +62,12 @@ export default {
 async function collect(request, env) {
   const origin = request.headers.get('Origin') || '';
   if (!originAllowed(origin, env)) {
-    return new Response('forbidden', { status: 403 });
+    return new Response(JSON.stringify({
+      ok: false,
+      reason: '이 사이트 주소가 허용 목록에 없습니다',
+      보낸주소: origin,
+      허용된주소: allowedOrigins(env),
+    }), { status: 403, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' } });
   }
 
   const ua = request.headers.get('User-Agent') || '';
@@ -82,7 +87,10 @@ async function collect(request, env) {
   const ip = request.headers.get('CF-Connecting-IP') || '';
 
   // 사무실 등 내부 회선에서의 접속은 집계하지 않습니다.
-  if (ipExcluded(ip, env)) return corsOk(env, origin);
+  if (ipExcluded(ip, env)) {
+    return new Response(JSON.stringify({ ok: true, saved: false, reason: '이 회선은 집계 제외로 설정되어 있습니다' }),
+      { headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders(env, origin) } });
+  }
 
   const visitor = await dailyHash(ip + ua, day, env.SECRET || 'ghgp');
 
@@ -96,7 +104,8 @@ async function collect(request, env) {
     'INSERT INTO hits (ts, day, site, visitor, page, ref, device, event) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).bind(now, day, site, visitor, page, ref, device, event).run();
 
-  return corsOk(env, origin);
+  return new Response(JSON.stringify({ ok: true, saved: true }),
+    { headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders(env, origin) } });
 }
 
 // EXCLUDE_IPS 에 적힌 주소면 true. '121.130.5.' 처럼 점으로 끝내면 앞부분 일치도 제외됩니다.
@@ -106,13 +115,19 @@ function ipExcluded(ip, env) {
     .some(rule => rule.endsWith('.') ? ip.startsWith(rule) : ip === rule);
 }
 
+// 주소 끝의 '/' 나 대소문자 차이로 거부되지 않도록 다듬습니다.
+// (설정에 https://ghgp.replit.app/ 처럼 슬래시를 붙여 넣는 실수가 잦습니다)
+function normOrigin(s) {
+  return String(s || '').trim().replace(/\/+$/, '').toLowerCase();
+}
+
 function allowedOrigins(env) {
-  return (env.ALLOW_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+  return (env.ALLOW_ORIGIN || '').split(',').map(normOrigin).filter(Boolean);
 }
 
 function originAllowed(origin, env) {
   const list = allowedOrigins(env);
-  return list.length === 0 || list.includes(origin);
+  return list.length === 0 || list.includes(normOrigin(origin));
 }
 
 function siteNames(env) {
@@ -317,7 +332,7 @@ async function dailyHash(raw, day, secret) {
 
 function corsHeaders(env, origin) {
   const list = allowedOrigins(env);
-  const allow = list.length === 0 ? '*' : (list.includes(origin) ? origin : list[0]);
+  const allow = list.length === 0 ? '*' : (list.includes(normOrigin(origin)) ? origin : list[0]);
   return {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
