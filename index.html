@@ -811,6 +811,52 @@
     else from = sessionStorage.getItem('ghgp_from') || '';
   } catch (e) {}
 
+  // 주소 뒤에 ?selftest=1 을 붙이면 집계가 되는지 화면에 결과를 보여줍니다.
+  if (location.search.indexOf('selftest=1') > -1) {
+    document.addEventListener('DOMContentLoaded', function () {
+      var box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:12px;right:12px;top:12px;z-index:99999;background:#0d1a12;'
+        + 'color:#fff;font-size:14px;line-height:1.7;padding:16px 18px;border-radius:12px;'
+        + 'box-shadow:0 8px 28px rgba(0,0,0,.35);white-space:pre-wrap;font-family:inherit';
+      box.textContent = '집계 자가 진단 중…';
+      document.body.appendChild(box);
+      var lines = ['[ 집계 자가 진단 ]', '보내는 주소: ' + (ENDPOINT || '(설정 안 됨)'), '사이트 이름표: ' + SITE];
+      if (!ENDPOINT) {
+        lines.push('', '결과: 실패 — 이 페이지에 집계 서버 주소가 비어 있습니다.');
+        lines.push('배포가 최신이 아닐 수 있습니다. git sync 후 다시 배포해 주세요.');
+        box.textContent = lines.join('\n');
+        return;
+      }
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ site: SITE, page: location.pathname, ref: '', from: 'selftest', event: 'view' })
+      }).then(function (r) {
+        return r.text().then(function (t) { return { status: r.status, text: t }; });
+      }).then(function (res) {
+        lines.push('', '서버 응답 코드: ' + res.status);
+        if (res.status === 200 && res.text.indexOf('"saved":true') > -1) {
+          lines.push('결과: 성공 — 기록이 저장되었습니다. 대시보드에서 확인해 보세요.');
+        } else if (res.status === 200) {
+          lines.push('결과: 서버에는 닿았지만 저장되지 않았습니다.');
+          lines.push(res.text);
+        } else if (res.status === 403) {
+          lines.push('결과: 거부됨 — Cloudflare 설정의 ALLOW_ORIGIN 에 이 사이트 주소가 없습니다.');
+          lines.push(res.text);
+        } else {
+          lines.push('결과: 오류', res.text);
+        }
+        box.textContent = lines.join('\n');
+      }).catch(function (e) {
+        lines.push('', '결과: 서버에 연결하지 못했습니다.');
+        lines.push('주소가 틀렸거나 Worker가 배포되지 않았을 수 있습니다.');
+        lines.push(String(e));
+        box.textContent = lines.join('\n');
+      });
+    });
+    return;
+  }
+
   function send(event) {
     var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, from: from, event: event });
     try {
