@@ -1,0 +1,144 @@
+<script>
+(function () {
+  // 예비 주소가 필요하면 아래 목록에 한 줄 더 추가하세요.
+  // 첫 번째 주소가 어떤 통신망에서 열리지 않으면 다음 주소로 자동 전환합니다.
+  var ENDPOINTS = [
+    'https://dashboard.greenhomesys.com/collect'
+  ];
+  var SITE = 'home';  // 그린홈시스 홈페이지
+  if (!ENDPOINTS.length) return;
+  var ENDPOINT = ENDPOINTS[0];
+  try {
+    var remembered = sessionStorage.getItem('ghgp_ep');
+    if (remembered && ENDPOINTS.indexOf(remembered) > -1) ENDPOINT = remembered;
+  } catch (e) {}
+  try {
+    if (location.search.indexOf('notrack=1') > -1) {
+      localStorage.setItem('ghgp_notrack', '1');
+      notice('이 기기의 방문은 앞으로 집계되지 않습니다.');
+    }
+    if (location.search.indexOf('notrack=0') > -1) {
+      localStorage.removeItem('ghgp_notrack');
+      notice('이 기기의 방문 집계를 다시 시작합니다.');
+    }
+    if (localStorage.getItem('ghgp_notrack') === '1') return;
+  } catch (e) {}
+
+  // 제외 설정이 됐는지 눈으로 확인할 수 있게 잠깐 안내를 띄웁니다.
+  function notice(msg) {
+    document.addEventListener('DOMContentLoaded', function () {
+      var el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = 'position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:9999;'
+        + 'background:#14532d;color:#fff;font-size:15px;font-weight:700;padding:13px 20px;'
+        + 'border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90%;text-align:center';
+      document.body.appendChild(el);
+      setTimeout(function () { el.remove(); }, 4000);
+    });
+  }
+
+  // 링크에 ?from=blog 같은 표시가 붙어 있으면 유입 경로로 기억해 둡니다.
+  var from = '';
+  try {
+    var qs = new URLSearchParams(location.search);
+    from = qs.get('from') || qs.get('utm_source') || '';
+    if (from) sessionStorage.setItem('ghgp_from', from);
+    else from = sessionStorage.getItem('ghgp_from') || '';
+  } catch (e) {}
+
+  // 주소 뒤에 ?selftest=1 을 붙이면 집계가 되는지 화면에 결과를 보여줍니다.
+  if (location.search.indexOf('selftest=1') > -1) {
+    document.addEventListener('DOMContentLoaded', function () {
+      var box = document.createElement('div');
+      box.style.cssText = 'position:fixed;left:12px;right:12px;top:12px;z-index:99999;background:#0d1a12;'
+        + 'color:#fff;font-size:14px;line-height:1.7;padding:16px 18px;border-radius:12px;'
+        + 'box-shadow:0 8px 28px rgba(0,0,0,.35);white-space:pre-wrap;font-family:inherit';
+      box.textContent = '집계 자가 진단 중…';
+      document.body.appendChild(box);
+      var lines = ['[ 집계 자가 진단 ]', '사이트 이름표: ' + SITE];
+      if (!ENDPOINTS.length) {
+        lines.push('', '결과: 실패 — 이 페이지에 집계 서버 주소가 비어 있습니다.');
+        lines.push('배포가 최신이 아닐 수 있습니다. git sync 후 다시 배포해 주세요.');
+        box.textContent = lines.join('\n');
+        return;
+      }
+      // 주소를 하나씩 모두 시험해서, 어느 주소가 열리고 어느 주소가 막히는지 보여줍니다.
+      var body = JSON.stringify({ site: SITE, page: location.pathname, ref: '', from: 'selftest', event: 'view' });
+      var ok = false;
+      (function check(n) {
+        if (n >= ENDPOINTS.length) {
+          lines.push('', ok
+            ? '→ 위에서 성공한 주소로 자동 전환되어 앞으로 정상 집계됩니다.'
+            : '→ 모든 주소가 막혀 있습니다. 이 통신망에서 서버에 닿지 못합니다.');
+          box.textContent = lines.join('\n');
+          return;
+        }
+        var url = ENDPOINTS[n];
+        lines.push('', '[' + (n + 1) + '] ' + url);
+        box.textContent = lines.join('\n') + '\n    확인 중…';
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: body })
+          .then(function (r) { return r.text().then(function (t) { return { status: r.status, text: t }; }); })
+          .then(function (res) {
+            lines.push('    서버 응답 코드: ' + res.status);
+            if (res.status === 200 && res.text.indexOf('"saved":true') > -1) {
+              ok = true;
+              lines.push('    결과: 성공 — 기록이 저장되었습니다.');
+              try { sessionStorage.setItem('ghgp_ep', url); } catch (e) {}
+            } else if (res.status === 200) {
+              lines.push('    결과: 서버에는 닿았지만 저장되지 않았습니다.');
+              lines.push('    ' + res.text);
+            } else if (res.status === 403) {
+              lines.push('    결과: 거부됨 — ALLOW_ORIGIN 에 이 사이트 주소가 없습니다.');
+              lines.push('    ' + res.text);
+            } else {
+              lines.push('    결과: 오류', '    ' + res.text);
+            }
+            check(n + 1);
+          })
+          .catch(function (e) {
+            lines.push('    결과: 이 주소에는 연결하지 못했습니다. (' + String(e) + ')');
+            check(n + 1);
+          });
+      })(0);
+    });
+    return;
+  }
+
+  function send(event) {
+    var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, from: from, event: event });
+    // 최근에 성공한 주소를 먼저 쓰고, 연결이 안 되면 나머지 주소를 차례로 시도합니다.
+    var list = ENDPOINTS.slice();
+    var i = list.indexOf(ENDPOINT);
+    if (i > 0) { list.splice(i, 1); list.unshift(ENDPOINT); }
+    (function attempt(n) {
+      if (n >= list.length) return;
+      fetch(list[n], { method: 'POST', body: data, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
+        .then(function () {
+          ENDPOINT = list[n];
+          try { sessionStorage.setItem('ghgp_ep', ENDPOINT); } catch (e) {}
+        })
+        .catch(function () { attempt(n + 1); });
+    })(0);
+  }
+
+  send('view');
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a, button');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    var name = null;
+
+    if (href.indexOf('tel:') === 0) name = 'call';
+    else if (href.indexOf('gh-point.com') > -1) name = 'point';
+    else if (href.indexOf('soomgo.com') > -1) name = 'soomgo';
+    else if (href.indexOf('blog.naver.com') > -1) name = 'blog';
+    else if (a.hasAttribute('download') || a.closest('.doc-item')) name = 'download';
+    else if (href.indexOf('%ea%b2%ac%ec%a0%81') > -1) name = 'quote';
+    else if (href.indexOf('%ea%b1%b0%eb%9e%98%ec%b2%98') > -1) name = 'partner';
+    else if (href.indexOf('greenhomesys.com') > -1) name = 'homepage';
+
+    if (name) send(name);
+  }, true);
+})();
+</script>
