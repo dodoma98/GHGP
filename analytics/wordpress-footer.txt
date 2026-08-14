@@ -1,13 +1,3 @@
-<!--
-  그린홈시스 방문 집계 코드 (영업 페이지 외 사이트용)
-
-  넣는 위치: 각 페이지의 </body> 바로 앞. 워드프레스라면 "푸터 코드" 칸.
-  사이트마다 SITE 값만 바꾸세요.  home = 그린홈시스 홈페이지 / viablanc = 비아블랑 홈페이지
-
-  주의: Cloudflare Worker 설정의 ALLOW_ORIGIN 에 그 사이트 주소를 쉼표로 추가해야
-        기록이 저장됩니다. www 주소로도 접속된다면 www 주소까지 함께 넣어주세요.
--->
-<!-- 방문 집계 (개인정보 수집 없음). ENDPOINT가 비어 있으면 아무 동작도 하지 않습니다. -->
 <script>
 (function () {
   // 예비 주소가 필요하면 아래 목록에 한 줄 더 추가하세요.
@@ -15,7 +5,7 @@
   var ENDPOINTS = [
     'https://dashboard.greenhomesys.com/collect'
   ];
-  var SITE = 'home';  // ← 사이트마다 다르게: 그린홈시스 홈페이지 home, 비아블랑 viablanc
+  var SITE = 'home';  // 그린홈시스 홈페이지
   if (!ENDPOINTS.length) return;
   var ENDPOINT = ENDPOINTS[0];
   try {
