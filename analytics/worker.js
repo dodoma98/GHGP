@@ -46,6 +46,10 @@ export default {
       if (!ok) return json({ error: 'unauthorized' }, 401);
       return stats(url, env, request);
     }
+    if (url.pathname === '/api/diag') {
+      if (!ok) return json({ error: 'unauthorized' }, 401);
+      return diag(env, request);
+    }
     if (url.pathname === '/' || url.pathname === '/index.html') {
       return html(ok ? DASHBOARD_HTML : LOGIN_HTML);
     }
@@ -232,6 +236,31 @@ async function stats(url, env, request) {
   });
 }
 
+/* ───────────── 설정 점검 ───────────── */
+
+// "왜 기록이 0건인지" 확인할 수 있도록 현재 상태를 그대로 보여줍니다.
+async function diag(env, request) {
+  const now = Math.floor(Date.now() / 1000);
+  const [all, day, recent] = await Promise.all([
+    env.DB.prepare('SELECT COUNT(*) n FROM hits').all(),
+    env.DB.prepare('SELECT COUNT(*) n FROM hits WHERE ts>=?').bind(now - 86400).all(),
+    env.DB.prepare(`SELECT datetime(ts,'unixepoch','+9 hours') t, site, page, ref, device, event
+                    FROM hits ORDER BY id DESC LIMIT 8`).all(),
+  ]);
+  const myIp = request.headers.get('CF-Connecting-IP') || '';
+  return json({
+    총기록: (all.results || [])[0]?.n ?? 0,
+    최근24시간: (day.results || [])[0]?.n ?? 0,
+    최근기록: recent.results || [],
+    허용된주소: allowedOrigins(env),
+    제외규칙: (env.EXCLUDE_IPS || '').split(',').map(s => s.trim()).filter(Boolean),
+    사이트이름: siteNames(env),
+    내IP: myIp,
+    내회선_제외됨: ipExcluded(myIp, env),
+    데이터베이스_연결됨: true,
+  });
+}
+
 /* ───────────── 로그인 ───────────── */
 
 async function login(request, env) {
@@ -386,6 +415,10 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
   <div class="card"><h2>기기 · 시간대</h2><div id="devices"></div><div id="hours" style="margin-top:14px"></div></div>
 </div>
 <p class="card" id="emptyHint" style="margin-top:18px;display:none;line-height:1.7;font-size:14.5px"></p>
+<div class="card" style="margin-top:18px">
+  <h2>설정 점검 <button class="btn-diag" type="button" id="diagBtn">확인하기</button></h2>
+  <div id="diag" class="empty">버튼을 누르면 지금 설정 상태와 최근 기록을 그대로 보여줍니다.</div>
+</div>
 <p class="muted" id="ipInfo" style="margin-top:18px;text-align:center"></p>
 <script>
 const PAGE_NAMES = {'/':'메인','/index.html':'메인','/archive.html':'자료실','/reviews.html':'사례&리뷰'};
@@ -498,6 +531,37 @@ async function load(){
         + 'Cloudflare 설정의 EXCLUDE_IPS 에 넣으면 사무실 방문이 집계에서 빠집니다.';
   }
 }
+document.getElementById('diagBtn').addEventListener('click', async function () {
+  var el = document.getElementById('diag');
+  el.textContent = '확인 중…';
+  var r = await fetch('/api/diag');
+  if (!r.ok) { el.textContent = '확인에 실패했습니다. 다시 로그인해 주세요.'; return; }
+  var d = await r.json();
+  var row = function (k, v, cls) {
+    return '<div class="diag-row"><b>' + k + '</b><span' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</span></div>';
+  };
+  var html = '';
+  html += row('저장된 기록', d['총기록'].toLocaleString() + '건 (최근 24시간 ' + d['최근24시간'].toLocaleString() + '건)',
+              d['총기록'] > 0 ? 'diag-ok' : 'diag-bad');
+  html += row('허용된 사이트 주소', d['허용된주소'].length ? d['허용된주소'].map(esc).join('<br>') : '(설정 안 됨 — 모든 주소 허용)',
+              d['허용된주소'].length ? '' : 'diag-bad');
+  html += row('집계 제외 회선', d['제외규칙'].length ? d['제외규칙'].map(esc).join(', ') : '(없음)');
+  html += row('지금 내 회선', esc(d['내IP']) + (d['내회선_제외됨'] ? ' → 집계에서 제외됨' : ' → 집계 대상'),
+              d['내회선_제외됨'] ? 'diag-bad' : 'diag-ok');
+  html += row('사이트 이름 설정', Object.keys(d['사이트이름']).length
+              ? Object.keys(d['사이트이름']).map(function (k) { return esc(k + ' = ' + d['사이트이름'][k]); }).join('<br>')
+              : '(설정 안 됨)');
+  if (d['최근기록'].length) {
+    html += '<div class="diag-row"><b>최근 기록</b><span>' + d['최근기록'].map(function (h) {
+      return esc(h.t + '  ' + h.site + '  ' + h.page + '  (' + h.event + ')');
+    }).join('<br>') + '</span></div>';
+  } else {
+    html += row('최근 기록', '없음 — 아래 원인 중 하나입니다: ①사이트 재배포 안 됨 ②허용 주소 누락 ③지금 회선이 제외됨', 'diag-bad');
+  }
+  el.className = '';
+  el.innerHTML = html;
+});
+
 document.getElementById('range').addEventListener('change', load);
 document.getElementById('site').addEventListener('change', load);
 load();
