@@ -712,7 +712,7 @@
 <!-- 라이트박스 -->
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="이미지 크게 보기">
   <button class="close" aria-label="닫기">×</button>
-  <img src="" alt="확대 이미지">
+  <img alt="확대 이미지">
 </div>
 
 <script>
@@ -727,7 +727,7 @@
   });
   function closeLb() {
     lb.classList.remove('open');
-    lbImg.src = '';
+    lbImg.removeAttribute('src');
     document.body.style.overflow = '';
   }
   lb.addEventListener('click', closeLb);

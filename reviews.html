@@ -536,10 +536,10 @@
         <span class="ch-tag">📷 네이버 블로그 · 최신 글</span>
         <h3>최신 시공사례</h3>
         <div class="thumb-grid">
-          <a href="https://blog.naver.com/green_homesys/224363554131" target="_blank" rel="noopener"><img src="assets/blog/case-2.webp" srcset="assets/blog/case-2-sm.webp 260w, assets/blog/case-2.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="대치동 창문교체 — 강남구 대치동빌라 창호 시공" width="420" height="420" loading="lazy" decoding="async"></a>
-          <a href="https://blog.naver.com/green_homesys/224356288970" target="_blank" rel="noopener"><img src="assets/blog/case-3.webp" srcset="assets/blog/case-3-sm.webp 260w, assets/blog/case-3.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="대구창호 — 대구 월성푸르지오 창호 시공" width="420" height="420" loading="lazy" decoding="async"></a>
-          <a href="https://blog.naver.com/green_homesys/224351730411" target="_blank" rel="noopener"><img src="assets/blog/case-4.webp" srcset="assets/blog/case-4-sm.webp 260w, assets/blog/case-4.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="LX하이샤시 — 남해 주택 창호 시공" width="420" height="420" loading="lazy" decoding="async"></a>
-          <a href="https://blog.naver.com/green_homesys/224187342099" target="_blank" rel="noopener"><img src="assets/blog/case-5.webp" srcset="assets/blog/case-5-sm.webp 260w, assets/blog/case-5.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="여수샷시 — 전남 여수시 죽림리 주택창호" width="420" height="420" loading="lazy" decoding="async"></a>
+          <a href="https://blog.naver.com/green_homesys/224363554131" target="_blank" rel="noopener"><img src="assets/blog/case-2.webp" srcset="assets/blog/case-2-sm.webp 260w, assets/blog/case-2.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="대치동 창문교체 — 강남구 대치동빌라 창호 시공" width="420" height="420" fetchpriority="high" decoding="async"></a>
+          <a href="https://blog.naver.com/green_homesys/224356288970" target="_blank" rel="noopener"><img src="assets/blog/case-3.webp" srcset="assets/blog/case-3-sm.webp 260w, assets/blog/case-3.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="대구창호 — 대구 월성푸르지오 창호 시공" width="420" height="420" fetchpriority="high" decoding="async"></a>
+          <a href="https://blog.naver.com/green_homesys/224351730411" target="_blank" rel="noopener"><img src="assets/blog/case-4.webp" srcset="assets/blog/case-4-sm.webp 260w, assets/blog/case-4.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="LX하이샤시 — 남해 주택 창호 시공" width="420" height="420" fetchpriority="high" decoding="async"></a>
+          <a href="https://blog.naver.com/green_homesys/224187342099" target="_blank" rel="noopener"><img src="assets/blog/case-5.webp" srcset="assets/blog/case-5-sm.webp 260w, assets/blog/case-5.webp 420w" sizes="(max-width: 760px) 46vw, 250px" alt="여수샷시 — 전남 여수시 죽림리 주택창호" width="420" height="420" fetchpriority="high" decoding="async"></a>
         </div>
         <p class="ch-hint">사진을 누르면 해당 시공사례 글이 새 탭으로 열려요</p>
       </div>
@@ -560,7 +560,7 @@
         <div class="sg-panel">
           <div class="sg-main">
             <div class="sg-head">
-              <span class="sg-avatar"><img src="assets/logo-mark.webp" alt="그린홈시스 로고" width="128" height="128"></span>
+              <span class="sg-avatar"><img src="assets/logo-mark.webp" alt="그린홈시스 로고" width="128" height="128" loading="lazy" decoding="async"></span>
               <span class="sg-name"><b>주식회사 그린홈시스</b><small>창호/샷시 전국 시공 가능 회사 · 샷시 설치 및 수리</small></span>
             </div>
             <div class="sg-stats">
@@ -608,7 +608,7 @@
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="이미지 크게 보기">
   <button class="close" aria-label="닫기">×</button>
-  <img src="" alt="확대 이미지">
+  <img alt="확대 이미지">
 </div>
 
 <script>
@@ -623,7 +623,7 @@
   });
   function closeLb() {
     lb.classList.remove('open');
-    lbImg.src = '';
+    lbImg.removeAttribute('src');
     document.body.style.overflow = '';
   }
   lb.addEventListener('click', closeLb);
