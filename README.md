@@ -10,7 +10,7 @@
 
 ## 배포
 
-- **Replit Static 배포**: https://ghgp.replit.app (GitHub 저장소 Import 방식)
+- **Replit Static 배포**: https://gh-gp.replit.app (GitHub 저장소 Import 방식)
 - main 브랜치 변경 후 Replit 워크스페이스에서 Git pull → Republish 하면 반영됩니다.
 
 ## 운영 방법
