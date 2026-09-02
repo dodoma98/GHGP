@@ -20,7 +20,7 @@
  *  - 비밀 변수 DASH_PASSWORD : 대시보드 로그인 비밀번호
  *  - 비밀 변수 SECRET        : 쿠키 서명·해시에 쓰는 아무 긴 문자열
  *  - 변수 ALLOW_ORIGIN       : 집계를 허용할 사이트 주소들, 쉼표로 구분
- *                              예: https://ghgp.replit.app,https://greenhomesys.com
+ *                              예: https://gh-gp.replit.app,https://greenhomesys.com
  *  - 변수 SITE_NAMES         : 사이트 코드와 표시 이름, 쉼표로 구분 (선택)
  *                              예: ghgp=영업 페이지,home=그린홈시스,viablanc=비아블랑
  *  - 변수 EXCLUDE_IPS        : 집계에서 뺄 IP, 쉼표로 구분 (선택)
@@ -116,7 +116,7 @@ function ipExcluded(ip, env) {
 }
 
 // 주소 끝의 '/' 나 대소문자 차이로 거부되지 않도록 다듬습니다.
-// (설정에 https://ghgp.replit.app/ 처럼 슬래시를 붙여 넣는 실수가 잦습니다)
+// (설정에 https://gh-gp.replit.app/ 처럼 슬래시를 붙여 넣는 실수가 잦습니다)
 function normOrigin(s) {
   return String(s || '').trim().replace(/\/+$/, '').toLowerCase();
 }

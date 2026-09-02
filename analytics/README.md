@@ -17,7 +17,7 @@
 
 | 사이트 | SITE 값 |
 |---|---|
-| 영업 페이지 (ghgp.replit.app) | `ghgp` |
+| 영업 페이지 (gh-gp.replit.app) | `ghgp` |
 | 그린홈시스 홈페이지 | `home` |
 | 비아블랑 홈페이지 | `viablanc` |
 
@@ -62,7 +62,7 @@ Worker 화면 → **Settings**
 |---|---|---|---|
 | `DASH_PASSWORD` | Secret | 대시보드 로그인 비밀번호 (직접 정하세요) | 필수 |
 | `SECRET` | Secret | 아무 무작위 문자열 40자 정도 | 필수 |
-| `ALLOW_ORIGIN` | Text | 집계를 허용할 사이트 주소, **쉼표로 구분**<br>예: `https://ghgp.replit.app,https://greenhomesys.com` | 필수 |
+| `ALLOW_ORIGIN` | Text | 집계를 허용할 사이트 주소, **쉼표로 구분**<br>예: `https://gh-gp.replit.app,https://greenhomesys.com` | 필수 |
 | `SITE_NAMES` | Text | 사이트 코드와 표시 이름<br>예: `ghgp=영업 페이지,home=그린홈시스 홈페이지,viablanc=비아블랑 홈페이지` | 선택 |
 | `EXCLUDE_IPS` | Text | 집계에서 뺄 회선(사무실 등), 쉼표로 구분<br>예: `121.130.5.77,210.99.4.` | 선택 |
 
@@ -97,11 +97,11 @@ var SITE = 'ghgp';   // 이 사이트를 구분할 이름
 
 | 링크를 거는 곳 | 이렇게 링크 |
 |---|---|
-| 네이버 블로그 | `https://ghgp.replit.app/?from=blog` |
-| 리틀리 | `https://ghgp.replit.app/?from=littly` |
-| 인스타그램 | `https://ghgp.replit.app/?from=insta` |
-| 카카오톡·문자 | `https://ghgp.replit.app/?from=kakao` |
-| 명함 QR코드 | `https://ghgp.replit.app/?from=card` |
+| 네이버 블로그 | `https://gh-gp.replit.app/?from=blog` |
+| 리틀리 | `https://gh-gp.replit.app/?from=littly` |
+| 인스타그램 | `https://gh-gp.replit.app/?from=insta` |
+| 카카오톡·문자 | `https://gh-gp.replit.app/?from=kakao` |
+| 명함 QR코드 | `https://gh-gp.replit.app/?from=card` |
 
 대시보드의 "유입 경로"에 각각 **네이버 블로그 / 리틀리 / 인스타그램 / 카카오톡 / 명함 QR** 로 표시됩니다.
 표시된 이름은 방문자가 사이트 안에서 페이지를 옮겨 다녀도 유지됩니다.
@@ -186,7 +186,7 @@ var SITE = 'ghgp';   // 이 사이트를 구분할 이름
 직원들에게 아래 링크를 한 번씩 열어달라고 하세요. 기기마다 한 번이면 됩니다.
 
 ```
-https://ghgp.replit.app/?notrack=1
+https://gh-gp.replit.app/?notrack=1
 ```
 
 열면 화면 위에 "이 기기의 방문은 앞으로 집계되지 않습니다" 안내가 잠깐 뜹니다.
