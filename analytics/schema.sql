@@ -18,3 +18,9 @@ CREATE TABLE IF NOT EXISTS hits (
 
 CREATE INDEX IF NOT EXISTS idx_hits_site_day   ON hits (site, day);
 CREATE INDEX IF NOT EXISTS idx_hits_site_event ON hits (site, event, day);
+
+-- 대시보드 조회는 전부 ts(기록 시각) 범위로 찾습니다. 위의 day 인덱스로는 걸리지
+-- 않아 매번 표 전체를 훑게 되고, D1 의 "읽은 행" 한도를 순식간에 써버립니다.
+-- 아래 두 줄이 그 조회를 범위 검색으로 바꿔 줍니다.
+CREATE INDEX IF NOT EXISTS idx_hits_event_ts      ON hits (event, ts);
+CREATE INDEX IF NOT EXISTS idx_hits_site_event_ts ON hits (site, event, ts);

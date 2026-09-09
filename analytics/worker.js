@@ -200,7 +200,7 @@ async function stats(url, env, request) {
 
   const todayStart = Math.floor(Date.now() / 1000) - (Math.floor(Date.now() / 1000) + 9 * 3600) % 86400;
 
-  const [series, pages, refs, devices, events, hours, totals, todayRow, bySite, allSites] = await Promise.all([
+  const [series, pages, refs, devices, events, hours, totals, todayRow, bySite] = await Promise.all([
     q(`SELECT ${bucketExpr} label, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
         WHERE event='view' AND ts>=?${cond} GROUP BY 1 ORDER BY MIN(ts)`),
     q(`SELECT site, page, COUNT(*) n FROM hits
@@ -221,13 +221,14 @@ async function stats(url, env, request) {
     // 사이트별 비교는 선택한 기간 기준, 전체 사이트 대상
     env.DB.prepare(`SELECT site, COUNT(DISTINCT visitor) uv, COUNT(*) pv FROM hits
         WHERE event='view' AND ts>=? GROUP BY site ORDER BY uv DESC`).bind(fromTs).all(),
-    env.DB.prepare(`SELECT DISTINCT site FROM hits ORDER BY site`).all(),
   ]);
 
   const myIp = request ? (request.headers.get('CF-Connecting-IP') || '') : '';
   const names = siteNames(env);
-  // 기록이 있는 사이트 + 설정에 등록해 둔 사이트를 합쳐 목록을 만듭니다.
-  const recorded = (allSites.results || []).map(r => r.site);
+  // 사이트 목록은 선택한 기간에 기록이 있는 사이트 + 설정에 등록해 둔 사이트를 합칩니다.
+  // 예전에는 표 전체에서 DISTINCT site 를 뽑았는데, 그 한 줄이 새로고침마다
+  // 표 전체를 훑어 "읽은 행"을 크게 잡아먹었습니다.
+  const recorded = (bySite.results || []).map(r => r.site);
   const sites = [...new Set([...recorded, ...Object.keys(names)])].sort();
 
   return json({
@@ -474,6 +475,18 @@ let SITE_NAMES = {};
 function siteLabel(code){ return SITE_NAMES[code] || code; }
 
 let timer = null;
+let autoMs = 0;
+
+// 탭이 보일 때만 타이머를 돌립니다. 숨겨지면 멈추고, 다시 보이면 한 번 새로 읽습니다.
+function restartTimer(){
+  if (timer) { clearInterval(timer); timer = null; }
+  if (autoMs && !document.hidden) timer = setInterval(load, autoMs);
+}
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden) { if (timer) { clearInterval(timer); timer = null; } }
+  else { load(); }
+});
+
 async function load(){
   const range = document.getElementById('range').value;
   const site = document.getElementById('site').value;
@@ -499,10 +512,10 @@ async function load(){
   document.getElementById('chartTitle').textContent =
     d.unit === 'day' ? '일별 방문자' : d.unit === 'hour' ? '시간별 방문자' : '분 단위 방문자';
 
-  // 짧은 기간을 보고 있을 때는 자동으로 새로고침합니다.
-  if (timer) clearInterval(timer);
-  var auto = { '5m': 15000, '1h': 30000, '12h': 60000, '24h': 120000 }[d.range];
-  if (auto) timer = setInterval(load, auto);
+  // 짧은 기간을 보고 있을 때만, 그리고 화면을 실제로 보고 있을 때만 새로고침합니다.
+  // 켜둔 채 잊은 탭이 배경에서 계속 조회하면 D1 의 "읽은 행" 한도를 다 써버립니다.
+  autoMs = { '5m': 15000, '1h': 60000, '12h': 300000, '24h': 300000 }[d.range] || 0;
+  restartTimer();
   document.getElementById('k1').textContent = d.today.uv.toLocaleString();
   document.getElementById('k2').textContent = d.today.pv.toLocaleString();
   document.getElementById('k3').textContent = d.total.uv.toLocaleString();
