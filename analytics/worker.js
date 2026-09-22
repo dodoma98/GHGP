@@ -40,14 +40,20 @@
  *                              끝을 점으로 끝내면 앞부분만 일치해도 제외: 121.130.5.
  *                              (이 값도 저장되지 않고 비교에만 쓰입니다)
  *
- * "견적서 받기"(가견적서)에 필요한 추가 설정
- *  - 비밀 변수 PPURIO_ACCOUNT : 비즈뿌리오 계정 아이디 (문자 발송용)
- *  - 비밀 변수 PPURIO_API_KEY : 비즈뿌리오 API 키
- *  - 변수 PPURIO_FROM         : 문자 발신번호 (사전에 비즈뿌리오에 등록된 번호)
- *  - 변수 QUOTE_TEST_MODE     : '1' 이면 실제 문자를 보내지 않고 인증번호를 화면에
- *                              그대로 보여줍니다. 실제 문자 연동을 확인하기 전까지
- *                              테스트할 때만 켜 두고, 확인되면 반드시 지우세요.
- *                              (지워져 있으면 평소처럼 꺼진 상태입니다)
+ * "견적서 받기"(가견적서)에 필요한 추가 설정 — 이름은 greenhome-mileage(지원 콘솔)가
+ * 이미 쓰고 있는 뿌리오 설정값과 **일부러 똑같이** 맞췄다(같은 회사 계정이라 값도 같을
+ * 가능성이 높고, 이름까지 다르면 두 곳을 관리하는 사람이 헷갈린다).
+ *  - 비밀 변수 PPURIO_ACCOUNT      : 뿌리오 계정 아이디
+ *  - 비밀 변수 PPURIO_AUTH_KEY     : 뿌리오 인증키
+ *  - 변수 PPURIO_SENDER_NUMBER    : 문자 발신번호 (뿌리오에 사전 등록된 번호, 기본 1551-7704)
+ *  - 변수 PPURIO_API_BASE         : (선택) 고정 IP 중계를 쓸 때만. greenhome-mileage가
+ *                                   이미 운영 중인 중계 주소(sms-relay.gh-point.com 등)를
+ *                                   넣으면 Cloudflare Worker의 유동 IP 문제를 피해 간다.
+ *                                   비우면 뿌리오를 직접 부른다.
+ *  - 비밀 변수 PPURIO_RELAY_KEY    : (선택) 위 중계를 쓸 때, 그 중계의 열쇠(RELAY_KEY)
+ *  - 변수 QUOTE_TEST_MODE         : '1' 이면 실제 문자를 보내지 않고 인증번호를 화면에
+ *                                   그대로 보여줍니다. 테스트할 때만 켜 두고, 확인되면
+ *                                   반드시 지우세요(지워져 있으면 평소처럼 꺼진 상태).
  */
 
 const SESSION_HOURS = 12;
@@ -384,43 +390,71 @@ function bearerToken(request) {
   return m ? m[1].trim() : '';
 }
 
+// 문자 바이트 수 — 뿌리오를 비롯한 한국 문자 발송 업계는 EUC-KR 계열 기준으로 센다:
+// 아스키는 1바이트, 그 밖(한글 등)은 2바이트. UTF-8로 세면 실제보다 크게 나와 90바이트
+// 근처의 문구가 SMS/LMS 판정을 잘못 받을 수 있다. (greenhome-mileage server/smsRules.ts
+// 의 같은 규칙 — 실제 서비스에서 이미 검증된 계산이다.)
+function smsByteLength(text) {
+  let n = 0;
+  for (const ch of text) n += ch.codePointAt(0) <= 0x7f ? 1 : 2;
+  return n;
+}
+const ppurioRefKey = () => `GHQ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+
 /* 문자 발송 — 비즈뿌리오(Ppurio) API.
- * ⚠ 검증 필요: 토큰 발급(POST /v1/token, Basic 인증)은 공식 문서로 확인했지만,
- *   메시지 발송(POST /v3/message)의 정확한 JSON 필드는 이 환경에서 비즈뿌리오
- *   문서 사이트에 접속이 막혀 있어 실제 응답으로 확인하지 못했다. 아래 body는
- *   공개된 예시를 바탕으로 한 최선의 추정이다 — 실제 계정으로 처음 보낼 때는
- *   QUOTE_TEST_MODE=1 로 먼저 전체 흐름을 확인한 뒤, 그 값을 지우고 실제 문자가
- *   도착하는지 꼭 한 번 확인해 주세요. 만약 발송이 실패하면(관리자에게 오류로
- *   보인다) 비즈뿌리오 개발 문서의 최신 예시로 이 함수 하나만 고치면 된다.
+ * greenhome-mileage(지원 콘솔)가 이미 이 API로 실제 문자를 보내고 있어(server/sms.ts),
+ * 거기서 실측으로 확인된 주소·필드를 그대로 따른다 — 이 파일만 보고 새로 추정하지 않는다.
+ *   - 밑주소는 api.bizppurio.com 이 아니라 message.ppurio.com 이다(다른 이름은 DNS에 없다).
+ *   - 토큰: POST {base}/v1/token, Authorization: Basic base64(account:authKey)
+ *   - 발송: POST {base}/v1/message (v3 아님), Authorization: Bearer {token}
+ *   - 몸통은 messages 배열이 아니라 account/messageType/content/from/duplicateFlag/
+ *     targetCount/refKey/targets 를 평평하게 준다 — targetCount·refKey 가 없으면
+ *     뿌리오가 400으로 거절한다(실측).
+ *
+ * ⚠ 뿌리오는 **부르는 서버의 공인 IP를 사전 등록**해야 한다(안 하면 토큰 단계에서
+ *   400 {"code":"3003","description":"invalid ip"}). Cloudflare Worker는 나가는 IP가
+ *   고정돼 있지 않아 이 문제를 그대로 겪는다 — greenhome-mileage도 같은 문제를 겪어
+ *   고정 IP 중계(ppurio-relay, sms-relay.gh-point.com)를 이미 세워 두었다. PPURIO_API_BASE
+ *   를 그 중계 주소로, PPURIO_RELAY_KEY 를 그 중계의 열쇠로 넣으면 바로 그 중계를 탄다
+ *   (analytics/README.md 참고). 비워 두면 뿌리오를 직접 부른다 — Worker IP가 등록돼
+ *   있지 않다면 "등록되지 않은 IP" 오류가 날 것이다.
  */
 async function sendOtpSmsViaPpurio(phone, code, env) {
   const account = env.PPURIO_ACCOUNT;
-  const apiKey = env.PPURIO_API_KEY;
-  const from = env.PPURIO_FROM;
-  if (!account || !apiKey || !from) {
-    throw new Error('문자 발송 설정(PPURIO_ACCOUNT/PPURIO_API_KEY/PPURIO_FROM)이 되어 있지 않습니다.');
+  const authKey = env.PPURIO_AUTH_KEY;
+  const sender = (env.PPURIO_SENDER_NUMBER || '15517704').replace(/[^0-9]/g, '');
+  if (!account || !authKey) {
+    throw new Error('문자 발송 설정(PPURIO_ACCOUNT/PPURIO_AUTH_KEY)이 되어 있지 않습니다.');
   }
-  const tokenRes = await fetch('https://api.bizppurio.com/v1/token', {
+  const base = (env.PPURIO_API_BASE || 'https://message.ppurio.com').replace(/\/+$/, '');
+  const relayHeaders = env.PPURIO_RELAY_KEY ? { 'x-relay-key': env.PPURIO_RELAY_KEY } : {};
+
+  const tokenRes = await fetch(`${base}/v1/token`, {
     method: 'POST',
-    headers: { Authorization: `Basic ${btoa(`${account}:${apiKey}`)}` },
+    headers: { Authorization: `Basic ${btoa(`${account}:${authKey}`)}`, ...relayHeaders },
   });
   if (!tokenRes.ok) {
-    throw new Error(`문자 서비스 인증에 실패했습니다 (${tokenRes.status}). 계정/API키를 확인해 주세요.`);
+    const raw = await tokenRes.text().catch(() => '');
+    throw new Error(`문자 서비스 인증에 실패했습니다 (${tokenRes.status}). ${raw.slice(0, 200) || '계정/인증키를 확인해 주세요.'}`);
   }
-  const tokenBody = await tokenRes.json();
-  const bearer = tokenBody.token;
+  let bearer;
+  try { bearer = (await tokenRes.json()).token; } catch { /* 아래에서 처리 */ }
   if (!bearer) throw new Error('문자 서비스 인증 응답에 토큰이 없습니다.');
 
-  const sendRes = await fetch('https://api.bizppurio.com/v3/message', {
+  const text = `[그린홈시스] 가견적서 인증번호는 ${code} 입니다. (5분 이내 입력)`;
+  const sendRes = await fetch(`${base}/v1/message`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json; charset=utf-8', ...relayHeaders },
     body: JSON.stringify({
       account,
-      messages: [{
-        to: phone,
-        from: String(from).replace(/[^0-9]/g, ''),
-        content: `[그린홈시스] 가견적서 인증번호는 ${code} 입니다. (5분 이내 입력)`,
-      }],
+      messageType: smsByteLength(text) > 90 ? 'LMS' : 'SMS',
+      content: text,
+      subject: '그린홈시스',
+      from: sender,
+      duplicateFlag: 'N',
+      targetCount: 1,
+      refKey: ppurioRefKey(),
+      targets: [{ to: phone }],
     }),
   });
   if (!sendRes.ok) {
