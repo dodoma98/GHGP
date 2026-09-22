@@ -406,54 +406,9 @@
 })();
 </script>
 
-<!-- 방문 집계 (개인정보 수집 없음). ENDPOINT가 비어 있으면 아무 동작도 하지 않습니다. -->
-<script>
-(function () {
-  var ENDPOINTS = ['https://dashboard.greenhomesys.com/collect'];
-  var SITE = 'ghgp';
-  if (!ENDPOINTS.length) return;
-  var ENDPOINT = ENDPOINTS[0];
-  try {
-    var remembered = sessionStorage.getItem('ghgp_ep');
-    if (remembered && ENDPOINTS.indexOf(remembered) > -1) ENDPOINT = remembered;
-  } catch (e) {}
-  try {
-    if (localStorage.getItem('ghgp_notrack') === '1') return;
-  } catch (e) {}
-  var from = '';
-  try {
-    var qs = new URLSearchParams(location.search);
-    from = qs.get('from') || qs.get('utm_source') || '';
-    if (from) sessionStorage.setItem('ghgp_from', from);
-    else from = sessionStorage.getItem('ghgp_from') || '';
-  } catch (e) {}
-  function send(event) {
-    var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, from: from, event: event });
-    var list = ENDPOINTS.slice();
-    var i = list.indexOf(ENDPOINT);
-    if (i > 0) { list.splice(i, 1); list.unshift(ENDPOINT); }
-    (function attempt(n) {
-      if (n >= list.length) return;
-      fetch(list[n], { method: 'POST', body: data, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
-        .then(function () {
-          ENDPOINT = list[n];
-          try { sessionStorage.setItem('ghgp_ep', ENDPOINT); } catch (e) {}
-        })
-        .catch(function () { attempt(n + 1); });
-    })(0);
-  }
-  send('view');
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest('a, button');
-    if (!a) return;
-    var href = a.getAttribute('href') || '';
-    var name = null;
-    if (href.indexOf('tel:') === 0) name = 'call';
-    else if (a.id === 'reqCodeBtn') name = 'quote_request_code';
-    else if (a.id === 'verifyBtn') name = 'quote_verify';
-    if (name) send(name);
-  }, true);
-})();
-</script>
+<!-- 방문·조회 수집 — 그린홈시스 지원 콘솔 [마케팅 · 영업 페이지 · 그린홈시스] 이 보는 자료.
+     파일은 gh-point.com 이 내려준다(greenhome-mileage `public/track.js`) — index/archive/
+     reviews.html 과 같은 한 줄이다(Cloudflare 집계는 걷어냈다, 2026-09-22 결정 "콘솔로 모은다"). -->
+<script src="https://gh-point.com/track.js" data-site="영업-그린홈시스" defer></script>
 </body>
 </html>
