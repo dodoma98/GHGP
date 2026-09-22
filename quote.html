@@ -233,7 +233,9 @@
 
 <script>
 (function () {
-  var API = 'https://dashboard.greenhomesys.com';
+  // 가견적서 기능은 지원 콘솔(greenhome-mileage)로 옮겼다(2026-09-22, "가견적서 기능은
+  // 전부 지원 콘솔로"). 화면·절차는 그대로고 뒷단 주소만 바뀌었다.
+  var API = 'https://gh-point.com/api/public/quote';
   var TOKEN_KEY = 'ghgp_quote_token';
 
   var els = {
@@ -288,7 +290,11 @@
     });
     var data = null;
     try { data = await res.json(); } catch (e) {}
-    return { ok: res.ok, status: res.status, data: data || {} };
+    data = data || {};
+    // 서버 오류는 { error: { code, message } } 모양이다(greenhome-mileage 규약,
+    // src/server/errors.ts) — GHGP 쪽 옛 Cloudflare 응답({ reason })과 다르다.
+    var reason = data.error && data.error.message ? data.error.message : data.reason;
+    return { ok: res.ok, status: res.status, data: data, reason: reason };
   }
 
   els.reqCodeBtn.addEventListener('click', async function () {
@@ -296,15 +302,15 @@
     if (phone.length < 9) { setMsg(els.phoneMsg, '휴대폰 번호를 정확히 입력해 주세요.', 'err'); return; }
     els.reqCodeBtn.disabled = true;
     setMsg(els.phoneMsg, '');
-    var r = await api('/quote/request-code', { method: 'POST', body: { phone: phone } });
+    var r = await api('/request-code', { method: 'POST', body: { phone: phone } });
     els.reqCodeBtn.disabled = false;
     if (!r.ok) {
-      setMsg(els.phoneMsg, r.data.reason || '요청에 실패했습니다.', 'err');
+      setMsg(els.phoneMsg, r.reason || '요청에 실패했습니다.', 'err');
       return;
     }
     pendingPhone = phone;
     els.codeInput.value = '';
-    setMsg(els.codeMsg, r.data.testCode ? ('(테스트) 인증번호: ' + r.data.testCode) : '인증번호를 문자로 보내드렸습니다.', 'ok');
+    setMsg(els.codeMsg, '인증번호를 문자로 보내드렸습니다.', 'ok');
     show('codeStep');
     els.codeInput.focus();
   });
@@ -319,10 +325,10 @@
     var code = normPhone(els.codeInput.value);
     if (code.length !== 6) { setMsg(els.codeMsg, '인증번호 6자리를 입력해 주세요.', 'err'); return; }
     els.verifyBtn.disabled = true;
-    var r = await api('/quote/verify-code', { method: 'POST', body: { phone: pendingPhone, code: code } });
+    var r = await api('/verify-code', { method: 'POST', body: { phone: pendingPhone, code: code } });
     els.verifyBtn.disabled = false;
     if (!r.ok) {
-      setMsg(els.codeMsg, r.data.reason || '인증에 실패했습니다.', 'err');
+      setMsg(els.codeMsg, r.reason || '인증에 실패했습니다.', 'err');
       return;
     }
     setToken(r.data.token);
@@ -360,7 +366,7 @@
     currentConcerns = next;
     renderConcerns({ concerns: next }, currentOptions);
     setMsg(els.concernMsg, '');
-    var r = await api('/quote/me/concerns', {
+    var r = await api('/me/concerns', {
       method: 'PATCH',
       headers: { Authorization: 'Bearer ' + getToken() },
       body: { concerns: next },
@@ -368,7 +374,7 @@
     if (!r.ok) {
       currentConcerns = prev;
       renderConcerns({ concerns: prev }, currentOptions);
-      setMsg(els.concernMsg, r.data.reason || '저장하지 못했습니다. 다시 눌러 주세요.', 'err');
+      setMsg(els.concernMsg, r.reason || '저장하지 못했습니다. 다시 눌러 주세요.', 'err');
       return;
     }
     currentConcerns = r.data.concerns || next;
@@ -377,7 +383,7 @@
   async function loadQuote() {
     var token = getToken();
     if (!token) { show('phoneStep'); return; }
-    var r = await api('/quote/me', { headers: { Authorization: 'Bearer ' + token } });
+    var r = await api('/me', { headers: { Authorization: 'Bearer ' + token } });
     if (!r.ok) {
       clearToken();
       show('phoneStep');
@@ -401,6 +407,13 @@
     renderConcerns(quote, currentOptions);
     show('quoteView');
   }
+
+  // 가견적서 배정 안내 문자의 링크(?phone=)를 타고 오면 번호를 미리 채워 준다 — 인증
+  // 자체를 건너뛰지는 않는다(문자 인증은 그대로 거친다), 그저 오타를 줄이는 편의다.
+  try {
+    var qsPhone = normPhone(new URLSearchParams(location.search).get('phone'));
+    if (qsPhone) els.phoneInput.value = qsPhone;
+  } catch (e) {}
 
   loadQuote();
 })();

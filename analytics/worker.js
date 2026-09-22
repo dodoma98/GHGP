@@ -6,18 +6,6 @@
  *  2) GET  /         — 비밀번호 입력 화면 또는 대시보드 (로그인 필요)
  *  3) POST /login    — 비밀번호 확인 후 서명된 세션 쿠키 발급
  *  4) GET  /api/stats— 집계 결과 JSON (로그인 필요)
- *  5) "견적서 받기" — 고객은 전화번호+문자 인증으로 본인 가견적서만 보고, 마음에
- *     걸리는 부분을 체크한다. 관리자는 /quotes 화면에서 전체 목록을 보고 새 가견적서를
- *     보낸다. 아래는 공개 API(문자 인증), 아래아래는 관리자 API(로그인 필요) —
- *     자세한 내용은 "가견적서" 절 참고.
- *       POST /quote/request-code   — 전화번호로 인증번호 문자 발송
- *       POST /quote/verify-code    — 인증번호 확인 → 열람용 토큰 발급
- *       GET  /quote/me             — (토큰) 본인 가견적서 조회
- *       PATCH /quote/me/concerns   — (토큰) 마음에 걸리는 부분 저장
- *       GET  /quotes               — 관리자 화면 (로그인 필요)
- *       GET  /api/quotes           — 관리자: 전체 목록 (로그인 필요)
- *       POST /api/quotes           — 관리자: 새 가견적서 등록 (로그인 필요)
- *       POST /api/quotes/:id/revoke— 관리자: 가견적서 회수 (로그인 필요)
  *
  * 개인정보
  *  - IP 주소는 저장하지 않습니다. 방문자 구분용 임시 식별자를 만들 때만 잠깐 쓰이고,
@@ -39,21 +27,6 @@
  *                              사무실 IP를 넣으면 그 회선의 방문은 기록되지 않습니다.
  *                              끝을 점으로 끝내면 앞부분만 일치해도 제외: 121.130.5.
  *                              (이 값도 저장되지 않고 비교에만 쓰입니다)
- *
- * "견적서 받기"(가견적서)에 필요한 추가 설정 — 이름은 greenhome-mileage(지원 콘솔)가
- * 이미 쓰고 있는 뿌리오 설정값과 **일부러 똑같이** 맞췄다(같은 회사 계정이라 값도 같을
- * 가능성이 높고, 이름까지 다르면 두 곳을 관리하는 사람이 헷갈린다).
- *  - 비밀 변수 PPURIO_ACCOUNT      : 뿌리오 계정 아이디
- *  - 비밀 변수 PPURIO_AUTH_KEY     : 뿌리오 인증키
- *  - 변수 PPURIO_SENDER_NUMBER    : 문자 발신번호 (뿌리오에 사전 등록된 번호, 기본 1551-7704)
- *  - 변수 PPURIO_API_BASE         : (선택) 고정 IP 중계를 쓸 때만. greenhome-mileage가
- *                                   이미 운영 중인 중계 주소(sms-relay.gh-point.com 등)를
- *                                   넣으면 Cloudflare Worker의 유동 IP 문제를 피해 간다.
- *                                   비우면 뿌리오를 직접 부른다.
- *  - 비밀 변수 PPURIO_RELAY_KEY    : (선택) 위 중계를 쓸 때, 그 중계의 열쇠(RELAY_KEY)
- *  - 변수 QUOTE_TEST_MODE         : '1' 이면 실제 문자를 보내지 않고 인증번호를 화면에
- *                                   그대로 보여줍니다. 테스트할 때만 켜 두고, 확인되면
- *                                   반드시 지우세요(지워져 있으면 평소처럼 꺼진 상태).
  */
 
 const SESSION_HOURS = 12;
@@ -67,14 +40,6 @@ export default {
     if (url.pathname === '/login' && request.method === 'POST') return login(request, env);
     if (url.pathname === '/logout') return logout(env);
 
-    // 가견적서 — 공개 API (문자 인증으로 본인 확인, 로그인 세션과 무관)
-    if (url.pathname === '/quote/request-code' && request.method === 'POST') return quoteRequestCode(request, env);
-    if (url.pathname === '/quote/verify-code' && request.method === 'POST') return quoteVerifyCode(request, env);
-    if (url.pathname === '/quote/me' && request.method === 'GET') return quoteMe(request, env);
-    if (url.pathname === '/quote/me/concerns' && (request.method === 'PATCH' || request.method === 'POST')) {
-      return quoteMeConcerns(request, env);
-    }
-
     // 아래부터는 로그인 필요
     const ok = await hasSession(request, env);
     if (url.pathname === '/api/stats') {
@@ -84,22 +49,6 @@ export default {
     if (url.pathname === '/api/diag') {
       if (!ok) return json({ error: 'unauthorized' }, 401);
       return diag(env, request);
-    }
-    if (url.pathname === '/api/quotes' && request.method === 'GET') {
-      if (!ok) return json({ error: 'unauthorized' }, 401);
-      return adminQuotesList(env);
-    }
-    if (url.pathname === '/api/quotes' && request.method === 'POST') {
-      if (!ok) return json({ error: 'unauthorized' }, 401);
-      return adminQuotesCreate(request, env);
-    }
-    const revokeMatch = url.pathname.match(/^\/api\/quotes\/(\d+)\/revoke$/);
-    if (revokeMatch && request.method === 'POST') {
-      if (!ok) return json({ error: 'unauthorized' }, 401);
-      return adminQuotesRevoke(Number(revokeMatch[1]), env);
-    }
-    if (url.pathname === '/quotes' || url.pathname === '/quotes.html') {
-      return html(ok ? QUOTES_ADMIN_HTML : LOGIN_HTML);
     }
     if (url.pathname === '/' || url.pathname === '/index.html') {
       return html(ok ? DASHBOARD_HTML : LOGIN_HTML);
@@ -328,318 +277,6 @@ async function diag(env, request) {
   });
 }
 
-/* ───────────── 가견적서 ("견적서 받기") ─────────────
- * 영업 페이지(gh-gp.replit.app)는 로그인이 없는 정적 사이트라, 고객이 "본인 것만"
- * 보게 하려면 회원 시스템 대신 전화번호+문자 인증을 쓴다. 흐름:
- *   1) 고객이 전화번호 입력 → POST /quote/request-code → 6자리 인증번호 문자 발송
- *   2) 고객이 인증번호 입력 → POST /quote/verify-code  → 열람용 토큰 발급(24시간)
- *   3) 그 토큰으로 GET /quote/me (조회), PATCH /quote/me/concerns (체크 저장)
- * 관리자는 기존 대시보드 로그인 세션 쿠키를 그대로 쓴다 (/quotes 화면, /api/quotes*).
- *
- * 같은 전화번호에 "활성" 가견적서는 항상 하나뿐이다(schema.sql 의 unique index).
- * 관리자가 새로 보내면 이전 것은 active=0 으로 바뀌고 기록만 남는다 — 지우지 않는다.
- */
-
-// 그린홈시스 가견적서 오른쪽 화면의 고정 6개 항목. greenhome-mileage(포인트 웹)와
-// 같은 목록이다 — 두 화면의 고객 경험을 맞추려는 의도적 선택. key 를 고치거나 빼면
-// 이미 저장된 옛 고객의 선택이 화면에서 사라지니, 문구(label)만 고칠 것.
-const QUOTE_CONCERNS = [
-  { key: 'price', label: '가격이 부담돼요' },
-  { key: 'compare', label: '다른 업체와 비교하고 싶어요' },
-  { key: 'material', label: '자재·브랜드가 궁금해요' },
-  { key: 'schedule', label: '시공 일정이 걱정돼요' },
-  { key: 'spec', label: '제품 사양(단열·방음 등)이 궁금해요' },
-  { key: 'as', label: 'A/S·보증 조건이 궁금해요' },
-];
-const QUOTE_CONCERN_KEYS = new Set(QUOTE_CONCERNS.map(c => c.key));
-
-// 숫자만 남긴 전화번호. 010/011 등 휴대폰과, 드물게 오는 지역번호 문의까지 느슨하게
-// 허용한다(9~11자리) — 너무 빡빡하게 막으면 실제 고객이 인증번호조차 못 받는다.
-function normPhone(raw) {
-  const digits = String(raw || '').replace(/[^0-9]/g, '');
-  return /^0[0-9]{8,10}$/.test(digits) ? digits : '';
-}
-
-function genOtpCode() {
-  const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1000000;
-  return String(n).padStart(6, '0');
-}
-
-// 인증번호는 원문을 저장하지 않는다 — 세션 쿠키 서명과 같은 hmac()을 재사용해
-// "전화번호+코드"를 해시로 바꿔 D1에는 그 해시만 남긴다.
-const otpHash = (phone, code, secret) => hmac(`otp:${phone}:${code}`, secret);
-
-// 가견적서 열람 토큰: "전화번호.만료시각.서명" — 관리자 세션 쿠키와 같은 방식이라
-// 새 암호화 라이브러리 없이 crypto.subtle 만으로 끝난다. 24시간 동안 유효.
-async function issueQuoteToken(phone, secret) {
-  const exp = Date.now() + 24 * 3600 * 1000;
-  const sig = await hmac(`quote:${phone}:${exp}`, secret);
-  return `${phone}.${exp}.${sig}`;
-}
-async function verifyQuoteToken(token, secret) {
-  const parts = String(token || '').split('.');
-  if (parts.length !== 3) return '';
-  const [phone, exp, sig] = parts;
-  if (!phone || !exp || Number(exp) < Date.now()) return '';
-  const good = await hmac(`quote:${phone}:${exp}`, secret);
-  return sig === good ? phone : '';
-}
-function bearerToken(request) {
-  const h = request.headers.get('Authorization') || '';
-  const m = h.match(/^Bearer\s+(.+)$/i);
-  return m ? m[1].trim() : '';
-}
-
-// 문자 바이트 수 — 뿌리오를 비롯한 한국 문자 발송 업계는 EUC-KR 계열 기준으로 센다:
-// 아스키는 1바이트, 그 밖(한글 등)은 2바이트. UTF-8로 세면 실제보다 크게 나와 90바이트
-// 근처의 문구가 SMS/LMS 판정을 잘못 받을 수 있다. (greenhome-mileage server/smsRules.ts
-// 의 같은 규칙 — 실제 서비스에서 이미 검증된 계산이다.)
-function smsByteLength(text) {
-  let n = 0;
-  for (const ch of text) n += ch.codePointAt(0) <= 0x7f ? 1 : 2;
-  return n;
-}
-const ppurioRefKey = () => `GHQ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
-
-/* 문자 발송 — 비즈뿌리오(Ppurio) API.
- * greenhome-mileage(지원 콘솔)가 이미 이 API로 실제 문자를 보내고 있어(server/sms.ts),
- * 거기서 실측으로 확인된 주소·필드를 그대로 따른다 — 이 파일만 보고 새로 추정하지 않는다.
- *   - 밑주소는 api.bizppurio.com 이 아니라 message.ppurio.com 이다(다른 이름은 DNS에 없다).
- *   - 토큰: POST {base}/v1/token, Authorization: Basic base64(account:authKey)
- *   - 발송: POST {base}/v1/message (v3 아님), Authorization: Bearer {token}
- *   - 몸통은 messages 배열이 아니라 account/messageType/content/from/duplicateFlag/
- *     targetCount/refKey/targets 를 평평하게 준다 — targetCount·refKey 가 없으면
- *     뿌리오가 400으로 거절한다(실측).
- *
- * ⚠ 뿌리오는 **부르는 서버의 공인 IP를 사전 등록**해야 한다(안 하면 토큰 단계에서
- *   400 {"code":"3003","description":"invalid ip"}). Cloudflare Worker는 나가는 IP가
- *   고정돼 있지 않아 이 문제를 그대로 겪는다 — greenhome-mileage도 같은 문제를 겪어
- *   고정 IP 중계(ppurio-relay, sms-relay.gh-point.com)를 이미 세워 두었다. PPURIO_API_BASE
- *   를 그 중계 주소로, PPURIO_RELAY_KEY 를 그 중계의 열쇠로 넣으면 바로 그 중계를 탄다
- *   (analytics/README.md 참고). 비워 두면 뿌리오를 직접 부른다 — Worker IP가 등록돼
- *   있지 않다면 "등록되지 않은 IP" 오류가 날 것이다.
- */
-async function sendOtpSmsViaPpurio(phone, code, env) {
-  const account = env.PPURIO_ACCOUNT;
-  const authKey = env.PPURIO_AUTH_KEY;
-  const sender = (env.PPURIO_SENDER_NUMBER || '15517704').replace(/[^0-9]/g, '');
-  if (!account || !authKey) {
-    throw new Error('문자 발송 설정(PPURIO_ACCOUNT/PPURIO_AUTH_KEY)이 되어 있지 않습니다.');
-  }
-  const base = (env.PPURIO_API_BASE || 'https://message.ppurio.com').replace(/\/+$/, '');
-  const relayHeaders = env.PPURIO_RELAY_KEY ? { 'x-relay-key': env.PPURIO_RELAY_KEY } : {};
-
-  const tokenRes = await fetch(`${base}/v1/token`, {
-    method: 'POST',
-    headers: { Authorization: `Basic ${btoa(`${account}:${authKey}`)}`, ...relayHeaders },
-  });
-  if (!tokenRes.ok) {
-    const raw = await tokenRes.text().catch(() => '');
-    throw new Error(`문자 서비스 인증에 실패했습니다 (${tokenRes.status}). ${raw.slice(0, 200) || '계정/인증키를 확인해 주세요.'}`);
-  }
-  let bearer;
-  try { bearer = (await tokenRes.json()).token; } catch { /* 아래에서 처리 */ }
-  if (!bearer) throw new Error('문자 서비스 인증 응답에 토큰이 없습니다.');
-
-  const text = `[그린홈시스] 가견적서 인증번호는 ${code} 입니다. (5분 이내 입력)`;
-  const sendRes = await fetch(`${base}/v1/message`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json; charset=utf-8', ...relayHeaders },
-    body: JSON.stringify({
-      account,
-      messageType: smsByteLength(text) > 90 ? 'LMS' : 'SMS',
-      content: text,
-      subject: '그린홈시스',
-      from: sender,
-      duplicateFlag: 'N',
-      targetCount: 1,
-      refKey: ppurioRefKey(),
-      targets: [{ to: phone }],
-    }),
-  });
-  if (!sendRes.ok) {
-    const detail = await sendRes.text().catch(() => '');
-    throw new Error(`문자 발송에 실패했습니다 (${sendRes.status}). ${detail.slice(0, 200)}`);
-  }
-}
-
-async function sendOtpCode(phone, code, env) {
-  if (env.QUOTE_TEST_MODE === '1') return; // 테스트 모드 — 실제 문자 없이 응답에 코드를 그대로 보여준다.
-  await sendOtpSmsViaPpurio(phone, code, env);
-}
-
-// POST /quote/request-code  { phone }
-async function quoteRequestCode(request, env) {
-  const origin = request.headers.get('Origin') || '';
-  if (!originAllowed(origin, env)) return jsonCors({ ok: false, reason: '허용되지 않은 사이트입니다.' }, 403, env, origin);
-
-  let body;
-  try { body = await request.json(); } catch { return jsonCors({ ok: false, reason: '요청 형식이 올바르지 않습니다.' }, 400, env, origin); }
-  const phone = normPhone(body.phone);
-  if (!phone) return jsonCors({ ok: false, reason: '휴대폰 번호를 확인해 주세요.' }, 400, env, origin);
-
-  // 등록된 가견적서가 없는 번호에는 문자를 보내지 않는다 — 비용·오발송 방지.
-  const has = await env.DB.prepare('SELECT id FROM quotes WHERE phone=? AND active=1 LIMIT 1').bind(phone).all();
-  if (!(has.results || []).length) {
-    return jsonCors({ ok: false, reason: '등록된 가견적서가 없습니다. 담당자에게 문의해 주세요.' }, 404, env, origin);
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  const existing = await env.DB.prepare('SELECT sent_at FROM quote_otp WHERE phone=?').bind(phone).all();
-  const prevSentAt = (existing.results || [])[0]?.sent_at;
-  if (prevSentAt && now - prevSentAt < 60) {
-    return jsonCors({ ok: false, reason: '잠시 후 다시 시도해 주세요. (60초에 한 번만 보낼 수 있어요)' }, 429, env, origin);
-  }
-
-  const code = genOtpCode();
-  const codeHash = await otpHash(phone, code, env.SECRET || 'ghgp');
-  await env.DB.prepare(
-    'INSERT INTO quote_otp (phone, code_hash, expires_at, attempts, sent_at) VALUES (?, ?, ?, 0, ?) ' +
-    'ON CONFLICT(phone) DO UPDATE SET code_hash=excluded.code_hash, expires_at=excluded.expires_at, attempts=0, sent_at=excluded.sent_at'
-  ).bind(phone, codeHash, now + 300, now).run();
-
-  try {
-    await sendOtpCode(phone, code, env);
-  } catch (e) {
-    return jsonCors({ ok: false, reason: e instanceof Error ? e.message : '문자 발송에 실패했습니다.' }, 500, env, origin);
-  }
-
-  const testCode = env.QUOTE_TEST_MODE === '1' ? code : undefined;
-  return jsonCors({ ok: true, testCode }, 200, env, origin);
-}
-
-// POST /quote/verify-code  { phone, code }
-async function quoteVerifyCode(request, env) {
-  const origin = request.headers.get('Origin') || '';
-  if (!originAllowed(origin, env)) return jsonCors({ ok: false, reason: '허용되지 않은 사이트입니다.' }, 403, env, origin);
-
-  let body;
-  try { body = await request.json(); } catch { return jsonCors({ ok: false, reason: '요청 형식이 올바르지 않습니다.' }, 400, env, origin); }
-  const phone = normPhone(body.phone);
-  const code = String(body.code || '').replace(/[^0-9]/g, '');
-  if (!phone || code.length !== 6) return jsonCors({ ok: false, reason: '인증번호를 확인해 주세요.' }, 400, env, origin);
-
-  const row = await env.DB.prepare('SELECT code_hash, expires_at, attempts FROM quote_otp WHERE phone=?').bind(phone).all();
-  const otp = (row.results || [])[0];
-  if (!otp) return jsonCors({ ok: false, reason: '인증번호를 먼저 요청해 주세요.' }, 400, env, origin);
-  if (Math.floor(Date.now() / 1000) > otp.expires_at) {
-    return jsonCors({ ok: false, reason: '인증번호가 만료되었습니다. 다시 요청해 주세요.' }, 400, env, origin);
-  }
-  if (otp.attempts >= 5) {
-    return jsonCors({ ok: false, reason: '시도 횟수를 초과했습니다. 인증번호를 다시 요청해 주세요.' }, 429, env, origin);
-  }
-
-  const good = await otpHash(phone, code, env.SECRET || 'ghgp');
-  if (good !== otp.code_hash) {
-    await env.DB.prepare('UPDATE quote_otp SET attempts = attempts + 1 WHERE phone=?').bind(phone).run();
-    return jsonCors({ ok: false, reason: '인증번호가 맞지 않습니다.' }, 400, env, origin);
-  }
-
-  await env.DB.prepare('DELETE FROM quote_otp WHERE phone=?').bind(phone).run();
-  const token = await issueQuoteToken(phone, env.SECRET || 'ghgp');
-  return jsonCors({ ok: true, token }, 200, env, origin);
-}
-
-// GET /quote/me — Authorization: Bearer <token>
-async function quoteMe(request, env) {
-  const origin = request.headers.get('Origin') || '';
-  const phone = await verifyQuoteToken(bearerToken(request), env.SECRET || 'ghgp');
-  if (!phone) return jsonCors({ ok: false, reason: '인증이 만료되었습니다. 다시 인증해 주세요.' }, 401, env, origin);
-
-  const row = await env.DB.prepare(
-    'SELECT id, title, pages, concerns, concerns_at, viewed_at, created_at FROM quotes WHERE phone=? AND active=1 LIMIT 1'
-  ).bind(phone).all();
-  const q = (row.results || [])[0];
-  if (!q) return jsonCors({ ok: true, quote: null }, 200, env, origin);
-
-  if (!q.viewed_at) {
-    await env.DB.prepare('UPDATE quotes SET viewed_at=? WHERE id=?').bind(Math.floor(Date.now() / 1000), q.id).run();
-  }
-
-  return jsonCors({
-    ok: true,
-    quote: {
-      id: q.id,
-      title: q.title,
-      pages: JSON.parse(q.pages || '[]'),
-      concerns: JSON.parse(q.concerns || '[]'),
-      concernsAt: q.concerns_at,
-      createdAt: q.created_at,
-    },
-    concernOptions: QUOTE_CONCERNS,
-  }, 200, env, origin);
-}
-
-// PATCH /quote/me/concerns — Authorization: Bearer <token>, body { concerns: [...] }
-async function quoteMeConcerns(request, env) {
-  const origin = request.headers.get('Origin') || '';
-  const phone = await verifyQuoteToken(bearerToken(request), env.SECRET || 'ghgp');
-  if (!phone) return jsonCors({ ok: false, reason: '인증이 만료되었습니다. 다시 인증해 주세요.' }, 401, env, origin);
-
-  let body;
-  try { body = await request.json(); } catch { return jsonCors({ ok: false, reason: '요청 형식이 올바르지 않습니다.' }, 400, env, origin); }
-  const list = Array.isArray(body.concerns) ? body.concerns : [];
-  const concerns = [...new Set(list.filter(k => QUOTE_CONCERN_KEYS.has(k)))];
-
-  const now = Math.floor(Date.now() / 1000);
-  const res = await env.DB.prepare(
-    'UPDATE quotes SET concerns=?, concerns_at=? WHERE phone=? AND active=1'
-  ).bind(JSON.stringify(concerns), now, phone).run();
-  if (!res.meta || res.meta.changes === 0) {
-    return jsonCors({ ok: false, reason: '가견적서를 찾을 수 없습니다.' }, 404, env, origin);
-  }
-  return jsonCors({ ok: true, concerns }, 200, env, origin);
-}
-
-/* ───────────── 가견적서 — 관리자 API (로그인 필요) ───────────── */
-
-async function adminQuotesList(env) {
-  const rows = await env.DB.prepare(
-    'SELECT id, phone, title, active, viewed_at, concerns, concerns_at, created_at FROM quotes ORDER BY created_at DESC LIMIT 300'
-  ).all();
-  const quotes = (rows.results || []).map(q => ({
-    ...q,
-    concerns: JSON.parse(q.concerns || '[]'),
-  }));
-  return json({ ok: true, quotes, concernOptions: QUOTE_CONCERNS });
-}
-
-async function adminQuotesCreate(request, env) {
-  let body;
-  try { body = await request.json(); } catch { return json({ ok: false, reason: '요청 형식이 올바르지 않습니다.' }, 400); }
-  const phone = normPhone(body.phone);
-  const title = String(body.title || '').trim().slice(0, 80);
-  const pages = Array.isArray(body.pages) ? body.pages.filter(p => typeof p === 'string' && p.startsWith('data:image/')) : [];
-
-  if (!phone) return json({ ok: false, reason: '휴대폰 번호를 확인해 주세요.' }, 400);
-  if (!title) return json({ ok: false, reason: '제목을 입력해 주세요.' }, 400);
-  if (!pages.length) return json({ ok: false, reason: '가견적서 이미지를 1장 이상 올려 주세요.' }, 400);
-  if (pages.length > 20) return json({ ok: false, reason: '이미지는 한 번에 20장까지 올릴 수 있어요.' }, 400);
-
-  const pagesJson = JSON.stringify(pages);
-  // D1 한 행에 너무 큰 값이 들어가지 않도록 넉넉히 여유를 둔 상한선(약 8MB 상당).
-  if (pagesJson.length > 8_000_000) {
-    return json({ ok: false, reason: '이미지 용량이 너무 큽니다. 장수를 줄이거나 더 작은 이미지로 올려 주세요.' }, 400);
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  const result = await env.DB.batch([
-    env.DB.prepare('UPDATE quotes SET active=0 WHERE phone=? AND active=1').bind(phone),
-    env.DB.prepare(
-      "INSERT INTO quotes (phone, title, pages, concerns, active, created_at) VALUES (?, ?, ?, '[]', 1, ?)"
-    ).bind(phone, title, pagesJson, now),
-  ]);
-  const id = result[1]?.meta?.last_row_id;
-  return json({ ok: true, id });
-}
-
-async function adminQuotesRevoke(id, env) {
-  if (!Number.isInteger(id) || id < 1) return json({ ok: false, reason: '잘못된 요청입니다.' }, 400);
-  const res = await env.DB.prepare('UPDATE quotes SET active=0 WHERE id=? AND active=1').bind(id).run();
-  if (!res.meta || res.meta.changes === 0) return json({ ok: false, reason: '이미 회수되었거나 없는 가견적서입니다.' }, 404);
-  return json({ ok: true });
-}
-
 /* ───────────── 로그인 ───────────── */
 
 async function login(request, env) {
@@ -699,10 +336,8 @@ function corsHeaders(env, origin) {
   const allow = list.length === 0 ? '*' : (list.includes(normOrigin(origin)) ? origin : list[0]);
   return {
     'Access-Control-Allow-Origin': allow,
-    // 가견적서 화면(quote.html)은 GET/PATCH 로도 이 Worker를 부르고, 열람 토큰을
-    // Authorization 헤더로 보낸다 — /collect 만 쓰던 시절보다 넓혀 둔다.
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -710,8 +345,6 @@ const preflight = (env, origin) => new Response(null, { status: 204, headers: co
 const corsOk = (env, origin) => new Response('ok', { headers: corsHeaders(env, origin) });
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
-const jsonCors = (obj, status, env, origin) =>
-  new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders(env, origin) } });
 const html = (body, status = 200) =>
   new Response(body, { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' } });
 
@@ -780,7 +413,6 @@ const DASHBOARD_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-
       <option value="30d" selected>최근 30일</option>
       <option value="90d">최근 90일</option>
     </select>
-    <a class="btn" href="/quotes">가견적서 →</a>
     <a class="btn" href="/logout">로그아웃</a>
   </div>
 </header>
@@ -962,175 +594,3 @@ document.getElementById('range').addEventListener('change', load);
 document.getElementById('site').addEventListener('change', load);
 load();
 </script></div></body></html>`;
-
-/* ───────────── 가견적서 관리자 화면 ───────────── */
-
-const QUOTES_ADMIN_HTML = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>가견적서 관리 — 그린홈시스</title>
-<style>${BASE_CSS}
- header{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
- header .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
- .btn{font-family:inherit;font-size:14px;padding:8px 12px;border:1.5px solid #cde3d3;
-   border-radius:999px;background:#fff;color:#1b2b20;cursor:pointer;text-decoration:none;display:inline-block}
- form.card{display:grid;gap:12px;margin-bottom:20px}
- form.card label{font-size:13.5px;font-weight:700;color:#1b2b20;display:block;margin-bottom:6px}
- form.card input[type=text],form.card input[type=tel]{width:100%;padding:11px 12px;font-size:15px;
-   border:1.5px solid #cde3d3;border-radius:10px}
- form.card input[type=file]{width:100%;font-size:14px}
- .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
- .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
- .thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #cde3d3}
- button[type=submit]{padding:13px;font-size:15.5px;font-weight:800;color:#fff;background:#1b7a44;
-   border:none;border-radius:10px;cursor:pointer}
- button[type=submit]:disabled{opacity:.6;cursor:not-allowed}
- .msg{font-size:13.5px;font-weight:700;margin-top:-4px}
- .msg.err{color:#a6242f}
- .msg.ok{color:#1b7a44}
- table{width:100%;border-collapse:collapse;font-size:14px}
- th,td{padding:9px 8px;border-bottom:1px solid #eef4ef;text-align:left;vertical-align:top}
- th{color:#5e6e62;font-weight:700;font-size:12.5px}
- .tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
- .tag-on{background:#e8f3eb;color:#14532d}
- .tag-off{background:#f4e6e6;color:#a6242f}
- .concern-chip{display:inline-block;font-size:11.5px;background:#f4f8f4;border:1px solid #cde3d3;
-   border-radius:999px;padding:2px 8px;margin:1px}
- .revoke{font-size:12.5px;color:#a6242f;background:#fff;border:1.5px solid #f0cdd0;border-radius:999px;
-   padding:5px 10px;cursor:pointer}
- .empty{color:#5e6e62;font-size:14px;padding:10px 0}
- @media(max-width:700px){.row2{grid-template-columns:1fr}table,thead,tbody,th,td,tr{display:block}
-   thead{display:none}tr{border-bottom:1px solid #cde3d3;padding:10px 0}
-   td{border-bottom:none;padding:3px 0}td::before{content:attr(data-l);display:inline-block;min-width:88px;color:#5e6e62;font-size:12px}}
-</style></head><body><div class="wrap">
-<header>
-  <div><h1>가견적서 관리</h1><p class="muted">전화번호 인증으로 고객이 본인 것만 봅니다.</p></div>
-  <div class="sp">
-    <a class="btn" href="/">← 대시보드</a>
-    <a class="btn" href="/logout">로그아웃</a>
-  </div>
-</header>
-
-<form class="card" id="sendForm">
-  <h2 style="font-size:16px;font-weight:800">새 가견적서 보내기</h2>
-  <div class="row2">
-    <div><label for="phone">고객 휴대폰 번호</label><input type="tel" id="phone" placeholder="01012345678" required></div>
-    <div><label for="title">제목</label><input type="text" id="title" placeholder="예: 홍길동님 시스템창호 가견적" required></div>
-  </div>
-  <div>
-    <label for="files">가견적서 이미지 (여러 장 선택 가능, 순서대로 저장됩니다)</label>
-    <input type="file" id="files" accept="image/*" multiple required>
-    <div class="thumbs" id="thumbs"></div>
-  </div>
-  <div id="sendMsg" class="msg"></div>
-  <button type="submit" id="sendBtn">고객에게 보내기</button>
-</form>
-
-<div class="card">
-  <h2 style="font-size:16px;font-weight:800;margin-bottom:10px">전체 목록</h2>
-  <div id="list" class="empty">불러오는 중…</div>
-</div>
-</div>
-<script>
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let CONCERN_LABELS = {};
-
-// 큰 사진을 그대로 올리면 D1 행 하나가 너무 커진다 — 가로 최대 1600px, JPEG로
-// 줄여서 data URL로 만든다 (원본 화질은 손실되지만 견적서 열람 용도로는 충분하다).
-function downscale(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('이미지를 읽지 못했습니다.'));
-    reader.onload = () => { img.src = reader.result; };
-    img.onerror = () => reject(new Error('이미지를 열지 못했습니다.'));
-    img.onload = () => {
-      const scale = Math.min(1, 1600 / img.width);
-      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.82));
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function loadList() {
-  const el = document.getElementById('list');
-  const r = await fetch('/api/quotes');
-  if (!r.ok) { el.textContent = '불러오지 못했습니다.'; return; }
-  const d = await r.json();
-  CONCERN_LABELS = {};
-  (d.concernOptions || []).forEach(c => { CONCERN_LABELS[c.key] = c.label; });
-  if (!d.quotes.length) { el.innerHTML = '<p class="empty">아직 보낸 가견적서가 없습니다.</p>'; return; }
-  el.innerHTML = '<table><thead><tr><th>전화번호</th><th>제목</th><th>상태</th><th>고객이 열어봄</th>'
-    + '<th>마음에 걸리는 부분</th><th>보낸 날짜</th><th></th></tr></thead><tbody>'
-    + d.quotes.map(q => {
-      const concerns = (q.concerns || []).map(k => '<span class="concern-chip">' + esc(CONCERN_LABELS[k] || k) + '</span>').join('') || '<span class="muted">-</span>';
-      const when = new Date(q.created_at * 1000).toLocaleString('ko-KR');
-      return '<tr>'
-        + '<td data-l="전화번호">' + esc(q.phone) + '</td>'
-        + '<td data-l="제목">' + esc(q.title) + '</td>'
-        + '<td data-l="상태"><span class="tag ' + (q.active ? 'tag-on' : 'tag-off') + '">' + (q.active ? '전달중' : '회수됨') + '</span></td>'
-        + '<td data-l="열어봄">' + (q.viewed_at ? '예' : '아직') + '</td>'
-        + '<td data-l="마음에 걸리는 부분">' + concerns + '</td>'
-        + '<td data-l="보낸 날짜">' + when + '</td>'
-        + '<td>' + (q.active ? '<button class="revoke" data-id="' + q.id + '">회수</button>' : '') + '</td>'
-        + '</tr>';
-    }).join('') + '</tbody></table>';
-  el.querySelectorAll('.revoke').forEach(btn => btn.addEventListener('click', async () => {
-    if (!confirm('이 가견적서를 회수하시겠어요? 고객이 더 이상 볼 수 없습니다.')) return;
-    btn.disabled = true;
-    const r = await fetch('/api/quotes/' + btn.dataset.id + '/revoke', { method: 'POST' });
-    if (r.ok) loadList(); else { alert('회수에 실패했습니다.'); btn.disabled = false; }
-  }));
-}
-
-document.getElementById('files').addEventListener('change', async (e) => {
-  const thumbs = document.getElementById('thumbs');
-  thumbs.innerHTML = '';
-  const files = [...e.target.files];
-  for (const f of files) {
-    try {
-      const url = await downscale(f);
-      const img = document.createElement('img');
-      img.src = url;
-      thumbs.appendChild(img);
-    } catch (err) {}
-  }
-});
-
-document.getElementById('sendForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const msg = document.getElementById('sendMsg');
-  const btn = document.getElementById('sendBtn');
-  msg.textContent = ''; msg.className = 'msg';
-  const phone = document.getElementById('phone').value;
-  const title = document.getElementById('title').value;
-  const files = [...document.getElementById('files').files];
-  if (!files.length) { msg.textContent = '이미지를 선택해 주세요.'; msg.className = 'msg err'; return; }
-  btn.disabled = true; btn.textContent = '올리는 중…';
-  try {
-    const pages = [];
-    for (const f of files) pages.push(await downscale(f));
-    const r = await fetch('/api/quotes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, title, pages }),
-    });
-    const d = await r.json();
-    if (!r.ok || !d.ok) throw new Error(d.reason || '보내지 못했습니다.');
-    msg.textContent = '보냈습니다. 고객이 문자 인증 후 바로 볼 수 있어요.';
-    msg.className = 'msg ok';
-    document.getElementById('sendForm').reset();
-    document.getElementById('thumbs').innerHTML = '';
-    loadList();
-  } catch (err) {
-    msg.textContent = err instanceof Error ? err.message : '보내지 못했습니다.';
-    msg.className = 'msg err';
-  } finally {
-    btn.disabled = false; btn.textContent = '고객에게 보내기';
-  }
-});
-
-loadList();
-</script></body></html>`;
