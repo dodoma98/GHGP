@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>견적서 받기 — 그린홈시스 | LX하우시스 완성창 대리점</title>
+<meta name="description" content="그린홈시스 가견적서 — 휴대폰 번호 인증 후 본인의 가견적서를 확인하고, 마음에 걸리는 부분을 남겨 주세요.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/pretendard-core.woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Pretendard Variable";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("assets/fonts/pretendard-ext.woff2") format("woff2");
+  unicode-range: U+AC00-D7A3;
+}
+@font-face {
+  font-family: "Pretendard Variable";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("assets/fonts/pretendard-core.woff2") format("woff2");
+  unicode-range: U+0020-007E,U+00A0-00FF;
+}
+</style>
+<style>
+  :root {
+    --green: #1b7a44;
+    --green-deep: #14532d;
+    --green-soft: #e8f3eb;
+    --green-line: #cde3d3;
+    --amber: #f0a500;
+    --lx-red: #a6242f;
+    --ink: #1b2b20;
+    --muted: #5e6e62;
+    --bg: #ffffff;
+    --bg-alt: #f4f8f4;
+    --radius: 14px;
+    --shadow: 0 6px 24px rgba(20, 60, 35, .08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.65;
+    word-break: keep-all;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+  .gnb {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--green-line);
+  }
+  .gnb-inner { display: flex; align-items: center; gap: 28px; height: 64px; position: relative; }
+  @media (min-width: 901px) {
+    .gnb nav { position: absolute; left: 50%; transform: translateX(-50%); margin-left: 0; }
+  }
+  .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+  .logo-img { height: 44px; width: auto; }
+  .gnb nav { display: flex; gap: 30px; margin-left: auto; font-size: 21px; font-weight: 700; color: var(--muted); }
+  .gnb nav a { white-space: nowrap; display: inline-flex; align-items: center; min-height: 44px; }
+  .gnb nav a:hover, .gnb nav a.active { color: var(--green); }
+  .gnb-call {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green); color: #fff;
+    font-weight: 700; font-size: 15px;
+    padding: 10px 18px; border-radius: 999px;
+    transition: background .15s; white-space: nowrap;
+  }
+  .gnb-call:hover { background: var(--green-deep); }
+
+  section { padding: 56px 0 72px; min-height: 60vh; }
+  .sec-head { text-align: center; margin-bottom: 32px; }
+  .eyebrow {
+    display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: .16em;
+    color: var(--green); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .sec-head h2 { font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 10px; }
+  .sec-head p { color: var(--muted); font-size: 16px; max-width: 52ch; margin: 0 auto; }
+
+  .card {
+    background: #fff; border: 1px solid var(--green-line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px 26px;
+  }
+  .auth-card { max-width: 420px; margin: 0 auto; text-align: center; }
+  .auth-card label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .auth-card input {
+    width: 100%; padding: 14px 16px; font-size: 17px; letter-spacing: .02em;
+    border: 1.5px solid var(--green-line); border-radius: 10px; margin-bottom: 14px; text-align: center;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-weight: 700; font-size: 16px; padding: 14px 20px; border-radius: 12px;
+    border: none; cursor: pointer; transition: transform .12s, background .15s; width: 100%;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--green-deep); }
+  .btn-ghost { background: #fff; color: var(--green); border: 1.5px solid var(--green-line); margin-top: 10px; }
+  .btn-ghost:hover { border-color: var(--green); }
+  .auth-msg { margin-top: 14px; font-size: 14px; font-weight: 700; min-height: 20px; }
+  .auth-msg.err { color: var(--lx-red); }
+  .auth-msg.ok { color: var(--green); }
+
+  .quote-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .quote-head h3 { font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+  .quote-head .btn-ghost { width: auto; margin-top: 0; padding: 10px 16px; font-size: 14px; }
+
+  /* 가로 화면 2:1(왼쪽:오른쪽) — 왼쪽 가견적서, 오른쪽 마음에 걸리는 부분 체크 */
+  .quote-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+  .quote-pages { display: flex; flex-direction: column; gap: 14px; }
+  .quote-pages img { border: 1px solid var(--green-line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .quote-concerns { position: sticky; top: 80px; }
+  .concern-head { font-size: 16px; font-weight: 800; }
+  .concern-sub { margin-top: 4px; font-size: 13.5px; color: var(--muted); }
+  .concern-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .concern-btn {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    padding: 13px 16px; border-radius: 12px; border: 1.5px solid var(--green-line);
+    background: var(--bg-alt); font-size: 14.5px; font-weight: 700; color: var(--ink);
+    cursor: pointer; transition: background .12s, border-color .12s;
+  }
+  .concern-btn:hover { border-color: var(--green); }
+  .concern-btn.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .concern-btn .dot {
+    flex: none; width: 20px; height: 20px; border-radius: 999px; border: 2px solid var(--green-line);
+    display: grid; place-items: center; font-size: 12px;
+  }
+  .concern-btn.on .dot { border-color: rgba(255,255,255,.7); background: rgba(255,255,255,.18); color: #fff; }
+  .concern-btn:disabled { opacity: .7; cursor: not-allowed; }
+
+  footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
+  footer b { color: var(--ink); }
+  footer p { margin-bottom: 4px; }
+  .footer-logo { height: 30px; width: auto; margin: 18px auto 0; opacity: .9; }
+
+  @media (max-width: 900px) {
+    .gnb-call { display: none; }
+    .gnb nav { gap: 14px; font-size: 17px; }
+    section { padding: 40px 0 56px; }
+    .quote-grid { grid-template-columns: 1fr; }
+    .quote-concerns { position: static; }
+  }
+  @media (max-width: 380px) {
+    .gnb-inner { gap: 8px; height: 56px; }
+    .logo-img { height: 30px; }
+    .gnb nav { gap: 10px; font-size: 15px; }
+    .gnb-call { font-size: 13px; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="container gnb-inner">
+    <a class="logo" href="index.html">
+      <img class="logo-img" src="assets/logo.webp" width="370" height="132" alt="그린홈시스 로고">
+    </a>
+    <nav>
+      <a href="index.html">메인</a>
+      <a href="archive.html">자료실</a>
+      <a href="reviews.html">사례&amp;리뷰</a>
+      <a href="quote.html" class="active">견적서 받기</a>
+    </nav>
+    <a class="gnb-call" href="tel:1551-7704" style="margin-left:auto;">📞 1551-7704 무료견적</a>
+  </div>
+</header>
+
+<section class="quote">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">Quote</span>
+      <h2>견적서 받기</h2>
+      <p>휴대폰 번호로 본인인증 후, 담당자가 보내드린 가견적서를 확인하실 수 있습니다.</p>
+    </div>
+
+    <div id="phoneStep" class="card auth-card">
+      <label for="phoneInput">휴대폰 번호</label>
+      <input type="tel" id="phoneInput" placeholder="01012345678" inputmode="numeric" autocomplete="tel">
+      <button id="reqCodeBtn" class="btn btn-primary" type="button">인증번호 받기</button>
+      <p id="phoneMsg" class="auth-msg"></p>
+    </div>
+
+    <div id="codeStep" class="card auth-card" style="display:none">
+      <label for="codeInput">인증번호 (6자리)</label>
+      <input type="tel" id="codeInput" maxlength="6" placeholder="숫자 6자리" inputmode="numeric" autocomplete="one-time-code">
+      <button id="verifyBtn" class="btn btn-primary" type="button">확인</button>
+      <button id="resendBtn" class="btn btn-ghost" type="button">다른 번호로 다시 받기</button>
+      <p id="codeMsg" class="auth-msg"></p>
+    </div>
+
+    <div id="quoteView" style="display:none">
+      <div class="quote-head">
+        <h3 id="quoteTitle"></h3>
+        <button id="logoutBtn" class="btn btn-ghost" type="button">다른 번호로 보기</button>
+      </div>
+      <div class="quote-grid">
+        <div class="quote-pages" id="quotePages"></div>
+        <div class="quote-concerns card">
+          <p class="concern-head">마음에 걸리는 부분이 있나요?</p>
+          <p class="concern-sub">해당하는 것을 눌러 주세요. 담당자가 확인하고 도와드립니다.</p>
+          <div id="concernList" class="concern-list"></div>
+          <p id="concernMsg" class="auth-msg"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="emptyView" class="card auth-card" style="display:none">
+      <p>아직 받은 가견적서가 없습니다.<br>담당자에게 문의해 주세요.</p>
+      <a class="btn btn-primary" style="margin-top:16px" href="tel:1551-7704">📞 1551-7704 문의하기</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p><b>주식회사 그린홈시스</b> · 대표 김상대 · LX하우시스 완성창 대리점</p>
+    <p>서울특별시 금천구 디지털로10길 37 아스크타워 1401호</p>
+    <p>TEL 1551-7704 · Green-homesys@naver.com</p>
+    <img class="footer-logo" src="assets/logo.webp" width="370" height="132" alt="그린홈시스 로고" loading="lazy">
+  </div>
+</footer>
+
+<script>
+(function () {
+  var API = 'https://dashboard.greenhomesys.com';
+  var TOKEN_KEY = 'ghgp_quote_token';
+
+  var els = {
+    phoneStep: document.getElementById('phoneStep'),
+    codeStep: document.getElementById('codeStep'),
+    quoteView: document.getElementById('quoteView'),
+    emptyView: document.getElementById('emptyView'),
+    phoneInput: document.getElementById('phoneInput'),
+    phoneMsg: document.getElementById('phoneMsg'),
+    reqCodeBtn: document.getElementById('reqCodeBtn'),
+    codeInput: document.getElementById('codeInput'),
+    codeMsg: document.getElementById('codeMsg'),
+    verifyBtn: document.getElementById('verifyBtn'),
+    resendBtn: document.getElementById('resendBtn'),
+    quoteTitle: document.getElementById('quoteTitle'),
+    quotePages: document.getElementById('quotePages'),
+    concernList: document.getElementById('concernList'),
+    concernMsg: document.getElementById('concernMsg'),
+    logoutBtn: document.getElementById('logoutBtn'),
+  };
+
+  var pendingPhone = '';
+
+  function show(step) {
+    ['phoneStep', 'codeStep', 'quoteView', 'emptyView'].forEach(function (id) {
+      els[id].style.display = id === step ? '' : 'none';
+    });
+  }
+  function setMsg(el, text, kind) {
+    el.textContent = text || '';
+    el.className = 'auth-msg' + (kind ? ' ' + kind : '');
+  }
+  function normPhone(v) { return String(v || '').replace(/[^0-9]/g, ''); }
+
+  function getToken() {
+    try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+  }
+  function setToken(t) {
+    try { sessionStorage.setItem(TOKEN_KEY, t); } catch (e) {}
+  }
+  function clearToken() {
+    try { sessionStorage.removeItem(TOKEN_KEY); } catch (e) {}
+  }
+
+  async function api(path, opts) {
+    opts = opts || {};
+    var headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+    var res = await fetch(API + path, {
+      method: opts.method || 'GET',
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    var data = null;
+    try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, data: data || {} };
+  }
+
+  els.reqCodeBtn.addEventListener('click', async function () {
+    var phone = normPhone(els.phoneInput.value);
+    if (phone.length < 9) { setMsg(els.phoneMsg, '휴대폰 번호를 정확히 입력해 주세요.', 'err'); return; }
+    els.reqCodeBtn.disabled = true;
+    setMsg(els.phoneMsg, '');
+    var r = await api('/quote/request-code', { method: 'POST', body: { phone: phone } });
+    els.reqCodeBtn.disabled = false;
+    if (!r.ok) {
+      setMsg(els.phoneMsg, r.data.reason || '요청에 실패했습니다.', 'err');
+      return;
+    }
+    pendingPhone = phone;
+    els.codeInput.value = '';
+    setMsg(els.codeMsg, r.data.testCode ? ('(테스트) 인증번호: ' + r.data.testCode) : '인증번호를 문자로 보내드렸습니다.', 'ok');
+    show('codeStep');
+    els.codeInput.focus();
+  });
+
+  els.resendBtn.addEventListener('click', function () {
+    setMsg(els.phoneMsg, '');
+    show('phoneStep');
+    els.phoneInput.focus();
+  });
+
+  els.verifyBtn.addEventListener('click', async function () {
+    var code = normPhone(els.codeInput.value);
+    if (code.length !== 6) { setMsg(els.codeMsg, '인증번호 6자리를 입력해 주세요.', 'err'); return; }
+    els.verifyBtn.disabled = true;
+    var r = await api('/quote/verify-code', { method: 'POST', body: { phone: pendingPhone, code: code } });
+    els.verifyBtn.disabled = false;
+    if (!r.ok) {
+      setMsg(els.codeMsg, r.data.reason || '인증에 실패했습니다.', 'err');
+      return;
+    }
+    setToken(r.data.token);
+    await loadQuote();
+  });
+
+  els.logoutBtn.addEventListener('click', function () {
+    clearToken();
+    pendingPhone = '';
+    els.phoneInput.value = '';
+    show('phoneStep');
+  });
+
+  function renderConcerns(quote, options) {
+    var picked = quote.concerns || [];
+    els.concernList.innerHTML = '';
+    options.forEach(function (c) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'concern-btn' + (picked.indexOf(c.key) > -1 ? ' on' : '');
+      btn.innerHTML = '<span class="dot">' + (picked.indexOf(c.key) > -1 ? '✓' : '') + '</span><span>' + c.label + '</span>';
+      btn.addEventListener('click', function () { toggleConcern(c.key, options); });
+      els.concernList.appendChild(btn);
+    });
+  }
+
+  var currentConcerns = [];
+  var currentOptions = [];
+
+  async function toggleConcern(key) {
+    var prev = currentConcerns.slice();
+    var next = currentConcerns.indexOf(key) > -1
+      ? currentConcerns.filter(function (k) { return k !== key; })
+      : currentConcerns.concat([key]);
+    currentConcerns = next;
+    renderConcerns({ concerns: next }, currentOptions);
+    setMsg(els.concernMsg, '');
+    var r = await api('/quote/me/concerns', {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + getToken() },
+      body: { concerns: next },
+    });
+    if (!r.ok) {
+      currentConcerns = prev;
+      renderConcerns({ concerns: prev }, currentOptions);
+      setMsg(els.concernMsg, r.data.reason || '저장하지 못했습니다. 다시 눌러 주세요.', 'err');
+      return;
+    }
+    currentConcerns = r.data.concerns || next;
+  }
+
+  async function loadQuote() {
+    var token = getToken();
+    if (!token) { show('phoneStep'); return; }
+    var r = await api('/quote/me', { headers: { Authorization: 'Bearer ' + token } });
+    if (!r.ok) {
+      clearToken();
+      show('phoneStep');
+      return;
+    }
+    if (!r.data.quote) {
+      show('emptyView');
+      return;
+    }
+    var quote = r.data.quote;
+    currentConcerns = quote.concerns || [];
+    currentOptions = r.data.concernOptions || [];
+    els.quoteTitle.textContent = quote.title;
+    els.quotePages.innerHTML = '';
+    quote.pages.forEach(function (src, i) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.alt = quote.title + ' ' + (i + 1) + '쪽';
+      els.quotePages.appendChild(img);
+    });
+    renderConcerns(quote, currentOptions);
+    show('quoteView');
+  }
+
+  loadQuote();
+})();
+</script>
+
+<!-- 방문 집계 (개인정보 수집 없음). ENDPOINT가 비어 있으면 아무 동작도 하지 않습니다. -->
+<script>
+(function () {
+  var ENDPOINTS = ['https://dashboard.greenhomesys.com/collect'];
+  var SITE = 'ghgp';
+  if (!ENDPOINTS.length) return;
+  var ENDPOINT = ENDPOINTS[0];
+  try {
+    var remembered = sessionStorage.getItem('ghgp_ep');
+    if (remembered && ENDPOINTS.indexOf(remembered) > -1) ENDPOINT = remembered;
+  } catch (e) {}
+  try {
+    if (localStorage.getItem('ghgp_notrack') === '1') return;
+  } catch (e) {}
+  var from = '';
+  try {
+    var qs = new URLSearchParams(location.search);
+    from = qs.get('from') || qs.get('utm_source') || '';
+    if (from) sessionStorage.setItem('ghgp_from', from);
+    else from = sessionStorage.getItem('ghgp_from') || '';
+  } catch (e) {}
+  function send(event) {
+    var data = JSON.stringify({ site: SITE, page: location.pathname, ref: document.referrer, from: from, event: event });
+    var list = ENDPOINTS.slice();
+    var i = list.indexOf(ENDPOINT);
+    if (i > 0) { list.splice(i, 1); list.unshift(ENDPOINT); }
+    (function attempt(n) {
+      if (n >= list.length) return;
+      fetch(list[n], { method: 'POST', body: data, keepalive: true, headers: { 'Content-Type': 'text/plain' } })
+        .then(function () {
+          ENDPOINT = list[n];
+          try { sessionStorage.setItem('ghgp_ep', ENDPOINT); } catch (e) {}
+        })
+        .catch(function () { attempt(n + 1); });
+    })(0);
+  }
+  send('view');
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a, button');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    var name = null;
+    if (href.indexOf('tel:') === 0) name = 'call';
+    else if (a.id === 'reqCodeBtn') name = 'quote_request_code';
+    else if (a.id === 'verifyBtn') name = 'quote_verify';
+    if (name) send(name);
+  }, true);
+})();
+</script>
+</body>
+</html>

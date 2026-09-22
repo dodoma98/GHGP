@@ -8,6 +8,11 @@
 2. **웹툰** — 창호 견적의 어려움 → 그린홈시스가 해결 (4컷)
 5. **마감 CTA** — 전화 유도, 모바일에서는 하단 플로팅 전화 버튼 고정
 
+메뉴의 **자료실**(`archive.html`), **사례&리뷰**(`reviews.html`), **견적서 받기**(`quote.html`)는
+같은 스타일을 쓰는 별도 페이지입니다. "견적서 받기"는 고객이 휴대폰 번호+문자 인증으로
+본인의 가견적서만 확인하는 화면으로, 뒷단(문자 인증·저장)은 `analytics/worker.js` 가
+처리합니다 — 설치·설정은 `analytics/README.md` 의 "가견적서" 절을 참고하세요.
+
 ## 배포
 
 - **Replit Static 배포**: https://gh-gp.replit.app (GitHub 저장소 Import 방식)
