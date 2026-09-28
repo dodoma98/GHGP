@@ -476,6 +476,16 @@
     .gnb-call { font-size: 13px; padding: 8px 12px; }
     .hero h1 { font-size: 30px; }
   }
+
+  /* 모바일 헤더 — 로고가 메뉴에 밀려 **가로로만 눌리지 않게**(임송화 2026-09-28 "모바일 화면으로 볼 때 상단
+     메뉴바 좌측에 로고가 찌그러져있는데"). 로고는 줄지 않고(flex-shrink:0) 비율 그대로 **크기**로 맞추고,
+     자리가 모자라면 메뉴 글자·간격을 줄인다. 폭 구간은 폰트를 다 받은 뒤 실측해 정했다. */
+  .logo { flex-shrink: 0; }
+  .logo-img { object-fit: contain; }
+  @media (max-width: 900px) { .gnb-inner { gap: 16px; } .logo-img { height: 36px; } }
+  @media (max-width: 560px) { .gnb-inner { gap: 10px; height: 56px; } .logo-img { height: 30px; } .gnb nav { gap: 10px; font-size: 15px; } }
+  @media (max-width: 400px) { .gnb-inner { gap: 8px; } .logo-img { height: 26px; } .gnb nav { gap: 8px; font-size: 14px; } }
+  @media (max-width: 340px) { .logo-img { height: 22px; } .gnb nav { gap: 6px; font-size: 13px; } }
 </style>
 </head>
 <body>
