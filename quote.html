@@ -163,10 +163,19 @@
      자리가 모자라면 메뉴 글자·간격을 줄인다. 폭 구간은 폰트를 다 받은 뒤 실측해 정했다. */
   .logo { flex-shrink: 0; }
   .logo-img { object-fit: contain; }
-  @media (max-width: 900px) { .gnb-inner { gap: 16px; } .logo-img { height: 36px; } }
-  @media (max-width: 560px) { .gnb-inner { gap: 10px; height: 56px; } .logo-img { height: 30px; } .gnb nav { gap: 10px; font-size: 15px; } }
-  @media (max-width: 400px) { .gnb-inner { gap: 8px; } .logo-img { height: 26px; } .gnb nav { gap: 8px; font-size: 14px; } }
-  @media (max-width: 340px) { .logo-img { height: 22px; } .gnb nav { gap: 6px; font-size: 13px; } }
+  @media (max-width: 900px) { .gnb-inner { gap: 16px; } .logo-img { height: 36px; } .gnb nav { gap: 22px; } }
+  /* 모바일 메뉴는 손가락으로 누른다(임송화 2026-09-28 "메뉴들도 간격 좀 여유롭게 띄워줘") — 로고 옆 남는 폭을
+     메뉴가 다 쓰고(flex:1) 고르게 나눈다(space-evenly). 링크마다 좌우 여백을 줘서 **누르는 자리**도 넓힌다
+     (세로는 원래 min-height 44px). 간격을 숫자로 박지 않는 이유: 폭마다 남는 자리가 달라서다.
+     ⚠ 폭 구간은 가장 넓게 그려지는 견적서 받기 쪽(quote.html — 한글을 ext 글꼴로 그려 15% 넓다)에 맞췄다. */
+  @media (max-width: 560px) {
+    .gnb-inner { gap: 12px; height: 56px; } .logo-img { height: 30px; }
+    .gnb nav { flex: 1; justify-content: space-evenly; gap: 0; margin-left: 0; font-size: 15px; }
+    .gnb nav a { padding: 0 6px; }
+  }
+  @media (max-width: 430px) { .gnb-inner { gap: 8px; } .logo-img { height: 26px; } .gnb nav { font-size: 14px; } .gnb nav a { padding: 0 5px; } }
+  @media (max-width: 370px) { .logo-img { height: 24px; } .gnb nav { font-size: 13px; } .gnb nav a { padding: 0 4px; } }
+  @media (max-width: 340px) { .logo-img { height: 22px; } .gnb nav { font-size: 12px; } .gnb nav a { padding: 0 3px; } }
 </style>
 </head>
 <body>
