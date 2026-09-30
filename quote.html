@@ -137,6 +137,29 @@
   .concern-btn.on .dot { border-color: rgba(255,255,255,.7); background: rgba(255,255,255,.18); color: #fff; }
   .concern-btn:disabled { opacity: .7; cursor: not-allowed; }
 
+  /* ───────── closing cta ───────── (자료실·사례&리뷰와 같은 모양 — 한쪽을 고치면 같이 고친다) */
+  .btn-point { background: linear-gradient(120deg, #f7b733, var(--amber)); color: #4a3400; font-size: 17px; }
+  .btn-point:hover { filter: brightness(1.05); }
+  .btn-white { background: #fff; color: var(--green-deep); }
+  .btn-white:hover { background: var(--green-soft); }
+  .closing {
+    background: linear-gradient(120deg, var(--green-deep), var(--green));
+    color: #fff; text-align: center;
+    padding: 72px 20px;
+  }
+  .closing h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 14px; }
+  .closing p { opacity: .9; margin-bottom: 30px; font-size: 16.5px; }
+  .closing .btn { font-size: 19px; padding: 18px 38px; border-radius: 999px; }
+  .closing-btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 620px; margin: 0 auto; }
+  .closing .btn-line { border: 1.5px solid rgba(255,255,255,.55); color: #fff; }
+  .closing .btn-line:hover { border-color: #fff; background: rgba(255,255,255,.1); }
+  @media (max-width: 640px) {
+    .closing-btns { max-width: 420px; gap: 12px; }
+    .closing .btn { width: 100%; padding-left: 12px; padding-right: 12px; }
+    .closing .btn-point, .closing .btn-white { grid-column: 1 / -1; }
+    .closing .btn-line { font-size: 15px; }
+  }
+
   footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
   footer b { color: var(--ink); }
   footer p { margin-bottom: 4px; }
@@ -298,6 +321,17 @@
     </div>
   </div>
 </section>
+
+<div class="closing">
+  <h2>지금 바로,<br>실측 견적 무료로 받아보세요!</h2>
+  <p>사양까지 투명하게 비교해 드립니다.<br>부담 없이 전화 주세요.</p>
+  <div class="closing-btns">
+    <a class="btn btn-point" href="https://gh-point.com/" target="_blank" rel="noopener">🎁 포인트 회원 등록하기</a>
+    <a class="btn btn-white" href="tel:1551-7704">📞 1551-7704</a>
+    <a class="btn btn-line" href="https://greenhomesys.com/%ea%b1%b0%eb%9e%98%ec%b2%98-%eb%93%b1%eb%a1%9d-%ec%9a%94%ec%b2%ad%ec%84%9c/" target="_blank" rel="noopener">🏢 거래처 등록 문의</a>
+    <a class="btn btn-line" href="https://greenhomesys.com/%ea%b2%ac%ec%a0%81-%ec%9a%94%ec%b2%ad%ec%84%9c/" target="_blank" rel="noopener">📝 무료 견적 문의</a>
+  </div>
+</div>
 
 <div id="zoom" class="zoom" role="dialog" aria-modal="true" aria-label="견적서 크게 보기">
   <div class="zoom-bar">
