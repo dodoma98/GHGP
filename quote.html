@@ -160,6 +160,28 @@
     .closing .btn-line { font-size: 15px; }
   }
 
+  /* 직원 전용 — 가견적서 목록(영업 시스템 표와 같은 열). 인쇄에는 안 나온다(body>:not(section) 숨김). */
+  .staff-eyebrow { font-size: 13px; font-weight: 800; color: var(--amber); letter-spacing: .04em; margin-bottom: 12px; }
+  .staff-link { display: inline-block; margin-top: 12px; background: none; border: 0; color: var(--muted); font-size: 13.5px; cursor: pointer; text-decoration: underline; }
+  .staff-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .staff-who { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .staff-bar .staff-link { margin-top: 0; }
+  .staff-table-wrap { overflow-x: auto; border: 1px solid var(--green-line); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+  .staff-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13.5px; color: var(--ink); }
+  .staff-table th { padding: 11px 14px; font-weight: 600; color: var(--muted); background: var(--green-soft); border-bottom: 1px solid var(--green-line); white-space: nowrap; }
+  .staff-table td { padding: 12px 14px; border-bottom: 1px solid var(--green-line); vertical-align: top; }
+  .staff-table tr:last-child td { border-bottom: 0; }
+  .staff-table .l { text-align: left; }
+  .staff-cust-name { font-weight: 700; white-space: nowrap; }
+  .staff-cust-sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .staff-badge { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .staff-badge.guest { background: var(--green-soft); color: var(--muted); }
+  .staff-badge.seen { background: var(--green-soft); color: var(--green-deep); }
+  .staff-badge.wait { background: #eef0ee; color: var(--muted); }
+  .staff-chip { display: inline-block; border-radius: 999px; background: #eef4ff; color: #2b5fa8; padding: 2px 8px; font-size: 12px; font-weight: 600; margin: 2px 3px 2px 0; }
+  .staff-cell-when { color: var(--muted); white-space: nowrap; }
+  #staffListMsg { text-align: center; }
+
   footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
   footer b { color: var(--ink); }
   footer p { margin-bottom: 4px; }
@@ -319,6 +341,41 @@
       <p>아직 받은 견적서가 없습니다.<br>담당자에게 문의해 주세요.</p>
       <a class="btn btn-primary" style="margin-top:16px" href="tel:1551-7704">📞 1551-7704 문의하기</a>
     </div>
+
+    <!-- 직원 전용: 번호 칸에 1551-7704 를 넣으면 열리는 로그인(위 openByPhone 참고).
+         열쇠는 고정 비번이 아니라 직원 계정이다 — 서버 api/public/quote-admin/login 참고. -->
+    <div id="staffLogin" class="card auth-card" style="display:none">
+      <p class="staff-eyebrow">직원 전용</p>
+      <label for="staffId">직원 아이디</label>
+      <input type="text" id="staffId" autocomplete="username" placeholder="예: 임송화">
+      <label for="staffPw" style="margin-top:10px">비밀번호</label>
+      <input type="password" id="staffPw" autocomplete="current-password">
+      <button id="staffLoginBtn" class="btn btn-primary" type="button" style="margin-top:14px">로그인</button>
+      <p id="staffMsg" class="auth-msg"></p>
+      <button id="staffCancel" class="staff-link" type="button">← 견적서 조회로</button>
+    </div>
+
+    <div id="staffList" style="display:none">
+      <div class="staff-bar">
+        <span id="staffWho" class="staff-who"></span>
+        <button id="staffOut" class="staff-link" type="button">로그아웃</button>
+      </div>
+      <div class="staff-table-wrap">
+        <table class="staff-table">
+          <thead>
+            <tr>
+              <th class="l">고객</th>
+              <th class="l">가견적서</th>
+              <th>보낸 날짜</th>
+              <th>확인</th>
+              <th class="l">마음에 걸리는 부분</th>
+            </tr>
+          </thead>
+          <tbody id="staffRows"></tbody>
+        </table>
+      </div>
+      <p id="staffListMsg" class="auth-msg"></p>
+    </div>
   </div>
 </section>
 
@@ -363,6 +420,11 @@
   // 바로 열람 토큰을 준다 — 그 뒤(/me · /me/concerns)는 예전 그대로다.
   var API = 'https://gh-point.com/api/public/quote';
   var TOKEN_KEY = 'ghgp_quote_token';
+  /* 직원 전용 가견적서 목록 창구 — 번호 칸에 대표번호(1551-7704)를 넣으면 열린다.
+     열쇠는 고정 비번이 아니라 직원 계정이다(서버 api/public/quote-admin/*). */
+  var ADMIN_API = 'https://gh-point.com/api/public/quote-admin';
+  var STAFF_TRIGGER = '15517704';                 // 1551-7704 (숫자만)
+  var STAFF_TOKEN_KEY = 'ghgp_staff_token';        // 직원 세션 토큰(30일). 로그아웃으로 지운다.
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
@@ -373,10 +435,13 @@
     downloadBtn: $('downloadBtn'), printBtn: $('printBtn'),
     zoom: $('zoom'), zoomBody: $('zoomBody'), zoomImg: $('zoomImg'), zoomLabel: $('zoomLabel'),
     zoomClose: $('zoomClose'), zoomNav: $('zoomNav'), zoomPrev: $('zoomPrev'), zoomNext: $('zoomNext'),
+    staffLogin: $('staffLogin'), staffList: $('staffList'), staffId: $('staffId'), staffPw: $('staffPw'),
+    staffLoginBtn: $('staffLoginBtn'), staffMsg: $('staffMsg'), staffCancel: $('staffCancel'),
+    staffWho: $('staffWho'), staffOut: $('staffOut'), staffRows: $('staffRows'), staffListMsg: $('staffListMsg'),
   };
 
   function show(step) {
-    ['phoneStep', 'quoteView', 'emptyView'].forEach(function (id) {
+    ['phoneStep', 'quoteView', 'emptyView', 'staffLogin', 'staffList'].forEach(function (id) {
       els[id].style.display = id === step ? '' : 'none';
     });
   }
@@ -413,6 +478,7 @@
 
   async function openByPhone() {
     var phone = normPhone(els.phoneInput.value);
+    if (phone === STAFF_TRIGGER) { enterStaff(); return; }   // 대표번호 → 직원 창구
     if (phone.length < 10) { setMsg(els.phoneMsg, '휴대폰 번호를 정확히 입력해 주세요.', 'err'); return; }
     els.openBtn.disabled = true;
     setMsg(els.phoneMsg, '');
@@ -424,6 +490,125 @@
   }
   els.openBtn.addEventListener('click', openByPhone);
   els.phoneInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') openByPhone(); });
+
+  /* ── 직원 전용: 가견적서 목록 보기 ────────────────────────────────────────────
+     번호 칸에 대표번호(1551-7704)를 넣으면 직원 로그인이 뜨고, 개별 직원 계정으로
+     로그인하면 가견적서 목록을 영업 시스템과 같은 표로 본다(읽기 전용).
+     열쇠는 고정 비번이 아니라 직원 계정이다 — 서버가 계정별 bcrypt·무차별 대입 차단으로
+     검증한다(api/public/quote-admin/*). 토큰은 이 브라우저에만 저장하고 [로그아웃]으로 지운다. */
+  function getStaffToken() { try { return localStorage.getItem(STAFF_TOKEN_KEY) || ''; } catch (e) { return ''; } }
+  function setStaffToken(t) { try { localStorage.setItem(STAFF_TOKEN_KEY, t); } catch (e) {} }
+  function clearStaffToken() { try { localStorage.removeItem(STAFF_TOKEN_KEY); } catch (e) {} }
+
+  async function adminReq(path, opts) {
+    opts = opts || {};
+    var headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+    var res;
+    try {
+      res = await fetch(ADMIN_API + path, {
+        method: opts.method || 'GET', headers: headers,
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+    } catch (e) { return { ok: false, status: 0, data: {}, reason: '연결이 잠시 끊겼습니다. 잠시 뒤 다시 시도해 주세요.' }; }
+    var data = null; try { data = await res.json(); } catch (e) {}
+    data = data || {};
+    var reason = data.error && data.error.message ? data.error.message : data.reason;
+    return { ok: res.ok, status: res.status, data: data, reason: reason };
+  }
+
+  function enterStaff() {
+    setMsg(els.phoneMsg, '');
+    if (getStaffToken()) { loadStaffList(); return; }
+    setMsg(els.staffMsg, '');
+    show('staffLogin');
+    setTimeout(function () { els.staffId.focus(); }, 0);
+  }
+
+  async function staffLogin() {
+    var name = (els.staffId.value || '').trim();
+    var pw = els.staffPw.value || '';
+    if (!name || !pw) { setMsg(els.staffMsg, '아이디와 비밀번호를 입력해 주세요.', 'err'); return; }
+    els.staffLoginBtn.disabled = true;
+    setMsg(els.staffMsg, '');
+    var r = await adminReq('/login', { method: 'POST', body: { name: name, password: pw, remember: true } });
+    els.staffLoginBtn.disabled = false;
+    if (!r.ok) { setMsg(els.staffMsg, r.reason || '로그인하지 못했습니다.', 'err'); return; }
+    setStaffToken(r.data.token);
+    els.staffPw.value = '';
+    els.staffWho.textContent = (r.data.staff && r.data.staff.name ? r.data.staff.name + ' 님 · ' : '') + '가견적서 목록';
+    await loadStaffList();
+  }
+
+  async function loadStaffList() {
+    var token = getStaffToken();
+    if (!token) { show('staffLogin'); return; }
+    if (!els.staffWho.textContent) els.staffWho.textContent = '가견적서 목록';
+    show('staffList');
+    setMsg(els.staffListMsg, '불러오는 중…');
+    var r = await adminReq('/quotes', { headers: { Authorization: 'Bearer ' + token } });
+    if (r.status === 401) {
+      clearStaffToken();
+      setMsg(els.staffMsg, '로그인이 만료됐습니다. 다시 로그인해 주세요.', 'err');
+      show('staffLogin'); setTimeout(function () { els.staffId.focus(); }, 0);
+      return;
+    }
+    if (!r.ok) { setMsg(els.staffListMsg, r.reason || '목록을 불러오지 못했습니다.', 'err'); return; }
+    setMsg(els.staffListMsg, '');
+    renderStaffRows(r.data.quotes || []);
+  }
+
+  function fmtPhone(v) {
+    var d = normPhone(v);
+    if (d.length === 11) return d.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+    if (d.length === 10) return d.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+    return v || '';
+  }
+  function elm(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function renderStaffRows(quotes) {
+    els.staffRows.innerHTML = '';
+    if (!quotes.length) {
+      var tr0 = elm('tr'); var td0 = elm('td', 'staff-empty l', '보낸 가견적서가 없습니다.');
+      td0.colSpan = 5; tr0.appendChild(td0); els.staffRows.appendChild(tr0); return;
+    }
+    quotes.forEach(function (q) {
+      var tr = elm('tr');
+      var rc = q.recipient || {};
+      var c = elm('td', 'l');
+      if (rc.type === 'member') {
+        c.appendChild(elm('div', 'staff-cust-name', rc.name || ''));
+        c.appendChild(elm('div', 'staff-cust-sub', rc.phone ? fmtPhone(rc.phone) : ''));
+      } else {
+        c.appendChild(elm('div', 'staff-cust-name', fmtPhone(rc.phone || '')));
+        var sub = elm('div', 'staff-cust-sub'); sub.appendChild(elm('span', 'staff-badge guest', '비회원 · 영업 페이지')); c.appendChild(sub);
+      }
+      tr.appendChild(c);
+
+      var t = elm('td', 'l'); t.textContent = (q.title || '') + ' ';
+      var pc = elm('span', null, '(' + (q.pageCount || 0) + '쪽)'); pc.style.color = 'var(--muted)'; t.appendChild(pc);
+      tr.appendChild(t);
+
+      tr.appendChild(elm('td', 'staff-cell-when', q.when || ''));
+
+      var v = elm('td');
+      v.appendChild(q.viewedAt ? elm('span', 'staff-badge seen', '확인함') : elm('span', 'staff-badge wait', '아직'));
+      tr.appendChild(v);
+
+      var cc = elm('td', 'l');
+      var labels = q.concernLabels || [];
+      if (!labels.length) { cc.appendChild(elm('span', 'staff-empty', q.viewedAt ? '고른 것 없음' : '-')); }
+      else { labels.forEach(function (lb) { cc.appendChild(elm('span', 'staff-chip', lb)); }); }
+      tr.appendChild(cc);
+
+      els.staffRows.appendChild(tr);
+    });
+  }
+
+  els.staffLoginBtn.addEventListener('click', staffLogin);
+  els.staffId.addEventListener('keydown', function (e) { if (e.key === 'Enter') els.staffPw.focus(); });
+  els.staffPw.addEventListener('keydown', function (e) { if (e.key === 'Enter') staffLogin(); });
+  els.staffCancel.addEventListener('click', function () { setMsg(els.staffMsg, ''); els.phoneInput.value = ''; show('phoneStep'); });
+  els.staffOut.addEventListener('click', function () { clearStaffToken(); els.staffWho.textContent = ''; els.phoneInput.value = ''; show('phoneStep'); });
 
   /* ── 마음에 걸리는 부분 — 눌러서 고르고 [제출하기]로 한 번에 보낸다 ──
      그전에는 누를 때마다 바로 저장했다. 이제 고른 것은 이 화면에만 있고, [제출하기]를
