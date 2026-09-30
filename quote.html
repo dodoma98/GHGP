@@ -181,6 +181,18 @@
   .staff-chip { display: inline-block; border-radius: 999px; background: #eef4ff; color: #2b5fa8; padding: 2px 8px; font-size: 12px; font-weight: 600; margin: 2px 3px 2px 0; }
   .staff-cell-when { color: var(--muted); white-space: nowrap; }
   #staffListMsg { text-align: center; }
+  /* 줄을 누르면 보낸 견적서를 본다(외근 확인용) */
+  .staff-table tbody tr.tap { cursor: pointer; transition: background .12s; }
+  .staff-table tbody tr.tap:hover { background: var(--green-soft); }
+  .staff-hint { text-align: center; color: var(--muted); font-size: 13px; margin: -4px 0 12px; }
+  .staff-see { color: var(--green-deep); font-weight: 700; }
+  /* 모바일(외근): 고객 · 견적서 · 보낸 날짜 세 칸만 (확인·마음에 걸리는 부분은 숨긴다) */
+  @media (max-width: 640px) {
+    .staff-table th:nth-child(4), .staff-table td:nth-child(4),
+    .staff-table th:nth-child(5), .staff-table td:nth-child(5) { display: none; }
+    .staff-table th, .staff-table td { padding: 12px 10px; }
+    .staff-table-wrap { overflow-x: visible; }
+  }
 
   footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
   footer b { color: var(--ink); }
@@ -360,6 +372,7 @@
         <span id="staffWho" class="staff-who"></span>
         <button id="staffOut" class="staff-link" type="button">로그아웃</button>
       </div>
+      <p class="staff-hint">줄을 누르면 <span class="staff-see">보낸 견적서</span>를 볼 수 있어요.</p>
       <div class="staff-table-wrap">
         <table class="staff-table">
           <thead>
@@ -557,6 +570,32 @@
     renderStaffRows(r.data.quotes || []);
   }
 
+  /* 목록의 한 줄을 누르면 그 고객에게 보낸 가견적서(쪽 이미지)를 사진 뷰어로 연다.
+     뷰어(zoom)는 고객 화면과 같은 것을 재사용한다 — 동시에 뜨지 않으므로 pages·title 을
+     공유해도 된다. 외근 중 바로 확인하는 자리다(임송화 지시 2026-09-30). */
+  async function openStaffQuote(id) {
+    var token = getStaffToken();
+    if (!token) { show('staffLogin'); return; }
+    setMsg(els.staffListMsg, '견적서를 여는 중…');
+    var r = await adminReq('/quotes/' + id, { headers: { Authorization: 'Bearer ' + token } });
+    if (r.status === 401) {
+      clearStaffToken();
+      setMsg(els.staffMsg, '로그인이 만료됐습니다. 다시 로그인해 주세요.', 'err');
+      show('staffLogin'); setTimeout(function () { els.staffId.focus(); }, 0);
+      return;
+    }
+    if (!r.ok) { setMsg(els.staffListMsg, r.reason || '견적서를 불러오지 못했습니다.', 'err'); return; }
+    setMsg(els.staffListMsg, '');
+    var quote = r.data.quote || {};
+    var qp = quote.pages || [];
+    if (!qp.length) { setMsg(els.staffListMsg, '이 가견적서에는 쪽 이미지가 없습니다.', 'err'); return; }
+    var rc = quote.recipient || {};
+    var who = rc.type === 'member' ? (rc.name || '') : fmtPhone(rc.phone || '');
+    pages = qp;
+    title = (who ? who + ' · ' : '') + (quote.title || '견적서');
+    zoomOpen(0);
+  }
+
   function fmtPhone(v) {
     var d = normPhone(v);
     if (d.length === 11) return d.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
@@ -572,7 +611,8 @@
       td0.colSpan = 5; tr0.appendChild(td0); els.staffRows.appendChild(tr0); return;
     }
     quotes.forEach(function (q) {
-      var tr = elm('tr');
+      var tr = elm('tr', 'tap');
+      tr.addEventListener('click', function () { openStaffQuote(q.id); });   // 누르면 보낸 견적서
       var rc = q.recipient || {};
       var c = elm('td', 'l');
       if (rc.type === 'member') {
@@ -666,7 +706,7 @@
     zi = i;
     els.zoomImg.src = pages[i];
     els.zoomImg.alt = title + ' ' + (i + 1) + '쪽';
-    els.zoomLabel.textContent = pages.length > 1 ? (i + 1) + ' / ' + pages.length + '쪽' : title;
+    els.zoomLabel.textContent = title + (pages.length > 1 ? ' · ' + (i + 1) + '/' + pages.length + '쪽' : '');
     els.zoomBody.classList.remove('big');
     els.zoomNav.style.display = pages.length > 1 ? '' : 'none';
     els.zoomPrev.disabled = i === 0;
