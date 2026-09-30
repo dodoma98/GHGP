@@ -24,3 +24,12 @@ CREATE INDEX IF NOT EXISTS idx_hits_site_event ON hits (site, event, day);
 -- 아래 두 줄이 그 조회를 범위 검색으로 바꿔 줍니다.
 CREATE INDEX IF NOT EXISTS idx_hits_event_ts      ON hits (event, ts);
 CREATE INDEX IF NOT EXISTS idx_hits_site_event_ts ON hits (site, event, ts);
+
+-- 대시보드 로그인 무차별 대입 방어(보안 검수 2026-09-30). 회선(IP) 하나가 일정 시간
+-- 안에 너무 자주 틀리면 잠깐 잠급니다. 개인정보가 아니라 시도 횟수만 남습니다.
+CREATE TABLE IF NOT EXISTS login_fails (
+  ip           TEXT PRIMARY KEY,
+  count        INTEGER NOT NULL DEFAULT 0,
+  window_start INTEGER NOT NULL,   -- 이 창이 시작된 시각 (unix seconds)
+  locked_until INTEGER NOT NULL DEFAULT 0
+);
