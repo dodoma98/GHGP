@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>견적서 받기 — 그린홈시스 | LX하우시스 완성창 대리점</title>
-<meta name="description" content="그린홈시스 견적서 — 휴대폰 번호 인증 후 본인의 견적서를 확인하고, 마음에 걸리는 부분을 남겨 주세요.">
+<meta name="description" content="그린홈시스 견적서 — 휴대폰 번호를 입력하고 본인의 견적서를 확인한 뒤, 마음에 걸리는 부분을 남겨 주세요.">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -176,6 +176,46 @@
   @media (max-width: 430px) { .gnb-inner { gap: 8px; } .logo-img { height: 26px; } .gnb nav { font-size: 14px; } .gnb nav a { padding: 0 5px; } }
   @media (max-width: 370px) { .logo-img { height: 24px; } .gnb nav { font-size: 13px; } .gnb nav a { padding: 0 4px; } }
   @media (max-width: 340px) { .logo-img { height: 22px; } .gnb nav { font-size: 12px; } .gnb nav a { padding: 0 3px; } }
+
+  /* 견적서 머리 — 제목 옆 [다운로드] [인쇄] [다른 번호로 보기] (임송화 지시 2026-09-30) */
+  .quote-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .quote-pages img { cursor: zoom-in; }
+  .quote-left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .zoom-hint { font-size: 13px; color: var(--muted); }
+
+  /* [제출하기] — 누른 것을 바로 저장하지 않고 모아서 보낸다(임송화 지시 2026-09-30) */
+  .concern-submit { margin-top: 14px; }
+  .concern-note { margin-top: 10px; font-size: 12.5px; color: #8a948c; line-height: 1.5; }
+
+  /* 사진 크게 보기 — 누르면 화면 가득, 한 번 더 누르면 원래 크기로 키워 손가락으로 옮겨 본다 */
+  .zoom { position: fixed; inset: 0; z-index: 200; background: #111a14;
+    display: none; flex-direction: column; }
+  .zoom.open { display: flex; }
+  .zoom-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 14px; color: #fff; font-size: 14px; font-weight: 700; flex: none; }
+  .zoom-close { background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 999px;
+    min-width: 44px; height: 44px; padding: 0 16px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .zoom-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center;
+    -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y pinch-zoom; }
+  .zoom-body img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; }
+  .zoom-body.big { display: block; }
+  .zoom-body.big img { max-width: none; max-height: none; width: auto; cursor: zoom-out; }
+  .zoom-nav { display: flex; justify-content: center; gap: 10px; padding: 10px 14px 16px; flex: none; }
+  .zoom-nav button { background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 999px;
+    height: 44px; padding: 0 18px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .zoom-nav button:disabled { opacity: .35; cursor: default; }
+
+  /* 인쇄 — 견적서 쪽 그림만 나간다(머리·메뉴·체크 칸·상담 버튼은 빼고) */
+  @media print {
+    body > :not(section) { display: none !important; }
+    section { padding: 0; min-height: 0; }
+    .sec-head, .quote-head, .quote-concerns, .auth-card, .zoom-hint { display: none !important; }
+    .quote-grid { display: block; }
+    .quote-pages { gap: 0; }
+    .quote-pages img { border: 0; border-radius: 0; box-shadow: none; width: 100%;
+      break-after: page; page-break-after: always; }
+    .quote-pages img:last-child { break-after: auto; page-break-after: auto; }
+  }
 </style>
 </head>
 <body>
@@ -200,36 +240,37 @@
     <div class="sec-head">
       <span class="eyebrow">Quote</span>
       <h2>견적서 받기</h2>
-      <p>휴대폰 번호로 본인인증 후,<br>담당자가 보내드린 견적서를 확인하실 수 있습니다.</p>
+      <p>휴대폰 번호를 입력하시면<br>담당자가 보내드린 견적서를 바로 확인하실 수 있습니다.</p>
     </div>
 
     <div id="phoneStep" class="card auth-card">
       <label for="phoneInput">휴대폰 번호</label>
       <input type="tel" id="phoneInput" placeholder="01012345678" inputmode="numeric" autocomplete="tel">
-      <button id="reqCodeBtn" class="btn btn-primary" type="button">인증번호 받기</button>
+      <button id="openBtn" class="btn btn-primary" type="button">견적서 보기</button>
       <p id="phoneMsg" class="auth-msg"></p>
-    </div>
-
-    <div id="codeStep" class="card auth-card" style="display:none">
-      <label for="codeInput">인증번호 (6자리)</label>
-      <input type="tel" id="codeInput" maxlength="6" placeholder="숫자 6자리" inputmode="numeric" autocomplete="one-time-code">
-      <button id="verifyBtn" class="btn btn-primary" type="button">확인</button>
-      <button id="resendBtn" class="btn btn-ghost" type="button">다른 번호로 다시 받기</button>
-      <p id="codeMsg" class="auth-msg"></p>
     </div>
 
     <div id="quoteView" style="display:none">
       <div class="quote-head">
         <h3 id="quoteTitle"></h3>
-        <button id="logoutBtn" class="btn btn-ghost" type="button">다른 번호로 보기</button>
+        <div class="quote-actions">
+          <button id="downloadBtn" class="btn btn-ghost" type="button">다운로드</button>
+          <button id="printBtn" class="btn btn-ghost" type="button">인쇄</button>
+          <button id="logoutBtn" class="btn btn-ghost" type="button">다른 번호로 보기</button>
+        </div>
       </div>
       <div class="quote-grid">
-        <div class="quote-pages" id="quotePages"></div>
+        <div class="quote-left">
+          <p class="zoom-hint">사진을 누르면 크게 볼 수 있어요.</p>
+          <div id="quotePages" class="quote-pages"></div>
+        </div>
         <div class="quote-concerns card">
           <p class="concern-head">마음에 걸리는 부분이 있나요?</p>
-          <p class="concern-sub">해당하는 것을 눌러 주세요. 담당자가 확인하고 도와드립니다.</p>
+          <p class="concern-sub">해당하는 것을 누른 뒤 [제출하기]를 눌러 주세요. 담당자가 확인하고 도와드립니다.</p>
           <div id="concernList" class="concern-list"></div>
+          <button id="submitBtn" class="btn btn-primary concern-submit" type="button">제출하기</button>
           <p id="concernMsg" class="auth-msg"></p>
+          <p class="concern-note">고객님의 의견은 본사의 제품 개선에 활용됩니다. 감사합니다.</p>
         </div>
       </div>
     </div>
@@ -240,6 +281,18 @@
     </div>
   </div>
 </section>
+
+<div id="zoom" class="zoom" role="dialog" aria-modal="true" aria-label="견적서 크게 보기">
+  <div class="zoom-bar">
+    <span id="zoomLabel"></span>
+    <button id="zoomClose" class="zoom-close" type="button">닫기 ✕</button>
+  </div>
+  <div id="zoomBody" class="zoom-body"><img id="zoomImg" alt=""></div>
+  <div id="zoomNav" class="zoom-nav">
+    <button id="zoomPrev" type="button">‹ 이전</button>
+    <button id="zoomNext" type="button">다음 ›</button>
+  </div>
+</div>
 
 <footer>
   <div class="container">
@@ -253,33 +306,26 @@
 <script>
 (function () {
   // 가견적서 기능은 지원 콘솔(greenhome-mileage)로 옮겼다(2026-09-22, "가견적서 기능은
-  // 전부 지원 콘솔로"). 화면·절차는 그대로고 뒷단 주소만 바뀌었다.
+  // 전부 지원 콘솔로"). 뒷단 주소가 그쪽이다.
+  // 2026-09-30 부터 **문자 인증이 없다**(임송화 지시 "핸드폰 인증번호 받기 기능 빼기 —
+  // 핸드폰 번호를 누르고 해당 고객이 견적서를 바로 볼 수 있게"). 번호를 넣으면 /open 이
+  // 바로 열람 토큰을 준다 — 그 뒤(/me · /me/concerns)는 예전 그대로다.
   var API = 'https://gh-point.com/api/public/quote';
   var TOKEN_KEY = 'ghgp_quote_token';
 
+  var $ = function (id) { return document.getElementById(id); };
   var els = {
-    phoneStep: document.getElementById('phoneStep'),
-    codeStep: document.getElementById('codeStep'),
-    quoteView: document.getElementById('quoteView'),
-    emptyView: document.getElementById('emptyView'),
-    phoneInput: document.getElementById('phoneInput'),
-    phoneMsg: document.getElementById('phoneMsg'),
-    reqCodeBtn: document.getElementById('reqCodeBtn'),
-    codeInput: document.getElementById('codeInput'),
-    codeMsg: document.getElementById('codeMsg'),
-    verifyBtn: document.getElementById('verifyBtn'),
-    resendBtn: document.getElementById('resendBtn'),
-    quoteTitle: document.getElementById('quoteTitle'),
-    quotePages: document.getElementById('quotePages'),
-    concernList: document.getElementById('concernList'),
-    concernMsg: document.getElementById('concernMsg'),
-    logoutBtn: document.getElementById('logoutBtn'),
+    phoneStep: $('phoneStep'), quoteView: $('quoteView'), emptyView: $('emptyView'),
+    phoneInput: $('phoneInput'), phoneMsg: $('phoneMsg'), openBtn: $('openBtn'),
+    quoteTitle: $('quoteTitle'), quotePages: $('quotePages'),
+    concernList: $('concernList'), concernMsg: $('concernMsg'), submitBtn: $('submitBtn'),
+    logoutBtn: $('logoutBtn'), downloadBtn: $('downloadBtn'), printBtn: $('printBtn'),
+    zoom: $('zoom'), zoomBody: $('zoomBody'), zoomImg: $('zoomImg'), zoomLabel: $('zoomLabel'),
+    zoomClose: $('zoomClose'), zoomNav: $('zoomNav'), zoomPrev: $('zoomPrev'), zoomNext: $('zoomNext'),
   };
 
-  var pendingPhone = '';
-
   function show(step) {
-    ['phoneStep', 'codeStep', 'quoteView', 'emptyView'].forEach(function (id) {
+    ['phoneStep', 'quoteView', 'emptyView'].forEach(function (id) {
       els[id].style.display = id === step ? '' : 'none';
     });
   }
@@ -289,152 +335,196 @@
   }
   function normPhone(v) { return String(v || '').replace(/[^0-9]/g, ''); }
 
-  function getToken() {
-    try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
-  }
-  function setToken(t) {
-    try { sessionStorage.setItem(TOKEN_KEY, t); } catch (e) {}
-  }
-  function clearToken() {
-    try { sessionStorage.removeItem(TOKEN_KEY); } catch (e) {}
-  }
+  function getToken() { try { return sessionStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; } }
+  function setToken(t) { try { sessionStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
+  function clearToken() { try { sessionStorage.removeItem(TOKEN_KEY); } catch (e) {} }
 
   async function api(path, opts) {
     opts = opts || {};
     var headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
-    var res = await fetch(API + path, {
-      method: opts.method || 'GET',
-      headers: headers,
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-    });
+    var res;
+    try {
+      res = await fetch(API + path, {
+        method: opts.method || 'GET',
+        headers: headers,
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+    } catch (e) {
+      return { ok: false, status: 0, data: {}, reason: '연결이 잠시 끊겼습니다. 잠시 뒤 다시 시도해 주세요.' };
+    }
     var data = null;
     try { data = await res.json(); } catch (e) {}
     data = data || {};
-    // 서버 오류는 { error: { code, message } } 모양이다(greenhome-mileage 규약,
-    // src/server/errors.ts) — GHGP 쪽 옛 Cloudflare 응답({ reason })과 다르다.
+    // 서버 오류는 { error: { code, message } } 모양이다(greenhome-mileage src/server/errors.ts).
     var reason = data.error && data.error.message ? data.error.message : data.reason;
     return { ok: res.ok, status: res.status, data: data, reason: reason };
   }
 
-  els.reqCodeBtn.addEventListener('click', async function () {
+  async function openByPhone() {
     var phone = normPhone(els.phoneInput.value);
-    if (phone.length < 9) { setMsg(els.phoneMsg, '휴대폰 번호를 정확히 입력해 주세요.', 'err'); return; }
-    els.reqCodeBtn.disabled = true;
+    if (phone.length < 10) { setMsg(els.phoneMsg, '휴대폰 번호를 정확히 입력해 주세요.', 'err'); return; }
+    els.openBtn.disabled = true;
     setMsg(els.phoneMsg, '');
-    var r = await api('/request-code', { method: 'POST', body: { phone: phone } });
-    els.reqCodeBtn.disabled = false;
-    if (!r.ok) {
-      setMsg(els.phoneMsg, r.reason || '요청에 실패했습니다.', 'err');
-      return;
-    }
-    pendingPhone = phone;
-    els.codeInput.value = '';
-    setMsg(els.codeMsg, '인증번호를 문자로 보내드렸습니다.', 'ok');
-    show('codeStep');
-    els.codeInput.focus();
-  });
-
-  els.resendBtn.addEventListener('click', function () {
-    setMsg(els.phoneMsg, '');
-    show('phoneStep');
-    els.phoneInput.focus();
-  });
-
-  els.verifyBtn.addEventListener('click', async function () {
-    var code = normPhone(els.codeInput.value);
-    if (code.length !== 6) { setMsg(els.codeMsg, '인증번호 6자리를 입력해 주세요.', 'err'); return; }
-    els.verifyBtn.disabled = true;
-    var r = await api('/verify-code', { method: 'POST', body: { phone: pendingPhone, code: code } });
-    els.verifyBtn.disabled = false;
-    if (!r.ok) {
-      setMsg(els.codeMsg, r.reason || '인증에 실패했습니다.', 'err');
-      return;
-    }
+    var r = await api('/open', { method: 'POST', body: { phone: phone } });
+    els.openBtn.disabled = false;
+    if (!r.ok) { setMsg(els.phoneMsg, r.reason || '견적서를 불러오지 못했습니다.', 'err'); return; }
     setToken(r.data.token);
     await loadQuote();
-  });
+  }
+  els.openBtn.addEventListener('click', openByPhone);
+  els.phoneInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') openByPhone(); });
 
   els.logoutBtn.addEventListener('click', function () {
     clearToken();
-    pendingPhone = '';
     els.phoneInput.value = '';
+    setMsg(els.phoneMsg, '');
     show('phoneStep');
   });
 
-  function renderConcerns(quote, options) {
-    var picked = quote.concerns || [];
+  /* ── 마음에 걸리는 부분 — 눌러서 고르고 [제출하기]로 한 번에 보낸다 ──
+     그전에는 누를 때마다 바로 저장했다. 이제 고른 것은 이 화면에만 있고, [제출하기]를
+     눌러야 담당자에게 간다(임송화 지시 2026-09-30). 저장된 것과 같으면 버튼이 «제출 완료». */
+  var saved = [];     // 서버에 저장된 것
+  var picked = [];    // 지금 화면에서 고른 것
+  var options = [];
+  function same(a, b) { return a.length === b.length && a.every(function (k) { return b.indexOf(k) > -1; }); }
+
+  function renderConcerns() {
     els.concernList.innerHTML = '';
     options.forEach(function (c) {
+      var on = picked.indexOf(c.key) > -1;
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'concern-btn' + (picked.indexOf(c.key) > -1 ? ' on' : '');
-      btn.innerHTML = '<span class="dot">' + (picked.indexOf(c.key) > -1 ? '✓' : '') + '</span><span>' + c.label + '</span>';
-      btn.addEventListener('click', function () { toggleConcern(c.key, options); });
+      btn.className = 'concern-btn' + (on ? ' on' : '');
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var dot = document.createElement('span'); dot.className = 'dot'; dot.textContent = on ? '✓' : '';
+      var label = document.createElement('span'); label.textContent = c.label;
+      btn.appendChild(dot); btn.appendChild(label);
+      btn.addEventListener('click', function () {
+        picked = on ? picked.filter(function (k) { return k !== c.key; }) : picked.concat([c.key]);
+        setMsg(els.concernMsg, '');
+        renderConcerns();
+      });
       els.concernList.appendChild(btn);
     });
+    var done = same(picked, saved);
+    els.submitBtn.disabled = done;
+    els.submitBtn.textContent = done && saved.length > 0 ? '제출 완료' : '제출하기';
   }
 
-  var currentConcerns = [];
-  var currentOptions = [];
-
-  async function toggleConcern(key) {
-    var prev = currentConcerns.slice();
-    var next = currentConcerns.indexOf(key) > -1
-      ? currentConcerns.filter(function (k) { return k !== key; })
-      : currentConcerns.concat([key]);
-    currentConcerns = next;
-    renderConcerns({ concerns: next }, currentOptions);
+  els.submitBtn.addEventListener('click', async function () {
+    els.submitBtn.disabled = true;
     setMsg(els.concernMsg, '');
     var r = await api('/me/concerns', {
       method: 'PATCH',
       headers: { Authorization: 'Bearer ' + getToken() },
-      body: { concerns: next },
+      body: { concerns: picked },
     });
     if (!r.ok) {
-      currentConcerns = prev;
-      renderConcerns({ concerns: prev }, currentOptions);
-      setMsg(els.concernMsg, r.reason || '저장하지 못했습니다. 다시 눌러 주세요.', 'err');
+      setMsg(els.concernMsg, r.reason || '제출하지 못했습니다. 다시 눌러 주세요.', 'err');
+      els.submitBtn.disabled = false;
       return;
     }
-    currentConcerns = r.data.concerns || next;
+    saved = (r.data.concerns || picked).slice();
+    picked = saved.slice();
+    renderConcerns();
+    setMsg(els.concernMsg, '제출했습니다. 담당자가 확인하고 연락드리겠습니다.', 'ok');
+  });
+
+  /* ── 사진 크게 보기 ── */
+  var pages = [], title = '', zi = 0;
+  function zoomShow(i) {
+    zi = i;
+    els.zoomImg.src = pages[i];
+    els.zoomImg.alt = title + ' ' + (i + 1) + '쪽';
+    els.zoomLabel.textContent = pages.length > 1 ? (i + 1) + ' / ' + pages.length + '쪽' : title;
+    els.zoomBody.classList.remove('big');
+    els.zoomNav.style.display = pages.length > 1 ? '' : 'none';
+    els.zoomPrev.disabled = i === 0;
+    els.zoomNext.disabled = i === pages.length - 1;
   }
+  function zoomOpen(i) {
+    zoomShow(i);
+    els.zoom.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    els.zoomClose.focus();
+  }
+  function zoomClose() {
+    els.zoom.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  els.zoomClose.addEventListener('click', zoomClose);
+  els.zoomPrev.addEventListener('click', function () { if (zi > 0) zoomShow(zi - 1); });
+  els.zoomNext.addEventListener('click', function () { if (zi < pages.length - 1) zoomShow(zi + 1); });
+  els.zoomImg.addEventListener('click', function (e) { e.stopPropagation(); els.zoomBody.classList.toggle('big'); });
+  els.zoomBody.addEventListener('click', function (e) { if (e.target === els.zoomBody) zoomClose(); });
+  document.addEventListener('keydown', function (e) {
+    if (!els.zoom.classList.contains('open')) return;
+    if (e.key === 'Escape') zoomClose();
+    else if (e.key === 'ArrowLeft' && zi > 0) zoomShow(zi - 1);
+    else if (e.key === 'ArrowRight' && zi < pages.length - 1) zoomShow(zi + 1);
+  });
+
+  /* ── 다운로드 · 인쇄 ──
+     쪽 그림은 data URL 로 온다. 다운로드는 쪽마다 한 파일(쪽이 여럿이면 차례로),
+     인쇄는 인쇄 전용 스타일(@media print)이 쪽 그림만 남긴다. */
+  function extOf(src) {
+    var m = /^data:image\/(\w+)/.exec(src || '');
+    var t = m ? m[1].toLowerCase() : 'jpeg';
+    return t === 'jpeg' ? 'jpg' : t;
+  }
+  function safeName(t) { return String(t || '견적서').replace(/[\\/:*?"<>|]+/g, ' ').trim() || '견적서'; }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  els.downloadBtn.addEventListener('click', async function () {
+    els.downloadBtn.disabled = true;
+    try {
+      for (var i = 0; i < pages.length; i++) {
+        var blob = await (await fetch(pages[i])).blob();
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = safeName(title) + (pages.length > 1 ? '_' + (i + 1) : '') + '.' + extOf(pages[i]);
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function (u) { return function () { URL.revokeObjectURL(u); }; }(url), 4000);
+        if (i < pages.length - 1) await sleep(400);  // 한꺼번에 누르면 브라우저가 뒤 파일을 막는다
+      }
+    } finally { els.downloadBtn.disabled = false; }
+  });
+  els.printBtn.addEventListener('click', function () { window.print(); });
 
   async function loadQuote() {
     var token = getToken();
     if (!token) { show('phoneStep'); return; }
     var r = await api('/me', { headers: { Authorization: 'Bearer ' + token } });
-    if (!r.ok) {
-      clearToken();
-      show('phoneStep');
-      return;
-    }
-    if (!r.data.quote) {
-      show('emptyView');
-      return;
-    }
+    if (!r.ok) { clearToken(); show('phoneStep'); return; }
+    if (!r.data.quote) { show('emptyView'); return; }
     var quote = r.data.quote;
-    currentConcerns = quote.concerns || [];
-    currentOptions = r.data.concernOptions || [];
+    saved = (quote.concerns || []).slice();
+    picked = saved.slice();
+    options = r.data.concernOptions || [];
+    title = quote.title;
+    pages = quote.pages || [];
     els.quoteTitle.textContent = quote.title;
     els.quotePages.innerHTML = '';
-    quote.pages.forEach(function (src, i) {
+    pages.forEach(function (src, i) {
       var img = document.createElement('img');
       img.src = src;
       img.alt = quote.title + ' ' + (i + 1) + '쪽';
+      img.addEventListener('click', function () { zoomOpen(i); });
       els.quotePages.appendChild(img);
     });
-    renderConcerns(quote, currentOptions);
+    setMsg(els.concernMsg, '');
+    renderConcerns();
     show('quoteView');
   }
 
-  // 가견적서 배정 안내 문자의 링크(?phone=)를 타고 오면 번호를 미리 채워 준다 — 인증
-  // 자체를 건너뛰지는 않는다(문자 인증은 그대로 거친다), 그저 오타를 줄이는 편의다.
-  try {
-    var qsPhone = normPhone(new URLSearchParams(location.search).get('phone'));
-    if (qsPhone) els.phoneInput.value = qsPhone;
-  } catch (e) {}
-
-  loadQuote();
+  // 가견적서 배정 안내 문자의 링크(?phone=)를 타고 오면 번호를 채우고 **바로 연다**
+  // (인증번호 단계가 없어졌으므로 누를 것이 남지 않는다).
+  var qsPhone = '';
+  try { qsPhone = normPhone(new URLSearchParams(location.search).get('phone')); } catch (e) {}
+  // 링크의 번호로 늘 새로 연다 — 이 탭에 다른 번호의 토큰이 남아 있어도 그 번호 것을 보여 주지 않게.
+  if (qsPhone) { els.phoneInput.value = qsPhone; openByPhone(); }
+  else loadQuote();
 })();
 </script>
 
