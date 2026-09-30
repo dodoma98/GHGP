@@ -27,9 +27,18 @@
  *                              사무실 IP를 넣으면 그 회선의 방문은 기록되지 않습니다.
  *                              끝을 점으로 끝내면 앞부분만 일치해도 제외: 121.130.5.
  *                              (이 값도 저장되지 않고 비교에만 쓰입니다)
+ *
+ * 로그인 보안 (보안 검수 2026-09-30)
+ *  - 회선(IP) 하나가 LOGIN_WINDOW_SEC 안에 LOGIN_MAX_ATTEMPTS 번 틀리면
+ *    LOGIN_LOCK_SEC 동안 그 회선의 로그인을 막습니다(login_fails 표, D1).
+ *  - 비밀번호 비교는 SHA-256 해시를 고정 길이로 견주는 방식이라(safeEqual),
+ *    문자열을 앞에서부터 비교하며 생기는 타이밍 차이로 비밀번호를 추측할 수 없습니다.
  */
 
 const SESSION_HOURS = 12;
+const LOGIN_MAX_ATTEMPTS = 5;   // 이 횟수를 틀리면 잠깁니다
+const LOGIN_WINDOW_SEC = 300;   // 이 시간 안의 실패만 셉니다(5분)
+const LOGIN_LOCK_SEC = 300;     // 잠기면 이만큼 기다려야 합니다(5분)
 
 export default {
   async fetch(request, env) {
@@ -125,9 +134,12 @@ function allowedOrigins(env) {
   return (env.ALLOW_ORIGIN || '').split(',').map(normOrigin).filter(Boolean);
 }
 
+// ALLOW_ORIGIN 을 안 정해뒀으면(list 비어 있음) **거부합니다** — 예전에는 이럴 때 전부
+// 허용했는데, 설정을 깜빡한 채 배포하면 아무 사이트나 /collect 에 기록을 넣을 수 있었습니다
+// (보안 검수 2026-09-30). README 대로 ALLOW_ORIGIN 을 채워 두면 평소와 똑같이 동작합니다.
 function originAllowed(origin, env) {
   const list = allowedOrigins(env);
-  return list.length === 0 || list.includes(normOrigin(origin));
+  return list.length > 0 && list.includes(normOrigin(origin));
 }
 
 function siteNames(env) {
@@ -280,11 +292,46 @@ async function diag(env, request) {
 /* ───────────── 로그인 ───────────── */
 
 async function login(request, env) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const now = Math.floor(Date.now() / 1000);
+
+  // login_fails 표가 아직 D1에 없으면(schema.sql 을 새로 적용하기 전) 조용히 건너뜁니다 —
+  // 표 하나가 없다고 로그인 자체가 막히면 안 됩니다. 표를 만들면 그 순간부터 잠금이 걸립니다.
+  let fail = null;
+  try {
+    const failRow = await env.DB.prepare(
+      'SELECT count, window_start, locked_until FROM login_fails WHERE ip=?'
+    ).bind(ip).all();
+    fail = (failRow.results || [])[0];
+  } catch {}
+  if (fail && fail.locked_until > now) {
+    const waitMin = Math.ceil((fail.locked_until - now) / 60);
+    return html(LOGIN_HTML.replace('<!--ERR-->',
+      `<p class="err">시도가 너무 많습니다. ${waitMin}분 뒤 다시 시도해 주세요.</p>`), 429);
+  }
+
   const form = await request.formData();
   const pw = String(form.get('password') || '');
-  if (!env.DASH_PASSWORD || pw !== env.DASH_PASSWORD) {
+  const ok = !!env.DASH_PASSWORD && await safeEqual(pw, env.DASH_PASSWORD);
+
+  if (!ok) {
+    // 창(5분)이 지났으면 새로 세고, 안에 있으면 이어서 셉니다.
+    const inWindow = fail && fail.window_start > now - LOGIN_WINDOW_SEC;
+    const count = inWindow ? fail.count + 1 : 1;
+    const windowStart = inWindow ? fail.window_start : now;
+    const lockedUntil = count >= LOGIN_MAX_ATTEMPTS ? now + LOGIN_LOCK_SEC : 0;
+    try {
+      await env.DB.prepare(
+        'INSERT INTO login_fails (ip, count, window_start, locked_until) VALUES (?, ?, ?, ?) ' +
+        'ON CONFLICT(ip) DO UPDATE SET count=excluded.count, window_start=excluded.window_start, locked_until=excluded.locked_until'
+      ).bind(ip, count, windowStart, lockedUntil).run();
+    } catch {}
     return html(LOGIN_HTML.replace('<!--ERR-->', '<p class="err">비밀번호가 맞지 않습니다.</p>'), 401);
   }
+
+  // 성공 — 그 회선의 실패 기록을 지웁니다.
+  try { await env.DB.prepare('DELETE FROM login_fails WHERE ip=?').bind(ip).run(); } catch {}
+
   const exp = Date.now() + SESSION_HOURS * 3600 * 1000;
   const token = `${exp}.${await hmac(String(exp), env.SECRET || 'ghgp')}`;
   return new Response(null, {
@@ -324,6 +371,22 @@ async function hmac(msg, secret) {
   );
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(msg));
   return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// 비밀번호를 그냥 a !== b 로 견주면, 앞에서부터 한 글자씩 틀릴 때 빠져나오는 시간 차이로
+// 정답을 한 글자씩 추측하는 이론적 공격(타이밍 공격)이 가능합니다. 두 값을 먼저 같은
+// 길이의 해시로 바꾼 뒤, 앞부터 끝까지 전부 훑어 비교하면(먼저 틀려도 멈추지 않음)
+// 그 시간차가 사라집니다.
+async function safeEqual(a, b) {
+  const enc = new TextEncoder();
+  const [ha, hb] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(a)),
+    crypto.subtle.digest('SHA-256', enc.encode(b)),
+  ]);
+  const ua = new Uint8Array(ha), ub = new Uint8Array(hb);
+  let diff = 0;
+  for (let i = 0; i < ua.length; i++) diff |= ua[i] ^ ub[i];
+  return diff === 0;
 }
 
 async function dailyHash(raw, day, secret) {
