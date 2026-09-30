@@ -177,7 +177,7 @@
   @media (max-width: 370px) { .logo-img { height: 24px; } .gnb nav { font-size: 13px; } .gnb nav a { padding: 0 4px; } }
   @media (max-width: 340px) { .logo-img { height: 22px; } .gnb nav { font-size: 12px; } .gnb nav a { padding: 0 3px; } }
 
-  /* 견적서 머리 — 제목 옆 [다운로드] [인쇄] [다른 번호로 보기] (임송화 지시 2026-09-30) */
+  /* 견적서 머리 — 제목 옆 [다운로드] [인쇄] (임송화 지시 2026-09-30 · [다른 번호로 보기]는 같은 날 뺐다) */
   .quote-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .quote-pages img { cursor: zoom-in; }
   .quote-left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -256,7 +256,6 @@
         <div class="quote-actions">
           <button id="downloadBtn" class="btn btn-ghost" type="button">다운로드</button>
           <button id="printBtn" class="btn btn-ghost" type="button">인쇄</button>
-          <button id="logoutBtn" class="btn btn-ghost" type="button">다른 번호로 보기</button>
         </div>
       </div>
       <div class="quote-grid">
@@ -319,7 +318,7 @@
     phoneInput: $('phoneInput'), phoneMsg: $('phoneMsg'), openBtn: $('openBtn'),
     quoteTitle: $('quoteTitle'), quotePages: $('quotePages'),
     concernList: $('concernList'), concernMsg: $('concernMsg'), submitBtn: $('submitBtn'),
-    logoutBtn: $('logoutBtn'), downloadBtn: $('downloadBtn'), printBtn: $('printBtn'),
+    downloadBtn: $('downloadBtn'), printBtn: $('printBtn'),
     zoom: $('zoom'), zoomBody: $('zoomBody'), zoomImg: $('zoomImg'), zoomLabel: $('zoomLabel'),
     zoomClose: $('zoomClose'), zoomNav: $('zoomNav'), zoomPrev: $('zoomPrev'), zoomNext: $('zoomNext'),
   };
@@ -373,13 +372,6 @@
   }
   els.openBtn.addEventListener('click', openByPhone);
   els.phoneInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') openByPhone(); });
-
-  els.logoutBtn.addEventListener('click', function () {
-    clearToken();
-    els.phoneInput.value = '';
-    setMsg(els.phoneMsg, '');
-    show('phoneStep');
-  });
 
   /* ── 마음에 걸리는 부분 — 눌러서 고르고 [제출하기]로 한 번에 보낸다 ──
      그전에는 누를 때마다 바로 저장했다. 이제 고른 것은 이 화면에만 있고, [제출하기]를
