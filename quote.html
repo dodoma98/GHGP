@@ -114,13 +114,11 @@
 
   .quote-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
   .quote-head h3 { font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
-  .quote-head .btn-ghost { width: auto; margin-top: 0; padding: 10px 16px; font-size: 14px; }
 
   /* 가로 화면 2:1(왼쪽:오른쪽) — 왼쪽 가견적서, 오른쪽 마음에 걸리는 부분 체크 */
   .quote-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
   .quote-pages { display: flex; flex-direction: column; gap: 14px; }
   .quote-pages img { border: 1px solid var(--green-line); border-radius: var(--radius); box-shadow: var(--shadow); }
-  .quote-concerns { position: sticky; top: 80px; }
   .concern-head { font-size: 16px; font-weight: 800; }
   .concern-sub { margin-top: 4px; font-size: 13.5px; color: var(--muted); }
   .concern-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -149,7 +147,7 @@
     .gnb nav { gap: 14px; font-size: 17px; }
     section { padding: 40px 0 56px; }
     .quote-grid { grid-template-columns: 1fr; }
-    .quote-concerns { position: static; }
+    .quote-side { position: static; max-height: none; overflow: visible; padding: 0; margin: 0; }
   }
   @media (max-width: 380px) {
     .gnb-inner { gap: 8px; height: 56px; }
@@ -177,8 +175,26 @@
   @media (max-width: 370px) { .logo-img { height: 24px; } .gnb nav { font-size: 13px; } .gnb nav a { padding: 0 4px; } }
   @media (max-width: 340px) { .logo-img { height: 22px; } .gnb nav { font-size: 12px; } .gnb nav a { padding: 0 3px; } }
 
-  /* 견적서 머리 — 제목 옆 [다운로드] [인쇄] (임송화 지시 2026-09-30 · [다른 번호로 보기]는 같은 날 뺐다) */
-  .quote-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* 오른쪽 칸 — «마음에 걸리는 부분» 카드 + 그 밑 [다운로드] [인쇄](같은 크기)가 **한 덩어리로**
+     데스크톱에서 스크롤을 따라온다(임송화 지시 2026-09-30). 화면이 낮아 덩어리가 다 안 들어가면
+     그 안에서 스크롤된다(max-height) — 안 그러면 밑의 두 버튼이 페이지 끝까지 안 보인다.
+     900px 이하(한 줄로 쌓이는 폭)에서는 따라오지 않는다. */
+  .quote-side { position: sticky; top: 80px; display: flex; flex-direction: column; gap: 10px;
+    max-height: calc(100vh - 96px); overflow-y: auto;
+    /* overflow 가 카드 그림자를 자르지 않게 안쪽 여백을 두고 바깥으로 같은 만큼 당긴다 */
+    padding: 4px 14px 22px; margin: -4px -14px -22px; }
+  .quote-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quote-actions .btn-ghost { margin-top: 0; }
+  /* 세로가 낮은 노트북(≈650px) — 카드를 촘촘하게 줄여 두 버튼까지 한 화면에 들어오게 한다.
+     안 줄이면 버튼이 덩어리 안 스크롤 밑으로 숨어 «버튼이 없다» 로 읽힌다(1366×650 실측). */
+  @media (min-width: 901px) and (max-height: 820px) {
+    .quote-concerns.card { padding: 18px 22px; }
+    .concern-list { margin-top: 10px; gap: 6px; }
+    .concern-btn { padding: 8px 14px; font-size: 14px; }
+    .concern-submit { margin-top: 10px; padding: 11px 20px; }
+    .quote-concerns #concernMsg { margin-top: 6px; min-height: 0; }
+    .quote-actions .btn { padding: 11px 20px; }
+  }
   .quote-pages img { cursor: zoom-in; }
   .quote-left { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .zoom-hint { font-size: 13px; color: var(--muted); }
@@ -209,7 +225,7 @@
   @media print {
     body > :not(section) { display: none !important; }
     section { padding: 0; min-height: 0; }
-    .sec-head, .quote-head, .quote-concerns, .auth-card, .zoom-hint { display: none !important; }
+    .sec-head, .quote-head, .quote-side, .auth-card, .zoom-hint { display: none !important; }
     .quote-grid { display: block; }
     .quote-pages { gap: 0; }
     .quote-pages img { border: 0; border-radius: 0; box-shadow: none; width: 100%;
@@ -253,16 +269,13 @@
     <div id="quoteView" style="display:none">
       <div class="quote-head">
         <h3 id="quoteTitle"></h3>
-        <div class="quote-actions">
-          <button id="downloadBtn" class="btn btn-ghost" type="button">다운로드</button>
-          <button id="printBtn" class="btn btn-ghost" type="button">인쇄</button>
-        </div>
       </div>
       <div class="quote-grid">
         <div class="quote-left">
           <p class="zoom-hint">사진을 누르면 크게 볼 수 있어요.</p>
           <div id="quotePages" class="quote-pages"></div>
         </div>
+        <div class="quote-side">
         <div class="quote-concerns card">
           <p class="concern-head">마음에 걸리는 부분이 있나요?</p>
           <p class="concern-sub">해당하는 것을 누른 뒤 [제출하기]를 눌러 주세요. 담당자가 확인하고 도와드립니다.</p>
@@ -270,6 +283,11 @@
           <button id="submitBtn" class="btn btn-primary concern-submit" type="button">제출하기</button>
           <p id="concernMsg" class="auth-msg"></p>
           <p class="concern-note">고객님의 의견은 본사의 제품 개선에 활용됩니다. 감사합니다.</p>
+        </div>
+        <div class="quote-actions">
+          <button id="downloadBtn" class="btn btn-ghost" type="button">다운로드</button>
+          <button id="printBtn" class="btn btn-ghost" type="button">인쇄</button>
+        </div>
         </div>
       </div>
     </div>
