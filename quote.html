@@ -180,7 +180,18 @@
   .staff-badge.wait { background: #eef0ee; color: var(--muted); }
   .staff-chip { display: inline-block; border-radius: 999px; background: #eef4ff; color: #2b5fa8; padding: 2px 8px; font-size: 12px; font-weight: 600; margin: 2px 3px 2px 0; }
   .staff-cell-when { color: var(--muted); white-space: nowrap; }
-  #staffListMsg { text-align: center; }
+  #staffListMsg { text-align: center; margin: 0 0 12px; min-height: 0; }
+  #staffListMsg:empty { display: none; }
+  /* 검색 · 새로고침 (2026-10-01 검수 — 폰에서 고객을 스크롤로만 찾아야 했다) */
+  .staff-tools { display: flex; gap: 8px; margin-bottom: 12px; }
+  .staff-search { flex: 1; min-width: 0; padding: 11px 14px; font-size: 16px; border: 1.5px solid var(--green-line); border-radius: 10px; }
+  .staff-search:focus { outline: none; border-color: var(--green); }
+  .staff-refresh { flex: none; width: auto; margin-top: 0; padding: 11px 16px; font-size: 14.5px; }
+  .staff-count { color: var(--muted); font-size: 13px; font-weight: 600; margin-left: 6px; }
+  /* 줄을 누르면 그 줄에서 바로 «여는 중» 을 보인다 — 표 밑 안내는 폰에서 화면 밖이었다 */
+  .staff-table tbody tr.opening { background: var(--green-soft); opacity: .75; pointer-events: none; }
+  .staff-opening { display: inline-block; margin-left: 6px; color: var(--green-deep); font-size: 12px; font-weight: 700; }
+  /* «비회원 · 영업 페이지» — 폰에서는 «비회원» 만(줄마다 같은 말이 자리를 먹었다 · 아래 640px 절) */
   /* 줄을 누르면 보낸 견적서를 본다(외근 확인용) */
   .staff-table tbody tr.tap { cursor: pointer; transition: background .12s; }
   .staff-table tbody tr.tap:hover { background: var(--green-soft); }
@@ -192,6 +203,7 @@
     .staff-table th:nth-child(5), .staff-table td:nth-child(5) { display: none; }
     .staff-table th, .staff-table td { padding: 12px 10px; }
     .staff-table-wrap { overflow-x: visible; }
+    .staff-badge .full { display: none; }
   }
 
   footer { padding: 34px 0 40px; text-align: center; color: var(--muted); font-size: 13.5px; }
@@ -259,6 +271,13 @@
   /* [제출하기] — 누른 것을 바로 저장하지 않고 모아서 보낸다(임송화 지시 2026-09-30) */
   .concern-submit { margin-top: 14px; }
   .concern-note { margin-top: 10px; font-size: 12.5px; color: #8a948c; line-height: 1.5; }
+  .auth-msg.warn { color: #9a6a00; }
+  /* 견적서가 열렸거나 직원 창구일 때는 머리의 «휴대폰 번호를 입력하시면…» 안내를 걷는다 —
+     열린 뒤에는 할 일이 끝난 말이고, 1366×768 에서 그 줄 때문에 [다운로드]·[인쇄]가 첫 화면 밑으로 밀렸다. */
+  body.mode-quote .sec-head p, body.mode-staff .sec-head p { display: none; }
+  body.mode-quote .sec-head { margin-bottom: 20px; }
+  body.mode-quote .sec-head .eyebrow { display: none; }
+  body.mode-quote section.quote { padding-top: 28px; }
 
   /* 사진 크게 보기 — 누르면 화면 가득, 한 번 더 누르면 원래 크기로 키워 손가락으로 옮겨 본다 */
   .zoom { position: fixed; inset: 0; z-index: 200; background: #111a14;
@@ -352,6 +371,7 @@
     <div id="emptyView" class="card auth-card" style="display:none">
       <p>아직 받은 견적서가 없습니다.<br>담당자에게 문의해 주세요.</p>
       <a class="btn btn-primary" style="margin-top:16px" href="tel:1551-7704">📞 1551-7704 문의하기</a>
+      <button id="emptyBack" class="btn btn-ghost" type="button">번호 다시 입력</button>
     </div>
 
     <!-- 직원 전용: 번호 칸에 1551-7704 를 넣으면 열리는 로그인(위 openByPhone 참고).
@@ -372,7 +392,12 @@
         <span id="staffWho" class="staff-who"></span>
         <button id="staffOut" class="staff-link" type="button">로그아웃</button>
       </div>
+      <div class="staff-tools">
+        <input id="staffSearch" class="staff-search" type="search" placeholder="이름 · 번호 · 견적서" autocomplete="off">
+        <button id="staffRefresh" class="btn btn-ghost staff-refresh" type="button">새로고침</button>
+      </div>
       <p class="staff-hint">줄을 누르면 <span class="staff-see">보낸 견적서</span>를 볼 수 있어요.</p>
+      <p id="staffListMsg" class="auth-msg"></p>
       <div class="staff-table-wrap">
         <table class="staff-table">
           <thead>
@@ -387,7 +412,6 @@
           <tbody id="staffRows"></tbody>
         </table>
       </div>
-      <p id="staffListMsg" class="auth-msg"></p>
     </div>
   </div>
 </section>
@@ -451,12 +475,19 @@
     staffLogin: $('staffLogin'), staffList: $('staffList'), staffId: $('staffId'), staffPw: $('staffPw'),
     staffLoginBtn: $('staffLoginBtn'), staffMsg: $('staffMsg'), staffCancel: $('staffCancel'),
     staffWho: $('staffWho'), staffOut: $('staffOut'), staffRows: $('staffRows'), staffListMsg: $('staffListMsg'),
+    staffSearch: $('staffSearch'), staffRefresh: $('staffRefresh'), emptyBack: $('emptyBack'),
+    secTitle: document.querySelector('.sec-head h2'),
   };
 
   function show(step) {
     ['phoneStep', 'quoteView', 'emptyView', 'staffLogin', 'staffList'].forEach(function (id) {
       els[id].style.display = id === step ? '' : 'none';
     });
+    var staff = step === 'staffLogin' || step === 'staffList';
+    document.body.classList.toggle('mode-quote', step === 'quoteView');
+    document.body.classList.toggle('mode-staff', staff);
+    // 직원 창구에서는 머리 제목도 직원용으로(고객용 안내가 그대로 남아 있었다)
+    els.secTitle.textContent = staff ? '가견적서 목록' : '견적서 받기';
   }
   function setMsg(el, text, kind) {
     el.textContent = text || '';
@@ -502,6 +533,12 @@
     await loadQuote();
   }
   els.openBtn.addEventListener('click', openByPhone);
+  // 가견적서를 거둔 뒤 «받은 견적서가 없습니다» 에 갇히지 않게 — 탭을 닫기 전까지 새로고침해도 같은 화면이었다
+  els.emptyBack.addEventListener('click', function () {
+    clearToken(); els.phoneInput.value = ''; setMsg(els.phoneMsg, ''); show('phoneStep');
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    setTimeout(function () { els.phoneInput.focus(); }, 0);
+  });
   els.phoneInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') openByPhone(); });
 
   /* ── 직원 전용: 가견적서 목록 보기 ────────────────────────────────────────────
@@ -511,7 +548,12 @@
      검증한다(api/public/quote-admin/*). 토큰은 이 브라우저에만 저장하고 [로그아웃]으로 지운다. */
   function getStaffToken() { try { return localStorage.getItem(STAFF_TOKEN_KEY) || ''; } catch (e) { return ''; } }
   function setStaffToken(t) { try { localStorage.setItem(STAFF_TOKEN_KEY, t); } catch (e) {} }
-  function clearStaffToken() { try { localStorage.removeItem(STAFF_TOKEN_KEY); } catch (e) {} }
+  function clearStaffToken() { try { localStorage.removeItem(STAFF_TOKEN_KEY); localStorage.removeItem(STAFF_NAME_KEY); } catch (e) {} }
+  // 로그인한 직원 이름 — 페이지를 다시 열어도 «○○ 님» 이 남게(토큰과 같이 지운다)
+  var STAFF_NAME_KEY = 'ghgp_staff_name';
+  function getStaffName() { try { return localStorage.getItem(STAFF_NAME_KEY) || ''; } catch (e) { return ''; } }
+  function setStaffName(n) { try { localStorage.setItem(STAFF_NAME_KEY, n); } catch (e) {} }
+  function whoText() { var n = getStaffName(); return n ? n + ' 님' : '직원'; }
 
   async function adminReq(path, opts) {
     opts = opts || {};
@@ -547,39 +589,64 @@
     els.staffLoginBtn.disabled = false;
     if (!r.ok) { setMsg(els.staffMsg, r.reason || '로그인하지 못했습니다.', 'err'); return; }
     setStaffToken(r.data.token);
+    setStaffName(r.data.staff && r.data.staff.name ? r.data.staff.name : '');
     els.staffPw.value = '';
-    els.staffWho.textContent = (r.data.staff && r.data.staff.name ? r.data.staff.name + ' 님 · ' : '') + '가견적서 목록';
     await loadStaffList();
   }
 
   async function loadStaffList() {
     var token = getStaffToken();
     if (!token) { show('staffLogin'); return; }
-    if (!els.staffWho.textContent) els.staffWho.textContent = '가견적서 목록';
     show('staffList');
-    setMsg(els.staffListMsg, '불러오는 중…');
+    els.staffWho.textContent = whoText();
+    if (!staffQuotes) setMsg(els.staffListMsg, '불러오는 중…');
+    els.staffRefresh.disabled = true;
     var r = await adminReq('/quotes', { headers: { Authorization: 'Bearer ' + token } });
+    els.staffRefresh.disabled = false;
     if (r.status === 401) {
-      clearStaffToken();
+      clearStaffToken(); staffQuotes = null;
       setMsg(els.staffMsg, '로그인이 만료됐습니다. 다시 로그인해 주세요.', 'err');
       show('staffLogin'); setTimeout(function () { els.staffId.focus(); }, 0);
       return;
     }
     if (!r.ok) { setMsg(els.staffListMsg, r.reason || '목록을 불러오지 못했습니다.', 'err'); return; }
     setMsg(els.staffListMsg, '');
-    renderStaffRows(r.data.quotes || []);
+    staffQuotes = r.data.quotes || [];
+    renderStaffRows();
+  }
+
+  /* 검색 — 고객 이름 · 번호(하이픈 무시) · 견적서 이름. 받아 둔 목록 안에서만 거른다(서버를 또 안 부른다). */
+  var staffQuotes = null;
+  function staffMatch(q, needle) {
+    if (!needle) return true;
+    var rc = q.recipient || {};
+    var text = [rc.name || '', q.title || ''].join(' ').toLowerCase();
+    if (text.indexOf(needle.toLowerCase()) > -1) return true;
+    var digits = normPhone(needle);
+    return digits.length >= 3 && normPhone(rc.phone || '').indexOf(digits) > -1;
   }
 
   /* 목록의 한 줄을 누르면 그 고객에게 보낸 가견적서(쪽 이미지)를 사진 뷰어로 연다.
      뷰어(zoom)는 고객 화면과 같은 것을 재사용한다 — 동시에 뜨지 않으므로 pages·title 을
      공유해도 된다. 외근 중 바로 확인하는 자리다(임송화 지시 2026-09-30). */
-  async function openStaffQuote(id) {
+  var opening = false;
+  async function openStaffQuote(id, tr) {
     var token = getStaffToken();
     if (!token) { show('staffLogin'); return; }
-    setMsg(els.staffListMsg, '견적서를 여는 중…');
+    if (opening) return;                       // 느린 회선에서 두 번 눌러 두 번 여는 것을 막는다
+    opening = true;
+    setMsg(els.staffListMsg, '');
+    var mark = null;
+    if (tr) {                                  // 누른 줄에서 바로 보이게(표 밑 안내는 폰에서 화면 밖이었다)
+      tr.classList.add('opening');
+      mark = elm('span', 'staff-opening', '여는 중…');
+      var cell = tr.children[1]; if (cell) cell.appendChild(mark);
+    }
     var r = await adminReq('/quotes/' + id, { headers: { Authorization: 'Bearer ' + token } });
+    opening = false;
+    if (tr) { tr.classList.remove('opening'); if (mark) mark.remove(); }
     if (r.status === 401) {
-      clearStaffToken();
+      clearStaffToken(); staffQuotes = null;
       setMsg(els.staffMsg, '로그인이 만료됐습니다. 다시 로그인해 주세요.', 'err');
       show('staffLogin'); setTimeout(function () { els.staffId.focus(); }, 0);
       return;
@@ -604,15 +671,20 @@
   }
   function elm(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
-  function renderStaffRows(quotes) {
+  function renderStaffRows() {
+    var needle = (els.staffSearch.value || '').trim();
+    var all = staffQuotes || [];
+    var quotes = all.filter(function (q) { return staffMatch(q, needle); });
+    els.staffWho.textContent = whoText();
+    els.staffWho.appendChild(elm('span', 'staff-count', needle ? quotes.length + ' / ' + all.length + '건' : all.length + '건'));
     els.staffRows.innerHTML = '';
     if (!quotes.length) {
-      var tr0 = elm('tr'); var td0 = elm('td', 'staff-empty l', '보낸 가견적서가 없습니다.');
+      var tr0 = elm('tr'); var td0 = elm('td', 'staff-empty l', needle ? '찾는 가견적서가 없습니다.' : '보낸 가견적서가 없습니다.');
       td0.colSpan = 5; tr0.appendChild(td0); els.staffRows.appendChild(tr0); return;
     }
     quotes.forEach(function (q) {
       var tr = elm('tr', 'tap');
-      tr.addEventListener('click', function () { openStaffQuote(q.id); });   // 누르면 보낸 견적서
+      tr.addEventListener('click', function () { openStaffQuote(q.id, tr); });   // 누르면 보낸 견적서
       var rc = q.recipient || {};
       var c = elm('td', 'l');
       if (rc.type === 'member') {
@@ -620,7 +692,9 @@
         c.appendChild(elm('div', 'staff-cust-sub', rc.phone ? fmtPhone(rc.phone) : ''));
       } else {
         c.appendChild(elm('div', 'staff-cust-name', fmtPhone(rc.phone || '')));
-        var sub = elm('div', 'staff-cust-sub'); sub.appendChild(elm('span', 'staff-badge guest', '비회원 · 영업 페이지')); c.appendChild(sub);
+        var sub = elm('div', 'staff-cust-sub');
+        var badge = elm('span', 'staff-badge guest', '비회원'); badge.appendChild(elm('span', 'full', ' · 영업 페이지'));
+        sub.appendChild(badge); c.appendChild(sub);
       }
       tr.appendChild(c);
 
@@ -648,7 +722,12 @@
   els.staffId.addEventListener('keydown', function (e) { if (e.key === 'Enter') els.staffPw.focus(); });
   els.staffPw.addEventListener('keydown', function (e) { if (e.key === 'Enter') staffLogin(); });
   els.staffCancel.addEventListener('click', function () { setMsg(els.staffMsg, ''); els.phoneInput.value = ''; show('phoneStep'); });
-  els.staffOut.addEventListener('click', function () { clearStaffToken(); els.staffWho.textContent = ''; els.phoneInput.value = ''; show('phoneStep'); });
+  els.staffOut.addEventListener('click', function () {
+    clearStaffToken(); staffQuotes = null; els.staffSearch.value = ''; els.staffWho.textContent = '';
+    els.phoneInput.value = ''; show('phoneStep');
+  });
+  els.staffSearch.addEventListener('input', renderStaffRows);
+  els.staffRefresh.addEventListener('click', loadStaffList);
 
   /* ── 마음에 걸리는 부분 — 눌러서 고르고 [제출하기]로 한 번에 보낸다 ──
      그전에는 누를 때마다 바로 저장했다. 이제 고른 것은 이 화면에만 있고, [제출하기]를
@@ -671,8 +750,10 @@
       btn.appendChild(dot); btn.appendChild(label);
       btn.addEventListener('click', function () {
         picked = on ? picked.filter(function (k) { return k !== c.key; }) : picked.concat([c.key]);
-        setMsg(els.concernMsg, '');
         renderConcerns();
+        // 고르기만 하고 떠나면 담당자에게 안 간다 — 그 자리에서 한 줄로 알린다(2026-10-01 검수)
+        if (same(picked, saved)) setMsg(els.concernMsg, '');
+        else setMsg(els.concernMsg, '아직 전달되지 않았어요. [제출하기]를 눌러 주세요.', 'warn');
       });
       els.concernList.appendChild(btn);
     });
@@ -680,6 +761,12 @@
     els.submitBtn.disabled = done;
     els.submitBtn.textContent = done && saved.length > 0 ? '제출 완료' : '제출하기';
   }
+
+  // 고른 것을 제출하지 않고 떠나려 하면 브라우저가 한 번 묻는다(문구는 브라우저가 정한다)
+  window.addEventListener('beforeunload', function (e) {
+    if (els.quoteView.style.display === 'none' || same(picked, saved)) return;
+    e.preventDefault(); e.returnValue = '';
+  });
 
   els.submitBtn.addEventListener('click', async function () {
     els.submitBtn.disabled = true;
@@ -712,15 +799,23 @@
     els.zoomPrev.disabled = i === 0;
     els.zoomNext.disabled = i === pages.length - 1;
   }
+  /* 확대 보기 동안에는 상담 버튼(gh-point.com chat-widget.js · 호스트 id gh-chat-widget)을 숨긴다 —
+     위젯이 z-index 최상단이라 검은 화면 위에 그대로 떠 있었다(2026-10-01 검수). */
+  function chatWidget(hidden) {
+    var w = document.getElementById('gh-chat-widget');
+    if (w) w.style.visibility = hidden ? 'hidden' : '';
+  }
   function zoomOpen(i) {
     zoomShow(i);
     els.zoom.classList.add('open');
     document.body.style.overflow = 'hidden';
+    chatWidget(true);
     els.zoomClose.focus();
   }
   function zoomClose() {
     els.zoom.classList.remove('open');
     document.body.style.overflow = '';
+    chatWidget(false);
   }
   els.zoomClose.addEventListener('click', zoomClose);
   els.zoomPrev.addEventListener('click', function () { if (zi > 0) zoomShow(zi - 1); });
