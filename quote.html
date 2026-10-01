@@ -292,8 +292,10 @@
     height: 44px; padding: 0 18px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .zoom-nav button:disabled { opacity: .35; cursor: default; }
 
-  /* 거래 사기 경고 — 대표계좌 외 개인 거래 금지 안내(임송화 지시 2026-10-01). 페이지에
-     들어올 때마다(세션당 한 번) 뜬다 — sessionStorage. */
+  /* 거래 사기 경고 — 법인 계좌 외 개인 거래 금지 안내(임송화 지시 2026-10-01). 페이지에
+     들어올 때마다(세션당 한 번) 뜬다 — sessionStorage.
+     같은 날 문구 고침(임송화 지시 "시공비 -> 공사 금액 / 대표 계좌 -> 법인회사" · "(주식회사 그린홈시스) -> (주)그린홈시스").
+     ⚠ 포인트 웹(greenhome-mileage `src/app/FraudWarningModal.tsx`)에 같은 창이 있다 — 문구를 고치면 두 곳을 같이 고친다. */
   .warn-overlay { position: fixed; inset: 0; z-index: 300; background: #111a14;
     display: none; align-items: center; justify-content: center; padding: 20px; }
   .warn-overlay.open { display: flex; }
@@ -455,7 +457,9 @@
     <p class="warn-title">거래 시 주의사항!</p>
     <p class="warn-body">
       저희 그린홈시스는<br>
-      시공비를 <b>대표계좌</b>로 받습니다.<br><br>
+      공사 금액을 <b>법인회사</b><br>
+      <b style="white-space:nowrap">(주)그린홈시스 계좌</b>로<br>
+      받고 있습니다.<br><br>
       개인 간의 거래를 <b>엄격히 금지</b>하고 있으며,<br>
       이러한 금전 거래로 인한 피해는<br>
       절대 책임지지 않습니다.<br><br>
@@ -509,7 +513,7 @@
     warnOverlay: $('warnOverlay'), warnClose: $('warnClose'),
   };
 
-  // 거래 사기 경고(임송화 지시 2026-10-01) — 대표계좌 외 개인 거래 금지 안내. 탭(세션)당 한 번만.
+  // 거래 사기 경고(임송화 지시 2026-10-01) — 법인 계좌 외 개인 거래 금지 안내. 탭(세션)당 한 번만.
   var WARN_KEY = 'ghgp_fraud_warn_seen';
   function showFraudWarning() {
     try { if (sessionStorage.getItem(WARN_KEY)) return; } catch (e) {}
