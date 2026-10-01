@@ -888,7 +888,16 @@
   try { qsPhone = normPhone(new URLSearchParams(location.search).get('phone')); } catch (e) {}
   // 링크의 번호로 늘 새로 연다 — 이 탭에 다른 번호의 토큰이 남아 있어도 그 번호 것을 보여 주지 않게.
   if (qsPhone) { els.phoneInput.value = qsPhone; openByPhone(); }
-  else loadQuote();
+  else {
+    /* 메뉴·링크로 **새로 들어오면** 번호 칸부터 (임송화 2026-10-01 "견적서 받기를 누르면 빠져나와지지 않는데").
+       열람 토큰이 탭(sessionStorage)에 남아 있어, 한 번 연 뒤로는 [견적서 받기]를 몇 번 눌러도 그 견적서만
+       떴다 — [다른 번호로 보기]를 뺀(2026-09-30) 뒤라 번호 칸으로 돌아갈 길이 아예 없었다.
+       새로고침·뒤로가기(reload · back_forward)는 보던 견적서를 그대로 둔다. IP 와는 무관하다(IP 는 저장하지 않는다). */
+    var navType = '';
+    try { var nav = performance.getEntriesByType('navigation')[0]; navType = nav ? nav.type : ''; } catch (e) {}
+    if (navType === 'navigate') clearToken();
+    loadQuote();
+  }
 })();
 </script>
 
