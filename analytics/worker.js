@@ -162,7 +162,7 @@ const FROM_NAMES = {
 function refLabel(raw, from) {
   if (from) {
     const key = String(from).toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20);
-    if (key) return FROM_NAMES[key] || key;
+    if (key) return (Object.prototype.hasOwnProperty.call(FROM_NAMES, key) && FROM_NAMES[key]) || key;
   }
   if (!raw) return 'direct';
   let host;
@@ -196,7 +196,7 @@ const RANGES = {
 
 async function stats(url, env, request) {
   const key = url.searchParams.get('range') || '30d';
-  const R = RANGES[key] || RANGES['30d'];
+  const R = (Object.prototype.hasOwnProperty.call(RANGES, key) && RANGES[key]) || RANGES['30d'];
   const now = Math.floor(Date.now() / 1000);
   const fromTs = now - R.sec;
   const site = (url.searchParams.get('site') || 'all').slice(0, 30);
@@ -535,7 +535,7 @@ function chart(el, rows, unit){
     '<text x="' + P + '" y="18" font-size="11" fill="#5e6e62">최대 ' + max + '명</text></svg>';
 }
 let SITE_NAMES = {};
-function siteLabel(code){ return SITE_NAMES[code] || code; }
+function siteLabel(code){ return (Object.prototype.hasOwnProperty.call(SITE_NAMES, code) && SITE_NAMES[code]) || code; }
 
 let timer = null;
 let autoMs = 0;
@@ -597,9 +597,9 @@ async function load(){
   }
 
   table(document.getElementById('pages'), d.pages,
-    r => (d.site === 'all' && d.sites.length > 1 ? '[' + siteLabel(r.site) + '] ' : '') + (PAGE_NAMES[r.page] || r.page), 'n');
+    r => (d.site === 'all' && d.sites.length > 1 ? '[' + siteLabel(r.site) + '] ' : '') + ((Object.prototype.hasOwnProperty.call(PAGE_NAMES, r.page) && PAGE_NAMES[r.page]) || r.page), 'n');
   table(document.getElementById('refs'), d.refs, r => r.ref === 'direct' ? '직접 접속' : r.ref, 'n');
-  table(document.getElementById('events'), d.events, r => EVENT_NAMES[r.event] || r.event, 'n');
+  table(document.getElementById('events'), d.events, r => (Object.prototype.hasOwnProperty.call(EVENT_NAMES, r.event) && EVENT_NAMES[r.event]) || r.event, 'n');
   table(document.getElementById('devices'), d.devices, r => r.device === 'mobile' ? '모바일' : 'PC', 'n');
   table(document.getElementById('hours'), d.hours.map(h => ({ label: h.h + '시', n: h.n })), r => r.label, 'n');
 
