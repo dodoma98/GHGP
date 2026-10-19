@@ -314,9 +314,8 @@
   .warn-body b { color: #dc2626; font-weight: 800; }
   .warn-phone { font-size: 28px; font-weight: 800; color: var(--green-deep); margin: 16px 0 20px; }
   /* [확인했습니다]는 창이 뜨자마자 JS로 포커스를 주므로(아래 showFraudWarning) 브라우저 기본
-     검은 테두리가 바로 보였다(임송화 지시 2026-10-19) — 초록 계열 포커스 링으로 바꾼다. */
-  .warn-card .btn:focus-visible { outline: 3px solid var(--green-deep); outline-offset: 2px; }
-  .warn-card .btn:focus:not(:focus-visible) { outline: none; }
+     테두리가 바로 보였다(임송화 지시 2026-10-19) — 아예 없앤다. */
+  .warn-card .btn:focus { outline: none; }
 
   /* 인쇄 — 견적서 쪽 그림만 나간다(머리·메뉴·체크 칸·상담 버튼은 빼고) */
   @media print {
