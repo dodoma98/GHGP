@@ -1,0 +1,16 @@
+{
+  "id": "/quote.html",
+  "name": "그린홈시스 가견적서",
+  "short_name": "가견적서",
+  "description": "그린홈시스 가견적서 확인 · 마음에 걸리는 부분 남기기",
+  "start_url": "/quote.html",
+  "scope": "/quote.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1b7a44",
+  "lang": "ko",
+  "icons": [
+    { "src": "assets/pwa/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/pwa/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

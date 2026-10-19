@@ -8,6 +8,13 @@
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<!-- 견적서 받기만 PWA로 설치 가능하게(임송화 지시 2026-10-19) — 매니페스트·서비스워커를
+     이 페이지에서만 연결한다(메인·자료실·사례&리뷰는 그대로 일반 페이지). -->
+<link rel="manifest" href="quote-manifest.webmanifest">
+<meta name="theme-color" content="#1b7a44">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="가견적서">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/pretendard-core.woff2" crossorigin>
 <style>
 @font-face {
@@ -931,6 +938,11 @@
   }
 
   showFraudWarning();
+
+  // PWA 설치 조건(서비스워커 등록) — 이 페이지 범위로만 등록한다. 실패해도 페이지 동작과 무관.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('quote-sw.js', { scope: '/quote.html' }).catch(function () {});
+  }
 
   // 가견적서 배정 안내 문자의 링크(?phone=)를 타고 오면 번호를 채우고 **바로 연다**
   // (인증번호 단계가 없어졌으므로 누를 것이 남지 않는다).
