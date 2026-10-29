@@ -293,8 +293,10 @@
 
   /* ───────── promo ───────── */
   .promo { background: var(--bg-alt); }
-  /* 카드 셋(상시·월간·특별 혜택) — 포스터마다 비율이 달라도 칸 폭은 똑같이 셋으로 나눈다. */
-  .promo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; }
+  /* 카드 셋(상시·월간·특별 혜택) — 칸 폭을 포스터 비율에 맞게 다르게 둬서, 세 장 다 꽉 채워도
+     (여백 없이) 세로 길이가 같아지게 한다(임송화 지시 2026-10-29 "카드 양 끝은 이미지랑 맞춰야지").
+     롯데 디지로카만 비율이 달라(891×1113) 그 칸을 나머지보다 1260/1113 ≈ 13.2% 더 넓힌다. */
+  .promo-grid { display: grid; grid-template-columns: 1fr 1fr 1.1321fr; gap: 20px; align-items: stretch; }
   .promo-card {
     background: #fff; border-radius: var(--radius);
     overflow: hidden; border: 1px solid var(--green-line);
@@ -312,9 +314,6 @@
   .badge-month { background: var(--amber-soft); color: #8a6100; }
   .badge-special { background: #f9e4e7; color: var(--lx-red); }
   .promo-card img { cursor: zoom-in; width: 100%; display: block; }
-  /* 롯데 디지로카 포스터(원래 더 낮은 비율)에 맞춰 나머지 둘을 살짝 줄인다(임송화 지시 2026-10-29) —
-     양쪽에 살짝 여백을 두는 식으로, 위아래를 잘라내지 않고 세로 길이를 맞춘다. */
-  .promo-card img.inset { width: 94.3%; margin: 0 auto; }
   /* 카드가 둘일 때는 640px까지 세 칸이 버텼지만, 셋이 되면서 그 폭에서 너무 좁아졌다 — 더 일찍 한 줄로 쌓는다. */
   @media (max-width: 860px) {
     .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
@@ -681,7 +680,7 @@
           <span class="badge badge-always">상시 혜택</span>
           <h3 class="two-line">개인 고객<br>가입 즉시 200,000P 지급</h3>
         </div>
-        <img class="inset" src="assets/promo-always.webp" alt="개인 고객 혜택: 가입 즉시 바로 쓸 수 있는 200,000포인트, 시공 완료 후 5% 추가 적립" loading="lazy" data-full="assets/promo-always.webp" width="891" height="1260" decoding="async">
+        <img src="assets/promo-always.webp" alt="개인 고객 혜택: 가입 즉시 바로 쓸 수 있는 200,000포인트, 시공 완료 후 5% 추가 적립" loading="lazy" data-full="assets/promo-always.webp" width="891" height="1260" decoding="async">
       </div>
       <div class="promo-card">
         <div class="head">
@@ -691,14 +690,14 @@
         <!-- 매달 포스터 교체: assets/promo-YYYY-MM.webp 로 새 파일을 넣고 아래 세 곳
              (src, data-full, width/height, alt)과 위의 "N월 한정" 표시를 바꿉니다. 파일 이름을 매달 바꾸는 이유는
              같은 이름에 새 그림을 덮으면 재방문자에게 지난달 포스터가 계속 보이기 때문입니다. -->
-        <img class="inset" src="assets/promo-2026-11.webp" alt="11월 겨울 프로모션: 적립서비스 오픈 이벤트 포인트 추가 할인(소비자 200,000P · 거래처 300,000P), 금액 구간별 최대 250만원 할인, 인테리어 계약 시 창호 연계 최대 5% 할인" loading="lazy" data-full="assets/promo-2026-11.webp" width="891" height="1260" decoding="async">
+        <img src="assets/promo-2026-11.webp" alt="11월 겨울 프로모션: 적립서비스 오픈 이벤트 포인트 추가 할인(소비자 200,000P · 거래처 300,000P), 금액 구간별 최대 250만원 할인, 인테리어 계약 시 창호 연계 최대 5% 할인" loading="lazy" data-full="assets/promo-2026-11.webp" width="891" height="1260" decoding="async">
       </div>
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-special">특별 혜택</span>
           <h3 class="two-line">롯데 디지로카<br><span class="sub">무이자 · 캐시백 · 특별한도</span></h3>
         </div>
-        <img src="assets/promo-lotte-digiroca.webp" alt="LX Z:IN 계약 고객 한정 롯데 디지로카 Link 카드 이벤트: 샷시 교체 12·24개월 무이자 할부, 10만원 캐시백, 인테리어 특별한도" loading="lazy" data-full="assets/promo-lotte-digiroca.webp" width="891" height="1188" decoding="async">
+        <img src="assets/promo-lotte-digiroca.webp" alt="LX Z:IN 계약 고객 한정 롯데 디지로카 Link 카드 이벤트: 샷시 교체 12·24개월 무이자 할부, 10만원 캐시백, 인테리어 특별한도" loading="lazy" data-full="assets/promo-lotte-digiroca.webp" width="891" height="1113" decoding="async">
       </div>
     </div>
     <p class="promo-note">월간 프로모션은 매달 새로운 혜택으로 찾아옵니다.<br>자세한 조건은 전화로 문의해 주세요.</p>
