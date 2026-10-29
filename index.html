@@ -293,8 +293,8 @@
 
   /* ───────── promo ───────── */
   .promo { background: var(--bg-alt); }
-  /* 두 포스터 비율에 맞춰 컬럼 폭 배분 → 이미지 높이 동일 */
-  .promo-grid { display: grid; grid-template-columns: 1fr 1.01fr; gap: 20px; align-items: stretch; }
+  /* 카드 셋(상시·월간·특별 혜택) — 포스터마다 비율이 달라도 칸 폭은 똑같이 셋으로 나눈다. */
+  .promo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; }
   .promo-card {
     background: #fff; border-radius: var(--radius);
     overflow: hidden; border: 1px solid var(--green-line);
@@ -305,7 +305,12 @@
   .badge { font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
   .badge-always { background: var(--green-soft); color: var(--green-deep); }
   .badge-month { background: var(--amber-soft); color: #8a6100; }
+  .badge-special { background: #f9e4e7; color: var(--lx-red); }
   .promo-card img { cursor: zoom-in; width: 100%; }
+  /* 카드가 둘일 때는 640px까지 세 칸이 버텼지만, 셋이 되면서 그 폭에서 너무 좁아졌다 — 더 일찍 한 줄로 쌓는다. */
+  @media (max-width: 860px) {
+    .promo-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+  }
   .promo-note { text-align: center; color: var(--muted); font-size: 14px; margin-top: 20px; }
   .coupon-head { text-align: center; margin: 56px 0 22px; }
   .coupon-head h3 { font-size: clamp(20px, 2.2vw, 26px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
@@ -677,6 +682,13 @@
              (src, data-full, width/height, alt)과 위의 "N월 한정" 표시를 바꿉니다. 파일 이름을 매달 바꾸는 이유는
              같은 이름에 새 그림을 덮으면 재방문자에게 지난달 포스터가 계속 보이기 때문입니다. -->
         <img src="assets/promo-2026-10.webp" alt="10월 가을 프로모션: 적립서비스 오픈 이벤트 포인트 추가 할인(소비자 200,000P · 거래처 300,000P), 금액 구간별 최대 250만원 할인, 인테리어 계약 시 창호 연계 최대 5% 할인" loading="lazy" data-full="assets/promo-2026-10.webp" width="891" height="1260" decoding="async">
+      </div>
+      <div class="promo-card">
+        <div class="head">
+          <span class="badge badge-special">특별 혜택</span>
+          <h3>롯데 디지로카: 세 가지 혜택</h3>
+        </div>
+        <img src="assets/promo-lotte-digiroca.webp" alt="LX Z:IN 계약 고객 한정 롯데 디지로카 Link 카드 이벤트: 샷시 교체 12·24개월 무이자 할부, 10만원 캐시백, 인테리어 특별한도" loading="lazy" data-full="assets/promo-lotte-digiroca.webp" width="891" height="1113" decoding="async">
       </div>
     </div>
     <p class="promo-note">월간 프로모션은 매달 새로운 혜택으로 찾아옵니다.<br>자세한 조건은 전화로 문의해 주세요.</p>
