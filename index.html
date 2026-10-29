@@ -305,6 +305,8 @@
   /* 카드 제목을 "짧은 이름 / 혜택"으로 두 줄 나눔(임송화 지시 2026-10-29) — 좁을 때 아무 데서나
      꺾이지 않고 늘 같은 자리에서 끊긴다. */
   .promo-card .head h3.two-line { line-height: 1.3; }
+  /* 둘째 줄이 길어 두 줄로 꺾이는 카드(롯데 디지로카)만 — 한 줄 이름보다 작게 */
+  .promo-card .head h3.two-line .sub { font-size: .82em; }
   .badge { font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
   .badge-always { background: var(--green-soft); color: var(--green-deep); }
   .badge-month { background: var(--amber-soft); color: #8a6100; }
@@ -691,7 +693,7 @@
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-special">특별 혜택</span>
-          <h3 class="two-line">롯데 디지로카<br>무이자 · 캐시백 · 특별한도</h3>
+          <h3 class="two-line">롯데 디지로카<br><span class="sub">무이자 · 캐시백 · 특별한도</span></h3>
         </div>
         <img src="assets/promo-lotte-digiroca.webp" alt="LX Z:IN 계약 고객 한정 롯데 디지로카 Link 카드 이벤트: 샷시 교체 12·24개월 무이자 할부, 10만원 캐시백, 인테리어 특별한도" loading="lazy" data-full="assets/promo-lotte-digiroca.webp" width="891" height="1260" decoding="async">
       </div>
