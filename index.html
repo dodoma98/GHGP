@@ -302,6 +302,9 @@
   }
   .promo-card .head { display: flex; align-items: center; gap: 10px; padding: 16px 18px; }
   .promo-card .head h3 { font-size: 17px; font-weight: 800; }
+  /* 카드 제목을 "짧은 이름 / 혜택"으로 두 줄 나눔(임송화 지시 2026-10-29) — 좁을 때 아무 데서나
+     꺾이지 않고 늘 같은 자리에서 끊긴다. */
+  .promo-card .head h3.two-line { line-height: 1.3; }
   .badge { font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
   .badge-always { background: var(--green-soft); color: var(--green-deep); }
   .badge-month { background: var(--amber-soft); color: #8a6100; }
@@ -472,6 +475,8 @@
     .promo-card .head .badge { font-size: 12px; padding: 3px 9px; }
     .promo-card .head h3 { font-size: clamp(13px, 3.7vw, 17px); letter-spacing: -.02em;
       white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    /* 두 줄 제목(위 .two-line)은 한 줄로 우겨넣지 않는다 — 제 줄에서 꺾이게 그대로 둔다. */
+    .promo-card .head h3.two-line { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
     .namecard-btns .btn { flex: 1 1 100%; }
   }
 
@@ -669,14 +674,14 @@
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-always">상시 혜택</span>
-          <h3>개인 고객: 가입 즉시 200,000P 지급</h3>
+          <h3 class="two-line">개인 고객<br>가입 즉시 200,000P 지급</h3>
         </div>
         <img src="assets/promo-always.webp" alt="개인 고객 혜택: 가입 즉시 바로 쓸 수 있는 200,000포인트, 시공 완료 후 5% 추가 적립" loading="lazy" data-full="assets/promo-always.webp" width="891" height="1260" decoding="async">
       </div>
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-month">10월 한정</span>
-          <h3>이달의 프로모션: 최대 250만원 할인</h3>
+          <h3 class="two-line">이달의 프로모션<br>최대 250만원 할인</h3>
         </div>
         <!-- 매달 포스터 교체: assets/promo-YYYY-MM.webp 로 새 파일을 넣고 아래 세 곳
              (src, data-full, width/height, alt)과 위의 "N월 한정" 표시를 바꿉니다. 파일 이름을 매달 바꾸는 이유는
@@ -686,7 +691,7 @@
       <div class="promo-card">
         <div class="head">
           <span class="badge badge-special">특별 혜택</span>
-          <h3>롯데 디지로카: 세 가지 혜택</h3>
+          <h3 class="two-line">롯데 디지로카<br>세 가지 혜택</h3>
         </div>
         <img src="assets/promo-lotte-digiroca.webp" alt="LX Z:IN 계약 고객 한정 롯데 디지로카 Link 카드 이벤트: 샷시 교체 12·24개월 무이자 할부, 10만원 캐시백, 인테리어 특별한도" loading="lazy" data-full="assets/promo-lotte-digiroca.webp" width="891" height="1260" decoding="async">
       </div>
