@@ -1060,6 +1060,13 @@
   try { qsPhone = normPhone(new URLSearchParams(location.search).get('phone')); } catch (e) {}
   // 링크의 번호로 늘 새로 연다 — 이 탭에 다른 번호의 토큰이 남아 있어도 그 번호 것을 보여 주지 않게.
   if (qsPhone) { els.phoneInput.value = qsPhone; openByPhone(); }
+  else if (getStaffToken()) {
+    /* 직원은 이 기기에서 한 번 로그인해 뒀으면 1551-7704를 또 안 쳐도 된다(임송화 지시
+       2026-11-05 "한 번이라도 로그인했으면 번호 누르는 과정 생략") — 토큰이 남아 있으면
+       번호 칸을 건너뛰고 곧장 목록으로. 토큰이 그새 만료됐으면 enterStaff 안의
+       loadStaffList → 401 처리가 로그인 화면으로 돌려보낸다. */
+    enterStaff();
+  }
   else {
     /* 메뉴·링크로 **새로 들어오면** 번호 칸부터 (임송화 2026-10-01 "견적서 받기를 누르면 빠져나와지지 않는데").
        열람 토큰이 탭(sessionStorage)에 남아 있어, 한 번 연 뒤로는 [견적서 받기]를 몇 번 눌러도 그 견적서만
