@@ -118,6 +118,25 @@
   .quote-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
   .quote-head h3 { font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
 
+  /* 받은 견적서 — 새 견적서를 받아도 지난 것을 다시 본다(임송화 지시 2026-11-05 «이 전에 받은 것도 볼 수 있게»).
+     서버(greenhome-mileage api/public/quote/me)가 history 를 준다 — 새 것에 밀려 내려간 것만이고, 담당자가 거둔 것은 안 온다. */
+  .quote-history { margin-bottom: 18px; }
+  .quote-history-head { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+  .quote-history-head span { color: var(--muted); font-weight: 700; }
+  .quote-history-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .qh-chip { flex: none; text-align: left; padding: 9px 14px; border-radius: 12px; border: 1.5px solid var(--green-line);
+    background: var(--bg-alt); color: var(--ink); cursor: pointer; font: inherit; transition: background .12s, border-color .12s; }
+  .qh-chip:hover { border-color: var(--green); }
+  .qh-chip.on { background: var(--green); border-color: var(--green); color: #fff; }
+  .qh-chip b { display: block; font-size: 13px; white-space: nowrap; }
+  .qh-chip small { display: block; max-width: 11rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--muted); }
+  .qh-chip.on small { color: rgba(255,255,255,.8); }
+  .quote-when { margin-top: 2px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .past-badge { font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--green-line); background: var(--bg-alt); color: var(--muted); }
+  .past-picked { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .past-picked span { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--green-line); background: var(--bg-alt); font-size: 14px; font-weight: 700; color: var(--muted); }
+  .past-picked-head { font-size: 12px; font-weight: 700; color: var(--muted); }
+
   /* 가로 화면 2:1(왼쪽:오른쪽) — 왼쪽 가견적서, 오른쪽 마음에 걸리는 부분 체크 */
   .quote-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
   .quote-pages { display: flex; flex-direction: column; gap: 14px; }
@@ -321,7 +340,7 @@
   @media print {
     body > :not(section) { display: none !important; }
     section { padding: 0; min-height: 0; }
-    .sec-head, .quote-head, .quote-side, .auth-card, .zoom-hint { display: none !important; }
+    .sec-head, .quote-head, .quote-side, .auth-card, .zoom-hint, .quote-history { display: none !important; }
     .quote-grid { display: block; }
     .quote-pages { gap: 0; }
     .quote-pages img { border: 0; border-radius: 0; box-shadow: none; width: 100%;
@@ -367,8 +386,12 @@
     </div>
 
     <div id="quoteView" style="display:none">
+      <div id="quoteHistory" class="quote-history" style="display:none"></div>
       <div class="quote-head">
-        <h3 id="quoteTitle"></h3>
+        <div>
+          <h3 id="quoteTitle"></h3>
+          <p id="quoteWhen" class="quote-when"></p>
+        </div>
       </div>
       <div class="quote-grid">
         <div class="quote-left">
@@ -376,7 +399,14 @@
           <div id="quotePages" class="quote-pages"></div>
         </div>
         <div class="quote-side">
-        <div class="quote-concerns card">
+        <!-- 지난 견적서를 볼 때 — 보기만 한다(체크는 최신 견적서에서만 · 서버도 지금 것만 받는다) -->
+        <div id="pastNote" class="quote-concerns card" style="display:none">
+          <p class="concern-head">지난 견적서예요</p>
+          <p id="pastSub" class="concern-sub"></p>
+          <div id="pastPicked" class="past-picked"></div>
+          <button id="backCurrentBtn" class="btn btn-primary concern-submit" type="button">최신 견적서 보기</button>
+        </div>
+        <div id="concernCard" class="quote-concerns card">
           <p class="concern-head">마음에 걸리는 부분이 있나요?</p>
           <p class="concern-sub">해당하는 것을 누른 뒤 [제출하기]를 눌러 주세요. 담당자가 확인하고 도와드립니다.</p>
           <div id="concernList" class="concern-list"></div>
@@ -512,6 +542,8 @@
     phoneStep: $('phoneStep'), quoteView: $('quoteView'), emptyView: $('emptyView'),
     phoneInput: $('phoneInput'), phoneMsg: $('phoneMsg'), openBtn: $('openBtn'),
     quoteTitle: $('quoteTitle'), quotePages: $('quotePages'),
+    quoteHistory: $('quoteHistory'), quoteWhen: $('quoteWhen'), concernCard: $('concernCard'),
+    pastNote: $('pastNote'), pastSub: $('pastSub'), pastPicked: $('pastPicked'), backCurrentBtn: $('backCurrentBtn'),
     concernList: $('concernList'), concernMsg: $('concernMsg'), submitBtn: $('submitBtn'),
     downloadBtn: $('downloadBtn'), printBtn: $('printBtn'),
     zoom: $('zoom'), zoomBody: $('zoomBody'), zoomImg: $('zoomImg'), zoomLabel: $('zoomLabel'),
@@ -915,27 +947,100 @@
   });
   els.printBtn.addEventListener('click', function () { window.print(); });
 
+  /* ── 받은 견적서 내역 (임송화 지시 2026-11-05 «새로운 가견적서를 받았을 때, 이 전에 받은 것도 볼 수 있게 해줘») ──
+     /me 가 history(지난 견적서 — 새 것에 밀려 내려간 것만 · 담당자가 거둔 것은 없다)를 함께 준다. 쪽 그림은 없어서
+     고르면 /me?id= 로 그 한 건만 받고, 받은 것은 이 화면이 떠 있는 동안 들고 있는다(pastCache).
+     지난 것은 **보기만** 한다 — 체크 카드 대신 그때 고른 부분과 [최신 견적서 보기]. 고르던 체크(picked)는 그대로 남는다. */
+  var current = null;   // 지금 견적서(없을 수 있다 — 거둔 뒤 지난 것만 남은 경우)
+  var history = [];
+  var pastCache = {};
+  var viewingId = null; // null = 지금 견적서
+  function labelOf(key) { for (var i = 0; i < options.length; i++) if (options[i].key === key) return options[i].label; return key; }
+  function renderHistory() {
+    var box = els.quoteHistory;
+    box.innerHTML = '';
+    if (!history.length) { box.style.display = 'none'; return; }
+    var head = document.createElement('p'); head.className = 'quote-history-head'; head.textContent = '받은 견적서 ';
+    var n = document.createElement('span'); n.textContent = (history.length + (current ? 1 : 0)) + '건'; head.appendChild(n);
+    var list = document.createElement('div'); list.className = 'quote-history-list';
+    function chip(big, small, on, onClick) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'qh-chip' + (on ? ' on' : '');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var t = document.createElement('b'); t.textContent = big; var u = document.createElement('small'); u.textContent = small || '';
+      b.appendChild(t); b.appendChild(u); b.addEventListener('click', onClick); return b;
+    }
+    if (current) list.appendChild(chip('최신 · ' + current.when, current.title, viewingId === null, openCurrent));
+    history.forEach(function (h) { list.appendChild(chip(h.when, h.title, viewingId === h.id, function () { openPast(h.id); })); });
+    box.appendChild(head); box.appendChild(list); box.style.display = '';
+  }
+  function drawQuote(q, past) {
+    title = q.title;
+    pages = q.pages || [];
+    els.quoteTitle.textContent = q.title;
+    els.quoteWhen.textContent = (q.when || '') + ' 받음';
+    if (past) { var bd = document.createElement('span'); bd.className = 'past-badge'; bd.textContent = '지난 견적서'; els.quoteWhen.appendChild(bd); }
+    els.quotePages.innerHTML = '';
+    pages.forEach(function (src, i) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.alt = q.title + ' ' + (i + 1) + '쪽';
+      img.addEventListener('click', function () { zoomOpen(i); });
+      els.quotePages.appendChild(img);
+    });
+    els.concernCard.style.display = past ? 'none' : '';
+    els.pastNote.style.display = past ? '' : 'none';
+    if (past) {
+      els.pastSub.textContent = current ? '마음에 걸리는 부분은 최신 견적서에서 골라 주세요.' : '지금 받은 견적서는 없어요. 지난 견적서를 다시 보실 수 있어요.';
+      els.pastPicked.innerHTML = '';
+      var keys = q.concerns || [];
+      if (keys.length) {
+        var ph = document.createElement('p'); ph.className = 'past-picked-head'; ph.textContent = '그때 고른 부분'; els.pastPicked.appendChild(ph);
+        keys.forEach(function (k) { var sp = document.createElement('span'); sp.textContent = '✓ ' + labelOf(k); els.pastPicked.appendChild(sp); });
+      }
+      els.backCurrentBtn.style.display = current ? '' : 'none';
+    }
+    renderHistory();
+  }
+  function openCurrent() {
+    if (!current) return;
+    viewingId = null;
+    drawQuote(current, false);
+    renderConcerns();
+  }
+  async function openPast(id) {
+    viewingId = id;
+    renderHistory();
+    var q = pastCache[id];
+    if (!q) {
+      var r = await api('/me?id=' + id, { headers: { Authorization: 'Bearer ' + getToken() } });
+      if (viewingId !== id) return;
+      if (!r.ok) {
+        if (r.status === 401) { clearToken(); show('phoneStep'); return; }
+        setMsg(els.concernMsg, r.reason || '견적서를 불러오지 못했습니다.', 'err');
+        return;
+      }
+      q = pastCache[id] = r.data.quote;
+    }
+    if (viewingId !== id) return;
+    drawQuote(q, true);
+  }
+  els.backCurrentBtn.addEventListener('click', openCurrent);
+
   async function loadQuote() {
     var token = getToken();
     if (!token) { show('phoneStep'); return; }
     var r = await api('/me', { headers: { Authorization: 'Bearer ' + token } });
     if (!r.ok) { clearToken(); show('phoneStep'); return; }
-    if (!r.data.quote) { show('emptyView'); return; }
-    var quote = r.data.quote;
-    saved = (quote.concerns || []).slice();
-    picked = saved.slice();
+    history = r.data.history || [];
     options = r.data.concernOptions || [];
-    title = quote.title;
-    pages = quote.pages || [];
-    els.quoteTitle.textContent = quote.title;
-    els.quotePages.innerHTML = '';
-    pages.forEach(function (src, i) {
-      var img = document.createElement('img');
-      img.src = src;
-      img.alt = quote.title + ' ' + (i + 1) + '쪽';
-      img.addEventListener('click', function () { zoomOpen(i); });
-      els.quotePages.appendChild(img);
-    });
+    current = r.data.quote || null;
+    pastCache = {};
+    if (!current && !history.length) { show('emptyView'); return; }
+    if (!current) { saved = []; picked = []; show('quoteView'); openPast(history[0].id); return; }
+    saved = (current.concerns || []).slice();
+    picked = saved.slice();
+    viewingId = null;
+    drawQuote(current, false);
     setMsg(els.concernMsg, '');
     renderConcerns();
     show('quoteView');
