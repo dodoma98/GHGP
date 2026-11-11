@@ -814,6 +814,15 @@
   els.staffPw.addEventListener('keydown', function (e) { if (e.key === 'Enter') staffLogin(); });
   els.staffCancel.addEventListener('click', function () { setMsg(els.staffMsg, ''); els.phoneInput.value = ''; show('phoneStep'); });
   els.staffOut.addEventListener('click', function () {
+    /* 서버 세션도 끊는다(2026-11-11) — 예전에는 이 브라우저의 토큰만 지워서 서버 세션이 30일(길게는 90일) 살아 있었다.
+       답을 기다리지 않는다(fire and forget): 실패해도(연결 끊김 등) 이 기기에서는 바로 나가진다. 서버는 늘 200 이다
+       (api/public/quote-admin/logout — 창구 세션만 지운다). */
+    var token = getStaffToken();
+    if (token) {
+      try {
+        fetch(ADMIN_API + '/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + token } }).catch(function () {});
+      } catch (e) {}
+    }
     clearStaffToken(); staffQuotes = null; els.staffSearch.value = ''; els.staffWho.textContent = '';
     els.phoneInput.value = ''; show('phoneStep');
   });
